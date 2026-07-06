@@ -1,0 +1,65 @@
+---
+/**
+ * Gran cierre visual: profundidad, copy firme y CTA luminoso (spec §8).
+ */
+interface Props {
+  titulo: string;
+  sub?: string;
+  primaryHref: string;
+  primaryLabel: string;
+  secondaryHref?: string;
+  secondaryLabel?: string;
+}
+
+const { titulo, sub, primaryHref, primaryLabel, secondaryHref, secondaryLabel } = Astro.props;
+---
+
+<section class="section cta-final">
+  <div class="container">
+    <div class="cta-final__panel card-lum reveal">
+      <div class="bg-atmos" aria-hidden="true">
+        <div class="halo halo-cyan anim-pulse" style="width:420px;height:420px;bottom:-260px;left:-120px;"></div>
+        <div class="halo halo-violet anim-pulse" style="width:460px;height:460px;top:-280px;right:-140px;animation-delay:2.4s;"></div>
+        <div class="bg-skyline"></div>
+      </div>
+      <div class="cta-final__content">
+        <h2 class="h2">{titulo}</h2>
+        {sub && <p class="lead">{sub}</p>}
+        <div class="cta-final__actions">
+          <a href={primaryHref} class="btn btn-primary">{primaryLabel}</a>
+          {secondaryHref && secondaryLabel && (
+            <a href={secondaryHref} class="btn btn-ghost">{secondaryLabel}</a>
+          )}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-final__panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: clamp(2.75rem, 7vw, 5rem) clamp(1.5rem, 6vw, 4.5rem);
+    text-align: center;
+  }
+
+  .cta-final__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1.4rem;
+    justify-items: center;
+    max-width: 42rem;
+    margin-inline: auto;
+  }
+
+  .cta-final__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+</style>

@@ -1,0 +1,24 @@
+---
+import { DEFAULT_LANG } from '../i18n/index.js';
+---
+
+<!doctype html>
+<html lang={DEFAULT_LANG}>
+  <head>
+    <meta charset="utf-8" />
+    <title>ExperientIA — Automatización · Growth · IA</title>
+    <meta http-equiv="refresh" content={`0; url=/${DEFAULT_LANG}/`} />
+    <link rel="canonical" href={`/${DEFAULT_LANG}/`} />
+    <meta name="robots" content="noindex" />
+    <script is:inline define:vars={{ DEFAULT_LANG }}>
+      const supported = ['es', 'en', 'pt'];
+      const pref = (navigator.languages ?? [navigator.language ?? ''])
+        .map((l) => (l || '').slice(0, 2).toLowerCase())
+        .find((l) => supported.includes(l));
+      location.replace(`/${pref ?? DEFAULT_LANG}/`);
+    </script>
+  </head>
+  <body>
+    <p><a href={`/${DEFAULT_LANG}/`}>ExperientIA</a></p>
+  </body>
+</html>

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import BrandSymbol from '../components/BrandSymbol.astro';
+import { DEFAULT_LANG, getDict, pagePath } from '../i18n/index.js';
+
+const lang = DEFAULT_LANG;
+const t = getDict(lang);
+---
+
+<Base lang={lang} pageKey={null} title="404">
+  <section class="nf">
+    <div class="bg-atmos" aria-hidden="true">
+      <div class="bg-grid"></div>
+      <div class="halo halo-violet" style="width:480px;height:480px;top:-160px;right:-200px;opacity:.35;"></div>
+    </div>
+    <div class="container nf__inner">
+      <BrandSymbol variant="gradient" size={90} />
+      <h1 class="display">404</h1>
+      <h2 class="h3">{t.notFound.titulo}</h2>
+      <p class="lead">{t.notFound.sub}</p>
+      <a href={pagePath(lang, 'home')} class="btn btn-primary">{t.notFound.cta}</a>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    position: relative;
+    min-height: 70vh;
+    display: grid;
+    align-items: center;
+    padding: calc(76px + 3rem) 0 4rem;
+    overflow: hidden;
+  }
+
+  .nf__inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+    text-align: center;
+  }
+</style>

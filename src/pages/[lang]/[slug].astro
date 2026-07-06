@@ -1,0 +1,42 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageSoluciones from '../../components/pages/PageSoluciones.astro';
+import PageTablero from '../../components/pages/PageTablero.astro';
+import PageProductos from '../../components/pages/PageProductos.astro';
+import PageCasos from '../../components/pages/PageCasos.astro';
+import PageRecursos from '../../components/pages/PageRecursos.astro';
+import PageNosotros from '../../components/pages/PageNosotros.astro';
+import PageContacto from '../../components/pages/PageContacto.astro';
+import { LANGS, PAGE_KEYS, getDict } from '../../i18n/index.js';
+
+export function getStaticPaths() {
+  return LANGS.flatMap((lang) => {
+    const dict = getDict(lang);
+    return PAGE_KEYS.map((key) => ({
+      params: { lang, slug: dict.slugs[key] },
+      props: { pageKey: key },
+    }));
+  });
+}
+
+const { lang } = Astro.params;
+const { pageKey } = Astro.props;
+const t = getDict(lang);
+const pageDict = t[pageKey];
+
+const components = {
+  soluciones: PageSoluciones,
+  tablero: PageTablero,
+  productos: PageProductos,
+  casos: PageCasos,
+  recursos: PageRecursos,
+  nosotros: PageNosotros,
+  contacto: PageContacto,
+};
+
+const PageComponent = components[pageKey];
+---
+
+<Base lang={lang} pageKey={pageKey} title={pageDict.metaTitle} description={pageDict.metaDescription}>
+  <PageComponent lang={lang} />
+</Base>

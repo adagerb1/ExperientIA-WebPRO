@@ -1,0 +1,144 @@
+---
+import PageHero from '../PageHero.astro';
+import Icon from '../Icon.astro';
+import { getDict, CONTACT_EMAIL } from '../../i18n/index.js';
+
+interface Props {
+  lang: string;
+}
+
+const { lang } = Astro.props;
+const t = getDict(lang);
+const p = t.recursos;
+
+const mailtoFor = (titulo) =>
+  `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`${p.pedir}: ${titulo}`)}`;
+---
+
+<PageHero eyebrow={p.hero.eyebrow} titulo={p.hero.titulo} sub={p.hero.sub} />
+
+<section class="section">
+  <div class="container">
+    <div class="grid grid-3">
+      {p.items.map((r, i) => (
+        <article class="card rec__card reveal" style={`--reveal-delay:${(i % 3) * 0.08}s`}>
+          <div class="rec__head">
+            <span class="icon-chip"><Icon name="doc" /></span>
+            <span class="rec__tipo">{r.tipo}</span>
+          </div>
+          <h2 class="h3">{r.titulo}</h2>
+          <p class="rec__texto">{r.texto}</p>
+          <a href={mailtoFor(r.titulo)} class="link-arrow">
+            {p.pedir}
+            <Icon name="arrow" size={16} />
+          </a>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section rec-news">
+  <div class="container">
+    <div class="card-lum rec-news__panel reveal">
+      <div class="bg-atmos" aria-hidden="true">
+        <div class="halo halo-cyan" style="width:400px;height:400px;top:-220px;right:-120px;opacity:.4;"></div>
+        <div class="halo halo-violet" style="width:380px;height:380px;bottom:-220px;left:-120px;opacity:.35;"></div>
+      </div>
+      <div class="rec-news__content">
+        <h2 class="h2">{p.newsletter.titulo}</h2>
+        <p class="lead">{p.newsletter.sub}</p>
+        <form
+          class="rec-news__form"
+          action={`mailto:${CONTACT_EMAIL}`}
+          method="get"
+          data-newsletter
+        >
+          <label class="visually-hidden" for="news-email">{p.newsletter.placeholder}</label>
+          <input id="news-email" type="email" name="subject" placeholder={p.newsletter.placeholder} required />
+          <button type="submit" class="btn btn-primary">{p.newsletter.cta}</button>
+        </form>
+        <p class="small">{p.newsletter.nota}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rec__card {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+  }
+
+  .rec__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .rec__tipo {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent-violet);
+    border: 1px solid rgba(122, 99, 255, 0.35);
+    background: rgba(122, 99, 255, 0.08);
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .rec__texto {
+    font-size: 0.95rem;
+    min-height: 3.6em;
+  }
+
+  .rec-news__panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    padding: clamp(2.5rem, 6vw, 4rem);
+    text-align: center;
+  }
+
+  .rec-news__content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1.2rem;
+    justify-items: center;
+    max-width: 38rem;
+    margin-inline: auto;
+  }
+
+  .rec-news__form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.4rem;
+  }
+
+  .rec-news__form input {
+    flex: 1 1 240px;
+    max-width: 340px;
+    padding: 0.9rem 1.2rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: rgba(5, 17, 38, 0.6);
+    color: var(--neutral-light);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+  }
+
+  .rec-news__form input::placeholder { color: var(--text-tertiary); }
+
+  .rec-news__form input:focus-visible {
+    outline: 2px solid var(--accent-cyan);
+    outline-offset: 2px;
+  }
+</style>

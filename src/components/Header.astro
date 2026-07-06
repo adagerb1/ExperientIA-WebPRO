@@ -1,0 +1,227 @@
+---
+import BrandLogo from './BrandLogo.astro';
+import { LANGS, getDict, pagePath, PAGE_KEYS } from '../i18n/index.js';
+
+interface Props {
+  lang: string;
+  pageKey?: string | null;
+}
+
+const { lang, pageKey = null } = Astro.props;
+const t = getDict(lang);
+
+const navItems = PAGE_KEYS.filter((k) => k !== 'contacto').map((k) => ({
+  key: k,
+  href: pagePath(lang, k),
+  label: t.nav[k],
+}));
+---
+
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <a href={pagePath(lang, 'home')} class="site-header__brand" aria-label={t.nav.homeLabel}>
+      <BrandLogo variant="gradient" descriptor={false} size={36} />
+    </a>
+
+    <nav class="site-header__nav" aria-label="Principal" data-nav>
+      <ul>
+        {navItems.map((item) => (
+          <li>
+            <a href={item.href} aria-current={pageKey === item.key ? 'page' : undefined}>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+
+      <div class="site-header__langs" aria-label={t.footer.idiomas}>
+        {LANGS.map((l) => (
+          <a href={pagePath(l, pageKey ?? 'home')} class:list={[{ 'is-active': l === lang }]} lang={l}>
+            {l.toUpperCase()}
+          </a>
+        ))}
+      </div>
+
+      <a href={pagePath(lang, 'contacto')} class="btn btn-primary site-header__cta">{t.nav.cta}</a>
+    </nav>
+
+    <button class="site-header__toggle" type="button" aria-expanded="false" aria-label={t.nav.menuLabel} data-nav-toggle>
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    border-bottom: 1px solid transparent;
+  }
+
+  .site-header.is-scrolled,
+  .site-header.is-open {
+    background: rgba(5, 17, 38, 0.82);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    border-bottom-color: var(--line-soft);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 76px;
+  }
+
+  .site-header__brand {
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+
+  .site-header__nav {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+  }
+
+  .site-header__nav ul {
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .site-header__nav ul a {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .site-header__nav ul a:hover,
+  .site-header__nav ul a[aria-current='page'] {
+    color: var(--neutral-light);
+  }
+
+  .site-header__nav ul a[aria-current='page'] {
+    color: var(--accent-cyan);
+  }
+
+  .site-header__langs {
+    display: inline-flex;
+    gap: 0.15rem;
+    padding: 0.2rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+  }
+
+  .site-header__langs a {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--text-tertiary);
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    transition: color 0.2s ease, background-color 0.2s ease;
+  }
+
+  .site-header__langs a:hover { color: var(--neutral-light); }
+
+  .site-header__langs a.is-active {
+    color: #041022;
+    background: var(--accent-cyan);
+  }
+
+  .site-header__cta {
+    padding: 0.65rem 1.15rem;
+    font-size: 0.75rem;
+  }
+
+  .site-header__toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: none;
+    border: 1px solid var(--line-soft);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .site-header__toggle span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--neutral-light);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+
+  @media (max-width: 1080px) {
+    .site-header__toggle { display: flex; }
+
+    .site-header__nav {
+      position: fixed;
+      top: 76px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1.2rem;
+      padding: 1.5rem clamp(1.25rem, 5vw, 3rem) 2rem;
+      background: #050f22;
+      border-bottom: 1px solid var(--line-soft);
+      transform: translateY(-8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: transform 0.25s ease, opacity 0.25s ease, visibility 0.25s;
+      max-height: calc(100dvh - 76px);
+      overflow-y: auto;
+    }
+
+    .site-header.is-open .site-header__nav {
+      transform: none;
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .site-header__nav ul {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .site-header__nav ul a {
+      display: block;
+      font-size: 1.05rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--line-soft);
+    }
+
+    .site-header__langs { align-self: flex-start; }
+
+    .site-header__cta { align-self: stretch; }
+
+    .site-header.is-open .site-header__toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .site-header.is-open .site-header__toggle span:nth-child(2) { opacity: 0; }
+    .site-header.is-open .site-header__toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  }
+</style>
+
+<script>
+  const header = document.querySelector('[data-header]');
+  const toggle = document.querySelector('[data-nav-toggle]');
+  if (header && toggle) {
+    toggle.addEventListener('click', () => {
+      const open = header.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+  }
+</script>

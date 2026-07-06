@@ -1,0 +1,20 @@
+{
+  "name": "experientia-webpro",
+  "version": "2.0.0",
+  "description": "Sitio web oficial de ExperientIA — Automatización · Growth · IA",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:41729/git/adagerb1/ExperientIA-WebPRO"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "astro": "^7.0.6"
+  }
+}
