@@ -3,7 +3,7 @@ import '@fontsource-variable/inter';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { LANGS, getDict, pagePath, CONTACT_EMAIL } from '../i18n/index.js';
+import { LANGS, getDict, pagePath, CONTACT_EMAIL, SOCIAL_LINKS } from '../i18n/index.js';
 
 interface Props {
   lang: string;
@@ -18,7 +18,7 @@ const t = getDict(lang);
 const pageTitle = title ? `${title} · ExperientIA` : t.meta.titleBase;
 const pageDescription = description ?? t.meta.description;
 
-const site = Astro.site ?? new URL('https://experientia.example.com');
+const site = Astro.site ?? new URL('https://experientia.pro');
 const canonical = new URL(pagePath(lang, pageKey ?? 'home'), site);
 
 const orgSchema = {
@@ -30,6 +30,7 @@ const orgSchema = {
   url: site.toString(),
   email: CONTACT_EMAIL,
   logo: new URL('/favicon.svg', site).toString(),
+  sameAs: SOCIAL_LINKS.map((s) => s.url),
 };
 ---
 

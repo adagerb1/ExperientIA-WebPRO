@@ -1,6 +1,7 @@
 ---
 import BrandLogo from './BrandLogo.astro';
-import { LANGS, getDict, pagePath, CONTACT_EMAIL, TONNY_DAGER_URL } from '../i18n/index.js';
+import Icon from './Icon.astro';
+import { LANGS, getDict, pagePath, CONTACT_EMAIL, TONNY_DAGER_URL, SOCIAL_LINKS } from '../i18n/index.js';
 
 interface Props {
   lang: string;
@@ -23,6 +24,13 @@ const colCompania = ['casos', 'recursos', 'nosotros', 'contacto'];
           <BrandLogo variant="gradient" descriptor={true} size={46} />
         </a>
         <p class="site-footer__tagline">{t.footer.tagline}</p>
+        <div class="site-footer__social" aria-label={t.footer.seguir}>
+          {SOCIAL_LINKS.map((s) => (
+            <a href={s.url} rel="noopener" target="_blank" aria-label={s.name} title={s.name}>
+              <Icon name={s.icon} size={18} />
+            </a>
+          ))}
+        </div>
       </div>
 
       <nav aria-label={t.footer.colSoluciones}>
@@ -99,6 +107,30 @@ const colCompania = ['casos', 'recursos', 'nosotros', 'contacto'];
     max-width: 26ch;
     color: var(--text-secondary);
     font-size: 0.95rem;
+  }
+
+  .site-footer__social {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  .site-footer__social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    color: var(--text-secondary);
+    border: 1px solid var(--line-soft);
+    background: rgba(246, 248, 251, 0.02);
+    transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .site-footer__social a:hover {
+    color: var(--accent-cyan);
+    border-color: rgba(24, 214, 241, 0.45);
+    transform: translateY(-2px);
   }
 
   .site-footer__title {

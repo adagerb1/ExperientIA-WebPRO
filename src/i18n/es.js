@@ -36,6 +36,7 @@ export default {
     ecosistema: 'Parte del ecosistema',
     legal: 'Todos los derechos reservados.',
     idiomas: 'Idioma',
+    seguir: 'Síguenos',
   },
   common: {
     verMas: 'Ver más',

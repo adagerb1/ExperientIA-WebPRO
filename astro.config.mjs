@@ -1,7 +1,6 @@
 import { defineConfig } from 'astro/config';
 
-// TODO: reemplazar por el dominio de producción definitivo de ExperientIA.
-const SITE_URL = 'https://experientia.example.com';
+const SITE_URL = 'https://experientia.pro';
 
 export default defineConfig({
   site: SITE_URL,

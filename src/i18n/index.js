@@ -6,9 +6,16 @@ export const LANGS = ['es', 'en', 'pt'];
 export const DEFAULT_LANG = 'es';
 export const DICTS = { es, en, pt };
 
-/** Correo de contacto oficial. TODO: reemplazar por la casilla definitiva. */
-export const CONTACT_EMAIL = 'contacto@experientia.com';
+/** Correo de contacto oficial. */
+export const CONTACT_EMAIL = 'hello@experientia.pro';
 export const TONNY_DAGER_URL = 'https://tonnydager.com';
+
+/** Redes sociales oficiales de ExperientIA. */
+export const SOCIAL_LINKS = [
+  { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/experientia.sas/' },
+  { name: 'LinkedIn', icon: 'linkedin', url: 'https://www.linkedin.com/in/tonny-dager/' },
+  { name: 'Facebook', icon: 'facebook', url: 'https://www.facebook.com/Experientia.SAS' },
+];
 
 export function getDict(lang) {
   return DICTS[lang] ?? DICTS[DEFAULT_LANG];
