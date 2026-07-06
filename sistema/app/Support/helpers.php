@@ -38,3 +38,33 @@ if (! function_exists('tr_lines')) {
         return array_values(array_filter(array_map('trim', explode("\n", (string) $value))));
     }
 }
+
+if (! function_exists('lroute')) {
+    /** Ruta nombrada en el idioma actual (o el indicado): lroute('home') → es.home */
+    function lroute(string $name, array $params = [], ?string $locale = null): string
+    {
+        $locale ??= app()->getLocale();
+
+        return route("{$locale}.{$name}", $params);
+    }
+}
+
+if (! function_exists('locale_switch_url')) {
+    /** URL de la página actual en otro idioma (para el selector ES/EN/PT). */
+    function locale_switch_url(string $locale): string
+    {
+        $route = request()->route();
+
+        if (! $route || ! $route->getName() || ! str_contains($route->getName(), '.')) {
+            return url("/{$locale}");
+        }
+
+        [, $name] = explode('.', $route->getName(), 2);
+
+        try {
+            return route("{$locale}.{$name}", $route->parameters());
+        } catch (\Throwable) {
+            return url("/{$locale}");
+        }
+    }
+}

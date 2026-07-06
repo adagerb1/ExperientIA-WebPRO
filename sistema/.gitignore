@@ -2,7 +2,7 @@
 .DS_Store
 .env
 .env.backup
-.env.production
+# .env.production es una PLANTILLA versionada (sin secretos)
 .phpactor.json
 .phpunit.result.cache
 /.codex
