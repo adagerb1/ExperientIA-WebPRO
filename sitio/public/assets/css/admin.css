@@ -1,0 +1,57 @@
+/* Portal administrativo ExperientIA */
+.admin-login { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem; }
+.admin-login .form-panel { width: min(100%, 400px); }
+
+.admin { display: grid; grid-template-columns: 240px 1fr; min-height: 100dvh; }
+.admin__nav { border-right: 1px solid var(--line-soft); padding: 1.4rem 1rem; display: flex; flex-direction: column; gap: 1.4rem; background: rgba(10,27,58,.35); position: sticky; top: 0; height: 100dvh; }
+.admin__brand { display: flex; align-items: center; gap: .6rem; font-size: 1.05rem; padding: 0 .5rem; }
+.admin__nav nav { display: grid; gap: .2rem; }
+.admin__nav nav a { display: block; padding: .6rem .8rem; border-radius: 9px; color: var(--text-secondary); font-size: .92rem; }
+.admin__nav nav a:hover { color: var(--neutral-light); background: rgba(246,248,251,.04); }
+.admin__nav nav a.is-active { color: var(--accent-cyan); background: rgba(24,214,241,.09); }
+.admin__nav .admin__grupo { font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-tertiary); margin: .8rem .8rem .3rem; }
+.admin__user { margin-top: auto; display: grid; gap: .6rem; padding: 0 .5rem; font-size: .85rem; color: var(--text-secondary); }
+.admin__user .btn { padding: .5rem 1rem; font-size: .68rem; }
+.admin__main { padding: clamp(1.4rem, 3vw, 2.5rem); min-width: 0; }
+.admin__main h1 { font-size: 1.5rem; margin-bottom: 1.4rem; }
+
+.admin table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.admin th { text-align: left; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-tertiary); padding: .6rem .8rem; border-bottom: 1px solid var(--line-strong); }
+.admin td { padding: .7rem .8rem; border-bottom: 1px solid var(--line-soft); color: var(--text-secondary); vertical-align: top; }
+.admin tr[data-id] { cursor: pointer; }
+.admin tr[data-id]:hover td { background: rgba(24,214,241,.05); color: var(--neutral-light); }
+
+.admin .badge { display: inline-block; padding: .2rem .6rem; border-radius: 999px; font-size: .7rem; font-weight: 600; border: 1px solid var(--line-strong); }
+.admin .badge[data-v="nuevo"] { color: var(--accent-cyan); border-color: rgba(24,214,241,.4); }
+.admin .badge[data-v="contactado"], .admin .badge[data-v="propuesta"] { color: #ffc247; border-color: rgba(255,194,71,.4); }
+.admin .badge[data-v="calificado"] { color: var(--accent-violet); border-color: rgba(122,99,255,.4); }
+.admin .badge[data-v="cliente"], .admin .badge[data-v="confirmada"] { color: #4be3a0; border-color: rgba(75,227,160,.4); }
+.admin .badge[data-v="descartado"], .admin .badge[data-v="cancelada"] { color: var(--text-tertiary); }
+
+.admin__toolbar { display: flex; flex-wrap: wrap; gap: .8rem; margin-bottom: 1.2rem; align-items: center; }
+.admin__toolbar input, .admin__toolbar select { padding: .6rem .9rem; border-radius: 9px; border: 1px solid var(--line-strong); background: rgba(5,17,38,.6); color: var(--neutral-light); font-family: var(--font-sans); font-size: .9rem; }
+.admin__toolbar .btn { margin-left: auto; }
+
+.admin__stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.admin__stats .card { padding: 1.2rem 1.4rem; display: grid; gap: .3rem; }
+.admin__stats b { font-size: 1.8rem; }
+
+.admin__form { display: grid; gap: 1rem; max-width: 46rem; }
+.admin__form .field input, .admin__form .field select, .admin__form .field textarea { width: 100%; }
+.admin__i18n { border: 1px solid var(--line-soft); border-radius: var(--radius-md); padding: 1rem; display: grid; gap: .8rem; }
+.admin__i18n > b { font-size: .8rem; color: var(--text-tertiary); }
+.admin__i18n .field label span { font-size: .68rem; color: var(--accent-cyan); margin-left: .4rem; }
+.admin__acciones { display: flex; gap: .8rem; align-items: center; }
+.admin__timeline { display: grid; gap: .8rem; margin-top: 1rem; }
+.admin__timeline .card { padding: 1rem 1.2rem; display: grid; gap: .3rem; }
+.admin__timeline time { font-size: .75rem; color: var(--text-tertiary); }
+.admin__volver { margin-bottom: 1.2rem; display: inline-block; }
+.admin .aviso { padding: .8rem 1.2rem; border-radius: 10px; border: 1px solid rgba(75,227,160,.4); color: #4be3a0; margin-bottom: 1rem; }
+.admin .aviso.err { border-color: rgba(255,125,157,.5); color: #ff7d9d; }
+
+@media (max-width: 900px) {
+  .admin { grid-template-columns: 1fr; }
+  .admin__nav { position: static; height: auto; flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .admin__nav nav { display: flex; flex-wrap: wrap; }
+  .admin__user { margin: 0; }
+}

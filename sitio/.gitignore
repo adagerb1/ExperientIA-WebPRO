@@ -1,0 +1,4 @@
+app/config.local.php
+datos/dev.sqlite
+datos/recursos/*
+!datos/recursos/playbook-automatizacion-90-dias.pdf
