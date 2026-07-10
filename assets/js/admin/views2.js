@@ -149,22 +149,3 @@ export const Plantillas = {
   },
   mounted(){ this.load(); },
 };
-
-export const AlexIAInterno = {
-  components: { Icon },
-  template: `<div><h1>AlexIA <span class="grad-text">interno</span></h1><p class="adm__sub">Asistente del equipo · consulta leads, métricas y contenido</p>
-    <div class="glass panel" style="max-width:760px;display:flex;flex-direction:column;height:60vh">
-      <div style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:.7rem;padding:.4rem" ref="msgs">
-        <div class="alexia-msg a">Hola {{ store.admin?store.admin.name:'' }}. Pregúntame por tus leads, métricas o contenido.</div>
-        <div v-for="(m,i) in msgs" :key="i" class="alexia-msg" :class="m.role==='user'?'u':'a'" style="max-width:75%">{{ m.text }}</div>
-        <div v-if="loading" class="alexia-msg a" style="opacity:.6">…</div></div>
-      <div style="display:flex;gap:.5rem;padding-top:.8rem;border-top:1px solid var(--line-soft)">
-        <textarea class="inp" style="resize:none;height:44px" v-model="text" placeholder="Escribe…" @keydown.enter.exact.prevent="send"></textarea>
-        <button class="btn btn-primary" @click="send" :disabled="loading"><Icon name="send" :size="16"/></button></div></div></div>`,
-  data(){ return { store, text:'', msgs:[], loading:false, convId:null }; },
-  methods:{ async send(){ const t=this.text.trim(); if(!t||this.loading)return; this.msgs.push({role:'user',text:t}); this.text=''; this.loading=true; this.scroll();
-    const r=await api.post('/admin/alexia',{mensaje:t,conversation_id:this.convId}); this.loading=false;
-    if(r.ok){ this.convId=r.data.conversation_id; this.msgs.push({role:'assistant',text:r.data.reply}); } else this.msgs.push({role:'assistant',text:r.error||'AlexIA no está disponible. Configure OpenAI en Conectores.'});
-    this.scroll(); },
-    scroll(){ this.$nextTick(()=>{ const m=this.$refs.msgs; if(m)m.scrollTop=m.scrollHeight; }); } },
-};

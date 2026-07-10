@@ -18,10 +18,10 @@ final class AlexIA
     {
         $ctx = self::businessContext($locale);
         if ($scope === 'interno') {
-            return "Eres AlexIA, el asistente interno de ExperientIA SAS para el equipo del portal administrativo. "
-                . "Ayudas a consultar y entender leads, métricas del CRM, agenda y contenido. Responde en {$locale}, "
-                . "de forma ejecutiva, breve y accionable. No inventes datos; si no tienes un dato, dilo. "
-                . "Contexto de negocio:\n{$ctx}";
+            return "Eres AlexIA, el estratega interno de ExperientIA SAS para el equipo del portal administrativo. "
+                . "Ayudas a interpretar leads, métricas del CRM, agenda y contenido, y a tomar decisiones de crecimiento. "
+                . "Responde en {$locale}, de forma ejecutiva, breve y accionable. Basa tus respuestas en los datos; "
+                . "si no tienes un dato, dilo.\nContexto de negocio:\n{$ctx}\n\nDatos en vivo del CRM:\n" . self::snapshot();
         }
         return "Eres AlexIA, asesor comercial de ExperientIA SAS. Tu misión es ayudar a empresas a entender cómo "
             . "la automatización, el growth y la IA pueden hacerlas crecer, y guiar al interesado hacia un diagnóstico "
@@ -89,6 +89,61 @@ final class AlexIA
             ->execute([$responseId, now_utc(), $convId]);
 
         return ['reply' => $respuesta, 'conversation_id' => $convId];
+    }
+
+    /** Llamada one-shot al cerebro activo (sin persistir conversación). */
+    public static function ask(string $instructions, string $userInput): string
+    {
+        $brain = self::brain();
+        if (! $brain) {
+            throw new \RuntimeException('AlexIA no está disponible: configure y active OpenAI o Anthropic (Claude).', 503);
+        }
+        if ($brain === 'anthropic') {
+            return AnthropicConnector::respond($instructions, [['role' => 'user', 'content' => $userInput]]);
+        }
+        [$txt] = OpenAIConnector::respond($instructions, $userInput);
+        return $txt;
+    }
+
+    /** Resumen conciso de la data del negocio para alimentar prompts. */
+    public static function snapshot(): string
+    {
+        $pdo = Database::pdo();
+        $q = fn (string $sql) => (int) $pdo->query($sql)->fetchColumn();
+
+        $total = $q('SELECT COUNT(*) FROM leads');
+        $nuevos = $q("SELECT COUNT(*) FROM leads WHERE status = 'nuevo'");
+        $avanzados = $q("SELECT COUNT(*) FROM leads WHERE status IN ('contactado','calificado','propuesta','cliente')");
+        $clientes = $q("SELECT COUNT(*) FROM leads WHERE status = 'cliente'");
+        $reservas = $q('SELECT COUNT(DISTINCT lead_id) FROM bookings');
+        $prox = $q("SELECT COUNT(*) FROM bookings WHERE status = 'confirmada' AND starts_at >= '" . now_utc() . "'");
+
+        $out = "- Leads totales: {$total} (sin gestionar: {$nuevos})\n";
+        $out .= "- Avanzados (contactado+): {$avanzados} · Con reserva: {$reservas} · Clientes: {$clientes} · Sesiones próximas: {$prox}\n";
+
+        $out .= 'Fuentes: ';
+        $frag = [];
+        foreach ($pdo->query("SELECT COALESCE(NULLIF(source,''),'(sin origen)') s, COUNT(*) c FROM leads GROUP BY s ORDER BY c DESC")->fetchAll() as $r) { $frag[] = "{$r['s']}:{$r['c']}"; }
+        $out .= implode(', ', $frag) . "\n";
+
+        $out .= 'Industrias: ';
+        $frag = [];
+        foreach ($pdo->query("SELECT COALESCE(NULLIF(industry,''),'(sin dato)') i, COUNT(*) c FROM leads GROUP BY i ORDER BY c DESC LIMIT 6")->fetchAll() as $r) { $frag[] = "{$r['i']}:{$r['c']}"; }
+        $out .= implode(', ', $frag) . "\n";
+
+        $des = [];
+        $sol = [];
+        foreach ($pdo->query("SELECT type, payload FROM touchpoints WHERE type IN ('contacto','diagnostico')")->fetchAll() as $tp) {
+            $p = json_decode($tp['payload'] ?? '', true) ?: [];
+            if ($tp['type'] === 'contacto' && ! empty($p['desafio'])) { $des[$p['desafio']] = ($des[$p['desafio']] ?? 0) + 1; }
+            if ($tp['type'] === 'diagnostico' && ! empty($p['resultado'])) { $sol[$p['resultado']] = ($sol[$p['resultado']] ?? 0) + 1; }
+        }
+        arsort($des);
+        arsort($sol);
+        if ($des) { $out .= 'Retos declarados: ' . implode(', ', array_map(fn ($k, $v) => "{$k}({$v})", array_keys($des), $des)) . "\n"; }
+        if ($sol) { $out .= 'Soluciones más pedidas: ' . implode(', ', array_map(fn ($k, $v) => "{$k}({$v})", array_keys($sol), $sol)) . "\n"; }
+
+        return $out;
     }
 
     /** Cerebro activo: prioriza el habilitado; si no, cualquiera con credencial. */

@@ -125,3 +125,21 @@ tr.row{ cursor:pointer; } tr.row:hover td{ background:rgba(24,214,241,.05); colo
 .hint{ font-size:.72rem; color:var(--text-tertiary); margin:.35rem 0 0; line-height:1.4; }
 .switch-row{ display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:var(--text-secondary); padding:.5rem 0; border-top:1px solid var(--line-soft); }
 .conn-actions{ display:flex; flex-wrap:wrap; gap:.6rem; justify-content:flex-end; }
+
+/* ── AlexIA · Estratega (panel en el Tablero) ────────────────────────── */
+.alexia-panel{ border:1px solid rgba(122,99,255,.28); background:linear-gradient(180deg, rgba(122,99,255,.06), rgba(18,34,66,.5)); }
+.ap-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:.4rem; }
+.ap-head h3{ margin:0; }
+.ap-resumen{ color:var(--neutral-light); font-size:.95rem; line-height:1.5; margin:.6rem 0 1rem; }
+.ap-recs{ list-style:none; counter-reset:ap; padding:0; margin:0 0 1rem; display:grid; gap:.7rem; }
+.ap-rec{ counter-increment:ap; position:relative; padding:.9rem 1rem .9rem 2.6rem; border:1px solid var(--line-soft); border-radius:12px; background:rgba(5,17,38,.4); }
+.ap-rec::before{ content:counter(ap); position:absolute; left:.85rem; top:.9rem; width:1.4rem; height:1.4rem; border-radius:50%; display:grid; place-items:center; font-size:.72rem; font-weight:700; color:#041022; background:var(--grad); }
+.ap-rec-h{ display:flex; justify-content:space-between; align-items:center; gap:.6rem; margin-bottom:.25rem; }
+.ap-rec-h b{ color:var(--neutral-light); font-size:.92rem; }
+.ap-rec p{ margin:0; font-size:.85rem; color:var(--text-secondary); line-height:1.45; }
+.ap-accion{ display:inline-block; margin-top:.4rem; font-size:.78rem; color:var(--cyan); }
+.prio{ font-size:.66rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:.15rem .55rem; border-radius:999px; border:1px solid var(--line-strong); white-space:nowrap; }
+.prio.alta{ color:#ff7d9d; border-color:rgba(255,125,157,.4); } .prio.media{ color:#ffc247; border-color:rgba(255,194,71,.4); } .prio.baja{ color:#4be3a0; border-color:rgba(75,227,160,.4); }
+.ap-ask{ display:flex; gap:.6rem; align-items:center; }
+.ap-ask .inp{ flex:1; }
+.ap-answer{ margin:.9rem 0 0; padding:.9rem 1rem; border-left:2px solid var(--cyan); background:rgba(24,214,241,.05); border-radius:0 10px 10px 0; color:var(--neutral-light); font-size:.9rem; line-height:1.5; white-space:pre-wrap; }

@@ -55,6 +55,7 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+$r->post('/admin/alexia/estrategia', 'Admin\\ChatController', 'estrategia'); // AlexIA estratega (BI)
 $r->post('/admin/alexia', 'Admin\\ChatController', 'mensaje');         // AlexIA interno (admin)
 // Genéricas de contenido (soluciones, productos, casos, faqs, recursos, disponibilidad)
 $r->get('/admin/{tabla}/list', 'Admin\\ContentController', 'index');

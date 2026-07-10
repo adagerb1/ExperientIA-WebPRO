@@ -6,7 +6,7 @@ import { Icon } from '../lib/ui.js';
 import { reveal } from '../lib/ui.js';
 import { Toasts } from '../lib/layout.js';
 import { Login, Dashboard, Leads, LeadDetail } from './views1.js';
-import { Reservas, Contenido, Conectores, Plantillas, AlexIAInterno } from './views2.js';
+import { Reservas, Contenido, Conectores, Plantillas } from './views2.js';
 
 const Shell = {
   components: { Icon, Toasts },
@@ -25,7 +25,7 @@ const Shell = {
   data(){ return { store,
     crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
     cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/recursos',icon:'doc',label:'Recursos'}],
-    plat:[{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'},{to:'/admin/alexia',icon:'sparkle',label:'AlexIA'}],
+    plat:[{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}],
   }; },
   methods:{ go(to){ this.$router.push(to); }, active(to){ return this.$route.path===to || (to!=='/admin'&&this.$route.path.startsWith(to)); }, salir(){ logout(); } },
 };
@@ -45,7 +45,6 @@ const routes = [
     { path: 'recursos', component: Contenido, props: { modulo: 'resources' } },
     { path: 'conectores', component: Conectores },
     { path: 'plantillas', component: Plantillas },
-    { path: 'alexia', component: AlexIAInterno },
   ]},
 ];
 
