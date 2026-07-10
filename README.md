@@ -122,5 +122,7 @@ Abrir `http://localhost:8092/` (público) y `http://localhost:8092/admin` (porta
 
 ## Despliegue
 
-Ver **[DESPLIEGUE.md](DESPLIEGUE.md)** — despliegue *zero-config* en cPanel: subir
-archivos, crear `.env`, ejecutar `install.php` una vez, borrarlo. No hay build.
+Ver **[DESPLIEGUE.md](DESPLIEGUE.md)** — despliegue *zero-config*: descomprimir en
+`public_html` y abrir `/install.php` en el navegador (**asistente/wizard** que
+comprueba requisitos, escribe el `.env`, crea las tablas, siembra el contenido y
+crea el administrador). Sin build, sin npm. Borrar `install.php` al terminar.

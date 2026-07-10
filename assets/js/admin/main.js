@@ -11,7 +11,7 @@ import { Reservas, Contenido, Conectores, Plantillas, AlexIAInterno } from './vi
 const Shell = {
   components: { Icon, Toasts },
   template: `<div class="adm"><aside class="adm__side">
-    <div class="adm__brand"><svg width="30" height="24" viewBox="0 0 128 100" fill="none"><defs><linearGradient id="sb" x1="18" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00e5ff"/><stop offset=".52" stop-color="#7b61ff"/><stop offset="1" stop-color="#00e5ff"/></linearGradient></defs><path fill="url(#sb)" d="M 6 2 L 38 2 L 64 41.5 L 64 58.5 L 38 98 L 6 98 L 6 55.5 L 12.5 52 L 12.5 48 L 6 44.5 Z"/><g stroke="#00e5ff" fill="none" stroke-width="10.5"><polyline points="88,26.5 72,50 88,73.5"/><polyline points="61.5,32 78.5,7.25 96,7.25"/><line x1="102.5" y1="6" x2="124" y2="31.5" stroke-width="11"/><polyline points="61.5,68 78.5,92.75 96,92.75"/><line x1="102.5" y1="94" x2="124" y2="68.5" stroke-width="11"/></g></svg> Experient<i>IA</i></div>
+    <div class="adm__brand"><img src="/assets/img/brand/logo.png" alt="ExperientIA" style="height:28px;width:auto" draggable="false"></div>
     <nav class="adm__nav">
       <p class="adm__grp">CRM</p>
       <button v-for="it in crm" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)"><Icon :name="it.icon" :size="17"/> {{ it.label }}</button>

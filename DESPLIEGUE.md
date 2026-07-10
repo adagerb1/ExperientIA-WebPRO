@@ -76,15 +76,21 @@ Los conectores (OpenAI/AlexIA, SendGrid, Telegram, WhatsApp, pasarelas, Google
 Calendar) pueden quedar vacíos y configurarse luego desde el panel
 (**Plataforma → Conectores**). El `.env` es solo el *fallback*.
 
-### 4. Instalar (una sola vez)
-Desde *Terminal* de cPanel o SSH, en `public_html`:
+### 4. Instalar (una sola vez) — asistente en el navegador
+Abre **`https://experientia.pro/install.php`** en el navegador. El asistente
+(wizard) comprueba los requisitos del servidor y te pide en un solo paso: datos de
+la base de datos, URL del sitio y el usuario administrador. Al enviar, **escribe el
+`.env` automáticamente**, crea las tablas, siembra el contenido inicial, registra
+conectores y plantillas, y crea el usuario **propietario** del portal.
+
+Si prefieres consola (opcional), desde *Terminal* de cPanel o SSH en `public_html`:
 
 ```bash
 php install.php "Tu Nombre" hello@experientia.pro "TuContraseñaSegura"
 ```
 
-Crea las tablas, siembra el contenido inicial, registra conectores y plantillas, y
-crea el usuario **propietario** del portal. **Borra `install.php`** al terminar.
+En cualquiera de los dos casos, **borra `install.php`** al terminar (el propio
+asistente te lo recuerda; si ya hay una instalación activa, se bloquea solo).
 
 ### 5. Verificar
 - Sitio: `https://experientia.pro/` → redirige a `/es/` (idiomas `/es/ /en/ /pt/`).

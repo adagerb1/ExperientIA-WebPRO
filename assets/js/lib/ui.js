@@ -33,29 +33,23 @@ export const Icon = {
   computed: { body() { return ICONS[this.name] || ICONS.target; } },
 };
 
+// Símbolo oficial de marca (imagen real del manual de identidad, gradiente).
 export const BrandSymbol = {
-  props: { size: { type: Number, default: 40 }, variant: { type: String, default: 'gradient' } },
-  template: `<svg :width="size*1.28" :height="size" viewBox="0 0 128 100" fill="none" aria-hidden="true">
-    <defs v-if="variant==='gradient'"><linearGradient :id="uid" x1="18" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#00e5ff"/><stop offset="0.52" stop-color="#7b61ff"/><stop offset="1" stop-color="#00e5ff"/></linearGradient></defs>
-    <path :fill="solid" d="M 6 2 L 38 2 L 64 41.5 L 64 58.5 L 38 98 L 6 98 L 6 55.5 L 12.5 52 L 12.5 48 L 6 44.5 Z"/>
-    <g :stroke="stroke" fill="none" stroke-width="10.5">
-      <polyline points="88,26.5 72,50 88,73.5"/><polyline points="61.5,32 78.5,7.25 96,7.25"/>
-      <line x1="102.5" y1="6" x2="124" y2="31.5" stroke-width="11"/>
-      <polyline points="61.5,68 78.5,92.75 96,92.75"/><line x1="102.5" y1="94" x2="124" y2="68.5" stroke-width="11"/></g></svg>`,
-  data() { return { uid: 'xg' + Math.random().toString(36).slice(2, 7) }; },
-  computed: {
-    solid() { return this.variant === 'white' ? '#fff' : this.variant === 'black' ? '#0a1224' : `url(#${this.uid})`; },
-    stroke() { return this.variant === 'white' ? '#fff' : this.variant === 'black' ? '#0a1224' : '#00e5ff'; },
-  },
+  props: { size: { type: Number, default: 40 } },
+  template: `<img src="/assets/img/brand/symbol.png" alt="" aria-hidden="true"
+    class="brand-symbol" :style="{height: size+'px', width:'auto'}" draggable="false">`,
 };
 
+// Logotipo oficial de marca (imagen real). descriptor=true incluye
+// "Automatización · Growth · IA".
 export const BrandLogo = {
-  components: { BrandSymbol },
   props: { size: { type: Number, default: 40 }, descriptor: { type: Boolean, default: true } },
-  template: `<span class="brand-logo" :style="{'--h': size+'px'}" translate="no">
-    <BrandSymbol :size="size"/><span class="txt"><span class="word">Experient<i>IA</i></span>
-    <span class="desc" v-if="descriptor">Automatización · Growth · IA</span></span></span>`,
+  template: `<img :src="src" alt="ExperientIA" class="brand-logo-img" translate="no"
+    :style="{height: h + 'px', width:'auto'}" draggable="false">`,
+  computed: {
+    src() { return this.descriptor ? '/assets/img/brand/logo-full.png' : '/assets/img/brand/logo.png'; },
+    h() { return this.descriptor ? Math.round(this.size * 1.6) : this.size; },
+  },
 };
 
 // Tablero de Crecimiento (centro de comando · liquid glass)
