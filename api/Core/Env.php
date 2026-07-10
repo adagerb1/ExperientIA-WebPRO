@@ -19,11 +19,20 @@ final class Env
             [$key, $value] = array_pad(explode('=', $line, 2), 2, '');
             $key = trim($key);
             $value = trim($value);
-            // Quitar comentarios en línea y comillas
-            if (($pos = strpos($value, ' #')) !== false) {
-                $value = substr($value, 0, $pos);
+            // Valores entrecomillados: se toman literales (protege contraseñas con
+            // #, espacios o símbolos). Sin comillas: se corta el comentario " #".
+            if (strlen($value) >= 2 && ($value[0] === '"' || $value[0] === "'") && substr($value, -1) === $value[0]) {
+                $quote = $value[0];
+                $value = substr($value, 1, -1);
+                if ($quote === '"') {
+                    $value = strtr($value, ['\\"' => '"', '\\\\' => '\\', '\\n' => "\n"]);
+                }
+            } else {
+                if (($pos = strpos($value, ' #')) !== false) {
+                    $value = substr($value, 0, $pos);
+                }
+                $value = trim($value);
             }
-            $value = trim($value, "\"' \t");
             self::$data[$key] = $value;
         }
     }

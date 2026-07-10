@@ -152,6 +152,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
         $secret = bin2hex(random_bytes(32));
         $host2 = preg_replace('#^www\.#', '', parse_url($appUrl, PHP_URL_HOST) ?: $host);
         $cors = $appUrl . ',' . $scheme . '://www.' . $host2;
+        // Contraseña entrecomillada y escapada: sobrevive #, espacios y símbolos.
+        $dbPassEnv = '"' . str_replace(['\\', '"'], ['\\\\', '\\"'], $dbPass) . '"';
         $env = <<<ENV
         APP_ENV=production
         APP_URL={$appUrl}
@@ -164,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$yaInstalado) {
         DB_PORT={$dbPort}
         DB_NAME={$dbName}
         DB_USER={$dbUser}
-        DB_PASS={$dbPass}
+        DB_PASS={$dbPassEnv}
 
         MAIL_FROM=hello@{$host2}
         MAIL_FROM_NAME=ExperientIA
