@@ -1,0 +1,61 @@
+/* ============================================================
+   ExperientIA · Design tokens
+   Dark premium + Glassmorfismo + Liquid Glass + UI Espacial
+   ============================================================ */
+:root {
+  /* Marca (Especificación V2) */
+  --base-01: #051126;
+  --base-02: #0a1b3a;
+  --cyan: #18d6f1;
+  --violet: #7a63ff;
+  --neutral-light: #f6f8fb;
+  --neutral-mid: #d9e2f0;
+
+  /* Texto */
+  --text-primary: var(--neutral-light);
+  --text-secondary: rgba(217, 226, 240, .76);
+  --text-tertiary: rgba(217, 226, 240, .55);
+
+  /* Superficies "liquid glass": translúcidas, con brillo interno */
+  --glass-bg: rgba(18, 34, 66, .45);
+  --glass-bg-strong: rgba(16, 30, 60, .72);
+  --glass-border: rgba(217, 226, 240, .14);
+  --glass-border-lit: rgba(24, 214, 241, .38);
+  --glass-hi: rgba(255, 255, 255, .06);   /* reflejo superior */
+  --blur: 22px;
+
+  /* Líneas y halos */
+  --line-soft: rgba(217, 226, 240, .10);
+  --line-strong: rgba(217, 226, 240, .18);
+  --cyan-glow: rgba(24, 214, 241, .34);
+  --violet-glow: rgba(122, 99, 255, .32);
+
+  /* Firma de marca */
+  --grad: linear-gradient(96deg, var(--cyan) 0%, var(--violet) 100%);
+  --grad-soft: linear-gradient(96deg, rgba(24,214,241,.16), rgba(122,99,255,.16));
+
+  --font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Radios generosos (UI espacial) */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+
+  --container: 1200px;
+  --section-y: clamp(4.5rem, 9vw, 7.5rem);
+  --motion: 220ms cubic-bezier(.22,.61,.36,1);
+  --motion-slow: 420ms cubic-bezier(.22,.61,.36,1);
+  color-scheme: dark;
+}
+
+@font-face {
+  font-family: 'Inter Variable'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/assets/fonts/inter-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: 'Inter Variable'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('/assets/fonts/inter-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
