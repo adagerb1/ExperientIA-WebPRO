@@ -47,16 +47,19 @@ $r->delete('/admin/leads/{id}', 'Admin\\LeadsController', 'destroy');
 $r->get('/admin/leads-export', 'Admin\\LeadsController', 'export');
 $r->get('/admin/reservas', 'Admin\\BookingsController', 'index');
 $r->patch('/admin/reservas/{id}', 'Admin\\BookingsController', 'update');
-$r->get('/admin/{tabla}/list', 'Admin\\ContentController', 'index');
-$r->post('/admin/{tabla}', 'Admin\\ContentController', 'store');
-$r->put('/admin/{tabla}/{id}', 'Admin\\ContentController', 'update');
-$r->delete('/admin/{tabla}/{id}', 'Admin\\ContentController', 'destroy');
+// Rutas específicas ANTES de las genéricas /admin/{tabla} (evita colisiones).
 $r->post('/admin/archivo', 'Admin\\ContentController', 'upload');
 $r->get('/admin/connectors', 'Admin\\ConnectorsController', 'index');
 $r->put('/admin/connectors/{provider}', 'Admin\\ConnectorsController', 'update');
 $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'test');
+$r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
 $r->post('/admin/alexia', 'Admin\\ChatController', 'mensaje');         // AlexIA interno (admin)
+// Genéricas de contenido (soluciones, productos, casos, faqs, recursos, disponibilidad)
+$r->get('/admin/{tabla}/list', 'Admin\\ContentController', 'index');
+$r->post('/admin/{tabla}', 'Admin\\ContentController', 'store');
+$r->put('/admin/{tabla}/{id}', 'Admin\\ContentController', 'update');
+$r->delete('/admin/{tabla}/{id}', 'Admin\\ContentController', 'destroy');
 
 $r->resolve($req);

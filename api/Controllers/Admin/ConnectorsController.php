@@ -18,27 +18,48 @@ final class ConnectorsController extends Controller
     {
         AuthMiddleware::require($this->req, 'admin');
         $defs = biz('connectors');
+        $groups = biz('connector_groups');
         $filas = Database::run('SELECT provider, enabled, config, status, last_check FROM connectors')->fetchAll();
         $byProv = [];
         foreach ($filas as $f) { $byProv[$f['provider']] = $f; }
 
         $out = [];
+        $configurados = 0;
+        $activos = 0;
         foreach ($defs as $prov => $def) {
             $row = $byProv[$prov] ?? ['enabled' => 0, 'config' => null, 'status' => 'sin_configurar', 'last_check' => null];
             $cfg = $row['config'] ? json_decode($row['config'], true) : [];
-            // Enmascarar secretos
-            $masked = [];
-            foreach ($def['campos'] as $campo) {
-                $val = $cfg[$campo] ?? '';
-                $masked[$campo] = $val ? (str_contains($campo, 'model') || str_contains($campo, 'email') || str_contains($campo, 'calendar') || str_contains($campo, 'name') ? $val : '••••••' . substr($val, -4)) : '';
+
+            // Secretos nunca se devuelven; text/select sí. 'saved' indica qué guarda credencial.
+            $config = [];
+            $saved = [];
+            foreach ($def['campos'] as $c) {
+                $n = $c['n'];
+                $has = isset($cfg[$n]) && $cfg[$n] !== '';
+                $saved[$n] = $has;
+                if (! empty($c['transient'])) { $config[$n] = ''; continue; }
+                $config[$n] = (($c['t'] ?? 'text') === 'secret') ? '' : ($cfg[$n] ?? '');
             }
+            $isConfigured = ! empty(array_filter($saved));
+            if ($isConfigured) { $configurados++; }
+            if ((int) $row['enabled'] === 1) { $activos++; }
+
             $out[] = [
                 'provider' => $prov, 'nombre' => $def['nombre'], 'grupo' => $def['grupo'],
-                'campos' => $def['campos'], 'enabled' => (int) $row['enabled'],
-                'status' => $row['status'], 'last_check' => $row['last_check'], 'config' => $masked,
+                'grupo_label' => $groups[$def['grupo']] ?? $def['grupo'], 'desc' => $def['desc'] ?? '',
+                'campos' => $def['campos'], 'acciones' => $def['acciones'] ?? [],
+                'config' => $config, 'saved' => $saved, 'enabled' => (int) $row['enabled'],
+                'status' => $isConfigured ? ($row['status'] === 'sin_configurar' ? 'configurado' : $row['status']) : 'sin_configurar',
+                'last_check' => $row['last_check'],
             ];
         }
-        Response::ok($out);
+        $gout = [];
+        foreach ($groups as $k => $l) { $gout[] = ['key' => $k, 'label' => $l]; }
+
+        Response::ok([
+            'items' => $out, 'groups' => $gout,
+            'summary' => ['disponibles' => count($defs), 'configurados' => $configurados, 'activos' => $activos],
+        ]);
     }
 
     public function update(string $provider): void
@@ -46,43 +67,98 @@ final class ConnectorsController extends Controller
         AuthMiddleware::require($this->req, 'admin');
         $defs = biz('connectors');
         if (! isset($defs[$provider])) { Response::error('Conector desconocido.', 404); }
+        $def = $defs[$provider];
 
         $existing = Database::run('SELECT config FROM connectors WHERE provider = ?', [$provider])->fetch();
         $cfg = $existing && $existing['config'] ? json_decode($existing['config'], true) : [];
 
-        foreach ($defs[$provider]['campos'] as $campo) {
-            $val = $this->req->input($campo, null);
-            // Ignorar valores enmascarados (no sobrescribir con ••••)
-            if ($val !== null && $val !== '' && ! str_starts_with((string) $val, '••••')) {
-                $cfg[$campo] = trim((string) $val);
+        foreach ($def['campos'] as $c) {
+            if (! empty($c['transient'])) { continue; }
+            $n = $c['n'];
+            $val = $this->req->input($n, null);
+            if ($val === null) { continue; }
+            $val = trim((string) $val);
+            // Secretos: solo se sobrescriben si el usuario escribe uno nuevo.
+            if (($c['t'] ?? 'text') === 'secret') {
+                if ($val !== '') { $cfg[$n] = $val; }
+            } else {
+                $cfg[$n] = $val;
             }
         }
         $enabled = $this->req->input('enabled') ? 1 : 0;
 
+        $this->upsert($provider, $enabled, $cfg);
+
+        // Pasarelas de pago: solo una activa a la vez.
+        if ($enabled && ($def['grupo'] ?? '') === 'pagos') {
+            foreach ($defs as $p => $d) {
+                if ($p !== $provider && ($d['grupo'] ?? '') === 'pagos') {
+                    Database::run('UPDATE connectors SET enabled = 0 WHERE provider = ?', [$p]);
+                }
+            }
+        }
+        Response::ok(['message' => 'ok']);
+    }
+
+    private function upsert(string $provider, int $enabled, array $cfg): void
+    {
         Database::run(
             Database::isSqlite()
                 ? 'INSERT INTO connectors (provider, enabled, config, status, updated_at) VALUES (?,?,?,?,?) ON CONFLICT(provider) DO UPDATE SET enabled=excluded.enabled, config=excluded.config, updated_at=excluded.updated_at'
                 : 'INSERT INTO connectors (provider, enabled, config, status, updated_at) VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), config=VALUES(config), updated_at=VALUES(updated_at)',
             [$provider, $enabled, json_encode($cfg, JSON_UNESCAPED_UNICODE), 'configurado', now_utc()]
         );
-        Response::ok(['message' => 'ok']);
     }
 
+    /** Compat: /admin/connectors/{provider}/test → acción 'test'. */
     public function test(string $provider): void
     {
+        $this->accion($provider, 'test');
+    }
+
+    /** Ejecuta una acción del conector (probar, enviar prueba, webhooks, etc.). */
+    public function accion(string $provider, string $accion): void
+    {
         AuthMiddleware::require($this->req, 'admin');
-        $res = match ($provider) {
-            'openai' => OpenAIConnector::test(),
-            'telegram' => TelegramConnector::test(),
-            'whatsapp' => WhatsAppConnector::test(),
-            'google_calendar' => GoogleCalendarConnector::test(),
-            'wompi', 'epayco', 'stripe', 'paypal' => PaymentConnector::test($provider),
-            'sendgrid' => ['ok' => ! empty(\Services\Connectors\ConnectorRegistry::config('sendgrid')['api_key']), 'message' => 'API key presente.', 'error' => 'Falta la API key de SendGrid.'],
-            default => ['ok' => false, 'error' => 'Conector sin prueba disponible.'],
+        $reg = '\\Services\\Connectors\\ConnectorRegistry';
+        $appUrl = \Core\Env::get('APP_URL', '');
+
+        $res = match ($accion . ':' . $provider) {
+            'test:openai' => OpenAIConnector::test(),
+            'test:anthropic' => \Services\Connectors\AnthropicConnector::test(),
+            'test:telegram' => TelegramConnector::test(),
+            'test:whatsapp' => WhatsAppConnector::test(),
+            'test:google_calendar' => GoogleCalendarConnector::test(),
+            'test:wompi', 'test:epayco', 'test:stripe', 'test:paypal' => PaymentConnector::test($provider),
+            'test:sendgrid' => ['ok' => ! empty($reg::config('sendgrid')['api_key']), 'message' => 'API key presente.', 'error' => 'Falta la API key de SendGrid.'],
+            'send_test:sendgrid' => $this->enviarCorreoPrueba(),
+            'register_webhooks:telegram' => TelegramConnector::registerWebhooks($appUrl),
+            'webhook_url:whatsapp' => ['ok' => true, 'message' => 'Configura en Meta: ' . $appUrl . '/api/webhook/whatsapp · Verify token: ' . ($reg::config('whatsapp')['verify_token'] ?: '(define uno)')],
+            'create_test_event:google_calendar' => $this->crearEventoPrueba(),
+            default => ['ok' => false, 'error' => 'Acción no disponible para este conector.'],
         };
-        $estado = ($res['ok'] ?? false) ? 'ok' : 'error';
-        Database::run('UPDATE connectors SET status = ?, last_check = ? WHERE provider = ?', [$estado, now_utc(), $provider]);
+
+        if ($accion === 'test') {
+            $estado = ($res['ok'] ?? false) ? 'ok' : 'error';
+            Database::run('UPDATE connectors SET status = ?, last_check = ? WHERE provider = ?', [$estado, now_utc(), $provider]);
+        }
         Response::ok($res);
+    }
+
+    private function enviarCorreoPrueba(): array
+    {
+        $to = trim((string) $this->req->input('test_to', '')) ?: \Core\Env::get('MAIL_NOTIFY', 'hello@experientia.pro');
+        if (! filter_var($to, FILTER_VALIDATE_EMAIL)) { return ['ok' => false, 'error' => 'Correo de prueba no válido.']; }
+        $ok = \Services\Mailer::send($to, 'Prueba de ExperientIA', '<h2>SendGrid operativo</h2><p>Este es un correo de prueba desde el panel de ExperientIA.</p>');
+        return $ok ? ['ok' => true, 'message' => 'Correo de prueba enviado a ' . $to] : ['ok' => false, 'error' => 'No se pudo enviar. Revise la API key de SendGrid.'];
+    }
+
+    private function crearEventoPrueba(): array
+    {
+        $inicio = gmdate('Y-m-d\TH:i:s\Z', time() + 86400);
+        $fin = gmdate('Y-m-d\TH:i:s\Z', time() + 86400 + 1800);
+        $id = GoogleCalendarConnector::createEvent('ExperientIA · evento de prueba', $inicio, $fin, 'Creado desde el panel de conectores.');
+        return $id ? ['ok' => true, 'message' => 'Evento de prueba creado (' . $id . ').'] : ['ok' => false, 'error' => 'No se pudo crear. Revise credenciales de Google.'];
     }
 
     public function templates(): void

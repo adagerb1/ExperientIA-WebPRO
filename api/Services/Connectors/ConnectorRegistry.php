@@ -41,7 +41,8 @@ final class ConnectorRegistry
     private static function envFallback(string $provider): array
     {
         return match ($provider) {
-            'openai' => ['api_key' => Env::get('OPENAI_API_KEY'), 'model' => Env::get('OPENAI_MODEL', 'gpt-4.1-mini')],
+            'openai' => ['api_key' => Env::get('OPENAI_API_KEY'), 'model' => Env::get('OPENAI_MODEL', 'gpt-4o-mini'), 'image_model' => Env::get('OPENAI_IMAGE_MODEL', 'gpt-image-1'), 'audio_model' => Env::get('OPENAI_AUDIO_MODEL', 'gpt-4o-mini-tts'), 'voice' => Env::get('OPENAI_VOICE', 'shimmer')],
+            'anthropic' => ['api_key' => Env::get('ANTHROPIC_API_KEY'), 'model' => Env::get('ANTHROPIC_MODEL', 'claude-sonnet-4-5')],
             'sendgrid' => ['api_key' => Env::get('SENDGRID_API_KEY'), 'from_email' => Env::get('MAIL_FROM'), 'from_name' => Env::get('MAIL_FROM_NAME')],
             'telegram' => ['commercial_token' => Env::get('TELEGRAM_BOT_COMMERCIAL_TOKEN'), 'internal_token' => Env::get('TELEGRAM_BOT_INTERNAL_TOKEN'), 'webhook_secret' => Env::get('TELEGRAM_WEBHOOK_SECRET')],
             'whatsapp' => ['token' => Env::get('WHATSAPP_TOKEN'), 'phone_id' => Env::get('WHATSAPP_PHONE_ID'), 'verify_token' => Env::get('WHATSAPP_VERIFY_TOKEN')],

@@ -3,6 +3,7 @@ namespace Services;
 
 use Core\Database;
 use Services\Connectors\OpenAIConnector;
+use Services\Connectors\AnthropicConnector;
 use Services\Connectors\ConnectorRegistry;
 
 /**
@@ -43,8 +44,9 @@ final class AlexIA
     /** Procesa un mensaje en una conversación (crea/continúa). Devuelve la respuesta. */
     public static function chat(string $scope, string $channel, string $mensaje, array $ctx = []): array
     {
-        if (! OpenAIConnector::isReady()) {
-            throw new \RuntimeException('AlexIA no está disponible: configure el conector de OpenAI en el panel.', 503);
+        $brain = self::brain();
+        if (! $brain) {
+            throw new \RuntimeException('AlexIA no está disponible: configure y active OpenAI o Anthropic (Claude) en el panel.', 503);
         }
         $pdo = Database::pdo();
         $locale = $ctx['locale'] ?? 'es';
@@ -74,7 +76,12 @@ final class AlexIA
         $pdo->prepare('INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)')
             ->execute([$convId, 'user', $mensaje, now_utc()]);
 
-        [$respuesta, $responseId] = OpenAIConnector::respond(self::instructions($scope, $locale), $mensaje, $prev);
+        if ($brain === 'anthropic') {
+            $respuesta = AnthropicConnector::respond(self::instructions($scope, $locale), self::history($pdo, $convId));
+            $responseId = null;
+        } else {
+            [$respuesta, $responseId] = OpenAIConnector::respond(self::instructions($scope, $locale), $mensaje, $prev);
+        }
 
         $pdo->prepare('INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)')
             ->execute([$convId, 'assistant', $respuesta, now_utc()]);
@@ -82,5 +89,27 @@ final class AlexIA
             ->execute([$responseId, now_utc(), $convId]);
 
         return ['reply' => $respuesta, 'conversation_id' => $convId];
+    }
+
+    /** Cerebro activo: prioriza el habilitado; si no, cualquiera con credencial. */
+    public static function brain(): ?string
+    {
+        if (ConnectorRegistry::enabled('anthropic') && AnthropicConnector::isReady()) { return 'anthropic'; }
+        if (ConnectorRegistry::enabled('openai') && OpenAIConnector::isReady()) { return 'openai'; }
+        if (OpenAIConnector::isReady()) { return 'openai'; }
+        if (AnthropicConnector::isReady()) { return 'anthropic'; }
+        return null;
+    }
+
+    /** Historial de la conversación para cerebros sin estado (Anthropic). */
+    private static function history(\PDO $pdo, int $convId): array
+    {
+        $st = $pdo->prepare('SELECT role, content FROM ai_messages WHERE conversation_id = ? ORDER BY id ASC');
+        $st->execute([$convId]);
+        $out = [];
+        foreach ($st->fetchAll() as $m) {
+            $out[] = ['role' => $m['role'] === 'assistant' ? 'assistant' : 'user', 'content' => $m['content']];
+        }
+        return $out;
     }
 }

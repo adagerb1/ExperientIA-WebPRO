@@ -22,6 +22,25 @@ final class TelegramConnector
         return ($r['body']['ok'] ?? false) === true;
     }
 
+    /** Registra el webhook de ambos bots hacia /api/webhook/telegram/{bot}. */
+    public static function registerWebhooks(string $baseUrl): array
+    {
+        $cfg = ConnectorRegistry::config('telegram');
+        $secret = $cfg['webhook_secret'] ?? '';
+        $out = [];
+        foreach (['commercial', 'internal'] as $bot) {
+            $tok = $bot === 'internal' ? ($cfg['internal_token'] ?? null) : ($cfg['commercial_token'] ?? null);
+            if (! $tok) { continue; }
+            $url = rtrim($baseUrl, '/') . "/api/webhook/telegram/{$bot}";
+            $params = ['url' => $url];
+            if ($secret) { $params['secret_token'] = $secret; }
+            $r = Http::json('POST', "https://api.telegram.org/bot{$tok}/setWebhook", $params);
+            $out[] = $bot . ': ' . (($r['body']['ok'] ?? false) ? 'registrado' : ($r['body']['description'] ?? 'error'));
+        }
+        if (! $out) { return ['ok' => false, 'error' => 'Configure al menos un token de bot.']; }
+        return ['ok' => true, 'message' => implode(' · ', $out)];
+    }
+
     public static function test(): array
     {
         $cfg = ConnectorRegistry::config('telegram');

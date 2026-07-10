@@ -84,23 +84,50 @@ export const Contenido = {
 
 export const Conectores = {
   components: { Icon },
-  template: `<div><h1>Conectores</h1><p class="adm__sub">Integraciones · las credenciales se guardan cifradas en el servidor</p>
-    <div class="conn-grid"><div v-for="c in items" :key="c.provider" class="glass conn">
-      <div class="conn__top"><b style="color:var(--neutral-light)">{{ c.nombre }}</b><span class="badge" :class="c.status==='ok'?'ok':c.status==='error'?'error':''">{{ estado(c.status) }}</span></div>
-      <span class="chip">{{ c.grupo }}</span>
-      <div class="field" v-for="campo in c.campos" :key="campo"><label>{{ campo }}</label>
-        <input class="inp" :type="secreto(campo)?'password':'text'" v-model="c.config[campo]" :placeholder="c.config[campo]||''"></div>
-      <label class="field" style="flex-direction:row;align-items:center;gap:.6rem"><label class="switch"><input type="checkbox" v-model="c.enabled" :true-value="1" :false-value="0"><span></span></label> Activo</label>
-      <div style="display:flex;gap:.6rem"><button class="btn btn-primary btn-sm" @click="guardar(c)">Guardar</button><button class="btn btn-ghost btn-sm" @click="probar(c)">Probar</button></div>
-      <p v-if="c._msg" class="small" :style="{color:c._ok?'#4be3a0':'#ff7d9d'}">{{ c._msg }}</p></div></div></div>`,
-  data(){ return { items:[] }; },
+  template: `<div><h1>Conectores</h1><p class="adm__sub">Integra IA, pagos, correo, bots y agenda · las credenciales se guardan cifradas en el servidor</p>
+    <div class="conn-kpis">
+      <div class="glass stat"><b class="grad-text">{{ summary.disponibles||0 }}</b><span>Disponibles</span></div>
+      <div class="glass stat"><b class="grad-text">{{ summary.configurados||0 }}</b><span>Con credenciales</span></div>
+      <div class="glass stat"><b class="grad-text">{{ summary.activos||0 }}</b><span>En uso</span></div></div>
+
+    <div class="conn-tabs">
+      <button :class="{active:tab===''}" @click="tab=''">Todos <em>{{ items.length }}</em></button>
+      <button v-for="g in groups" :key="g.key" :class="{active:tab===g.key}" @click="tab=g.key">{{ g.label }} <em>{{ countGroup(g.key) }}</em></button></div>
+
+    <div class="conn-grid">
+      <div v-for="c in filtered" :key="c.provider" class="glass conn-card">
+        <div class="conn-head"><div><b>{{ c.nombre }}</b><p class="conn-desc">{{ c.desc }}</p></div>
+          <div class="conn-badges"><span v-if="c.status!=='sin_configurar'" class="badge cliente">Configurado</span><span v-if="c.enabled" class="badge ok">Activo</span></div></div>
+        <div class="field" v-for="f in c.campos" :key="f.n">
+          <label>{{ f.l }} <span v-if="f.t==='secret' && c.saved[f.n]" class="saved">guardado ✓</span></label>
+          <select v-if="f.t==='select'" class="inp" v-model="c.config[f.n]"><option v-for="o in f.op" :key="o" :value="o">{{ o }}</option></select>
+          <input v-else-if="f.t==='secret'" class="inp" type="password" v-model="c.draft[f.n]" :placeholder="c.saved[f.n]?'Guardado — escribe para cambiar':(f.ph||'')" autocomplete="new-password">
+          <input v-else class="inp" type="text" v-model="c.config[f.n]" :placeholder="f.ph||''">
+          <p v-if="f.help" class="hint">{{ f.help }}</p></div>
+        <label class="switch-row"><label class="switch"><input type="checkbox" v-model="c.enabled" :true-value="1" :false-value="0"><span></span></label> Activar</label>
+        <div class="conn-actions">
+          <button v-for="a in c.acciones" :key="a.k" class="btn btn-ghost btn-sm" @click="accion(c,a.k)">{{ a.l }}</button>
+          <button class="btn btn-primary btn-sm" @click="guardar(c)">Guardar</button></div>
+        <p v-if="c._msg" class="small" :style="{color:c._ok?'#4be3a0':'#ff7d9d'}">{{ c._msg }}</p></div></div></div>`,
+  data(){ return { items:[], groups:[], summary:{}, tab:'' }; },
+  computed:{ filtered(){ return this.tab ? this.items.filter(c=>c.grupo===this.tab) : this.items; } },
   methods:{
-    async load(){ const r=await api.get('/admin/connectors'); if(r.ok) this.items=r.data.map(c=>({...c,_msg:'',_ok:false})); },
-    secreto(c){ return !['model','from_email','from_name','calendar_id','phone_id','verify_token'].includes(c); },
-    estado(s){ return {ok:'Conectado',error:'Error',configurado:'Configurado',sin_configurar:'Sin configurar'}[s]||s; },
-    async guardar(c){ const payload={enabled:c.enabled}; for(const k in c.config){ if(c.config[k]&&!String(c.config[k]).startsWith('••')) payload[k]=c.config[k]; }
-      const r=await api.put('/admin/connectors/'+c.provider,payload); if(r.ok){ toast(c.nombre+' guardado.'); } else toast(r.error||'Error','err'); },
-    async probar(c){ c._msg='Probando…'; const r=await api.post('/admin/connectors/'+c.provider+'/test',{}); c._ok=r.data&&r.data.ok; c._msg=(r.data&&(r.data.message||r.data.error))||r.error||'—'; if(c._ok)c.status='ok'; },
+    async load(){ const r=await api.get('/admin/connectors'); if(!r.ok) return;
+      this.groups=r.data.groups; this.summary=r.data.summary;
+      this.items=r.data.items.map(c=>{ const cfg={...c.config};
+        c.campos.forEach(f=>{ if(f.t==='select' && !cfg[f.n]) cfg[f.n]=f.op[0]; });
+        return {...c, config:cfg, draft:{}, _msg:'', _ok:false }; }); },
+    countGroup(k){ return this.items.filter(c=>c.grupo===k).length; },
+    async guardar(c){ const p={enabled:c.enabled};
+      for(const f of c.campos){ if(f.transient) continue;
+        if(f.t==='secret'){ if(c.draft[f.n]) p[f.n]=c.draft[f.n]; } else { p[f.n]=c.config[f.n]??''; } }
+      const r=await api.put('/admin/connectors/'+c.provider,p);
+      if(r.ok){ toast(c.nombre+' guardado.'); this.load(); } else toast(r.error||'Error','err'); },
+    async accion(c,k){ c._msg='Ejecutando…'; c._ok=false;
+      const body={}; for(const f of c.campos){ if(f.transient) body[f.n]=c.config[f.n]||c.draft[f.n]||''; }
+      const r=await api.post('/admin/connectors/'+c.provider+'/accion/'+k,body);
+      c._ok=!!(r.data&&r.data.ok); c._msg=(r.data&&(r.data.message||r.data.error))||r.error||'—';
+      if(c._ok&&k==='test') c.status='ok'; },
   },
   mounted(){ this.load(); },
 };

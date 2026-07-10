@@ -20,7 +20,7 @@ final class OpenAIConnector
     {
         $cfg = ConnectorRegistry::config('openai');
         $body = [
-            'model' => $cfg['model'] ?? 'gpt-4.1-mini',
+            'model' => $cfg['model'] ?: 'gpt-4o-mini',
             'instructions' => $instructions,
             'input' => $userInput,
             'store' => true,
@@ -43,9 +43,28 @@ final class OpenAIConnector
     {
         $cfg = ConnectorRegistry::config('openai');
         $r = Http::json('POST', 'https://api.openai.com/v1/images/generations', [
-            'model' => 'gpt-image-1', 'prompt' => $prompt, 'size' => $size, 'n' => 1,
+            'model' => $cfg['image_model'] ?: 'gpt-image-1', 'prompt' => $prompt, 'size' => $size, 'n' => 1,
         ], ['Authorization: Bearer ' . $cfg['api_key']]);
         return $r['body']['data'][0] ?? [];
+    }
+
+    /** Sintetiza voz (TTS) con el modelo y voz configurados. Devuelve bytes MP3. */
+    public static function speak(string $text): string
+    {
+        $cfg = ConnectorRegistry::config('openai');
+        $ch = curl_init('https://api.openai.com/v1/audio/speech');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $cfg['api_key'], 'Content-Type: application/json'],
+            CURLOPT_POSTFIELDS => json_encode([
+                'model' => $cfg['audio_model'] ?: 'gpt-4o-mini-tts',
+                'voice' => $cfg['voice'] ?: 'shimmer',
+                'input' => $text,
+            ]),
+        ]);
+        $raw = curl_exec($ch);
+        curl_close($ch);
+        return $raw ?: '';
     }
 
     /** Transcribe audio (whisper/gpt-4o-transcribe). */

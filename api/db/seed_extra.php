@@ -23,5 +23,5 @@ return [
             'body' => ['es' => '<h2>Gracias por suscribirse</h2><p>Recibirá una síntesis mensual sobre IA, automatización y crecimiento.</p>', 'en' => '<h2>Thanks for subscribing</h2>', 'pt' => '<h2>Obrigado por assinar</h2>'],
         ],
     ],
-    'connectors' => ['openai', 'sendgrid', 'telegram', 'whatsapp', 'wompi', 'epayco', 'stripe', 'paypal', 'google_calendar'],
+    'connectors' => ['openai', 'anthropic', 'sendgrid', 'telegram', 'whatsapp', 'wompi', 'epayco', 'stripe', 'paypal', 'google_calendar'],
 ];
