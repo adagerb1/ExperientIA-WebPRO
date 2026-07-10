@@ -7,6 +7,7 @@ import { reveal } from '../lib/ui.js';
 import { Toasts } from '../lib/layout.js';
 import { Login, Dashboard, Leads, LeadDetail } from './views1.js';
 import { Reservas, Contenido, Conectores, Plantillas } from './views2.js';
+import { Recursos } from './recursos.js';
 
 const Shell = {
   components: { Icon, Toasts },
@@ -42,7 +43,7 @@ const routes = [
     { path: 'productos', component: Contenido, props: { modulo: 'products' } },
     { path: 'casos', component: Contenido, props: { modulo: 'case_studies' } },
     { path: 'faqs', component: Contenido, props: { modulo: 'faqs' } },
-    { path: 'recursos', component: Contenido, props: { modulo: 'resources' } },
+    { path: 'recursos', component: Recursos },
     { path: 'conectores', component: Conectores },
     { path: 'plantillas', component: Plantillas },
   ]},

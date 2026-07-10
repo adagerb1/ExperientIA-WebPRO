@@ -14,10 +14,10 @@ final class ContentController extends Controller
         'products' => ['icon', 'nombre', 'rol', 'texto', 'destacado', 'sort', 'active'],
         'case_studies' => ['sector', 'titulo', 'contexto', 'intervencion', 'resultados', 'sort', 'active'],
         'faqs' => ['pregunta', 'respuesta', 'sort', 'active'],
-        'resources' => ['slug', 'type', 'tipo_label', 'titulo', 'extracto', 'cuerpo', 'file_path', 'sort', 'active', 'published_at'],
+        'resources' => ['slug', 'type', 'categories', 'tipo_label', 'titulo', 'extracto', 'cuerpo', 'author', 'read_minutes', 'cover_image', 'audio_path', 'video_url', 'file_path', 'gated', 'featured', 'seo_title', 'seo_desc', 'status', 'sort', 'active', 'published_at'],
         'availability_rules' => ['weekday', 'start_time', 'end_time', 'active'],
     ];
-    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo'];
+    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'seo_title', 'seo_desc'];
 
     public function index(string $tabla): void
     {

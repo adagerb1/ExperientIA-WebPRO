@@ -1,6 +1,13 @@
 <?php
 return [
     'locales' => ['es', 'en', 'pt'],
+    'resource_categories' => [
+        'ia_negocios' => 'IA aplicada a negocios', 'automatizacion' => 'Automatización',
+        'growth' => 'Growth', 'estrategia' => 'Estrategia', 'marketing' => 'Marketing estratégico',
+        'crm' => 'CRM', 'ventas' => 'Ventas', 'experiencia_cliente' => 'Experiencia de cliente',
+        'agentes' => 'Agentes inteligentes', 'datos' => 'Datos y analítica',
+        'liderazgo' => 'Liderazgo', 'transformacion' => 'Transformación digital',
+    ],
     'industries' => [
         'tecnologia' => 'Tecnología y software', 'retail' => 'Retail y comercio',
         'financiero' => 'Servicios financieros', 'salud' => 'Salud', 'manufactura' => 'Manufactura',

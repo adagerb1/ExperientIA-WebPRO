@@ -7,3 +7,9 @@ storage/recursos/*
 api/db/dev.sqlite
 node_modules/
 .DS_Store
+
+# Medios generados por IA
+assets/img/covers/*
+!assets/img/covers/.gitkeep
+assets/media/*
+!assets/media/.gitkeep

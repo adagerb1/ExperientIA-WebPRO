@@ -1,0 +1,82 @@
+<?php
+/**
+ * Migraciones idempotentes de ExperientIA. Añade columnas nuevas a bases de datos
+ * ya instaladas, sin tocar los datos existentes.
+ *
+ *   • Navegador:  https://tu-dominio/migrate.php
+ *   • Consola:    php migrate.php
+ *
+ * Seguro de ejecutar varias veces. BORRAR del servidor cuando termines.
+ */
+$cli = PHP_SAPI === 'cli';
+if (! $cli) { header('Content-Type: text/plain; charset=utf-8'); }
+
+require __DIR__ . '/api/bootstrap.php';
+require __DIR__ . '/api/helpers.php';
+
+use Core\Database;
+
+$pdo = Database::pdo();
+$sqlite = Database::isSqlite();
+
+/** Columnas deseadas por tabla: nombre => tipo MySQL. */
+$deseadas = [
+    'resources' => [
+        'categories' => 'JSON NULL',
+        'author' => 'VARCHAR(120) NULL',
+        'read_minutes' => 'INT NOT NULL DEFAULT 5',
+        'cover_image' => 'VARCHAR(255) NULL',
+        'audio_path' => 'VARCHAR(255) NULL',
+        'video_url' => 'VARCHAR(500) NULL',
+        'gated' => 'TINYINT NOT NULL DEFAULT 0',
+        'featured' => 'TINYINT NOT NULL DEFAULT 0',
+        'seo_title' => 'JSON NULL',
+        'seo_desc' => 'JSON NULL',
+        'status' => "VARCHAR(20) NOT NULL DEFAULT 'draft'",
+    ],
+];
+
+/** Adapta un tipo MySQL a SQLite. */
+function tipoSqlite(string $t): string
+{
+    $t = preg_replace('/\bJSON\b/', 'TEXT', $t);
+    $t = preg_replace('/\bTINYINT\b/', 'INTEGER', $t);
+    $t = preg_replace('/\bINT\b/', 'INTEGER', $t);
+    return $t;
+}
+
+/** Columnas existentes de una tabla (portable). */
+function columnas(PDO $pdo, bool $sqlite, string $tabla): array
+{
+    if ($sqlite) {
+        $rows = $pdo->query("PRAGMA table_info({$tabla})")->fetchAll(PDO::FETCH_ASSOC);
+        return array_column($rows, 'name');
+    }
+    $rows = $pdo->query("SHOW COLUMNS FROM {$tabla}")->fetchAll(PDO::FETCH_ASSOC);
+    return array_column($rows, 'Field');
+}
+
+$total = 0;
+foreach ($deseadas as $tabla => $cols) {
+    try {
+        $existentes = columnas($pdo, $sqlite, $tabla);
+    } catch (\Throwable $e) {
+        echo "! Tabla {$tabla} no existe (ejecuta install.php primero).\n";
+        continue;
+    }
+    foreach ($cols as $col => $tipo) {
+        if (in_array($col, $existentes, true)) { continue; }
+        $ddl = $sqlite ? tipoSqlite($tipo) : $tipo;
+        $pdo->exec("ALTER TABLE {$tabla} ADD COLUMN {$col} {$ddl}");
+        echo "+ {$tabla}.{$col} añadida\n";
+        $total++;
+    }
+}
+
+// Los artículos ya publicados (active=1 + published_at) pasan a status='published'.
+try {
+    $pdo->exec("UPDATE resources SET status = 'published' WHERE (status IS NULL OR status = '' OR status = 'draft') AND active = 1 AND published_at IS NOT NULL");
+} catch (\Throwable $e) { /* columna status recién creada podría no requerirlo */ }
+
+echo $total === 0 ? "Sin cambios: la base de datos ya está al día.\n" : "Listo: {$total} columna(s) añadida(s).\n";
+echo "BORRE migrate.php del servidor.\n";
