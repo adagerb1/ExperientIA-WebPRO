@@ -23,7 +23,7 @@ const Shell = {
     <div class="adm__user"><span>{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm" @click="salir"><Icon name="logout" :size="14"/> Salir</button></div>
   </aside><main class="adm__main"><router-view/></main><Toasts/></div>`,
   data(){ return { store,
-    crm:[{to:'/admin',icon:'analitica',label:'Resumen'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
+    crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
     cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/recursos',icon:'doc',label:'Recursos'}],
     plat:[{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'},{to:'/admin/alexia',icon:'sparkle',label:'AlexIA'}],
   }; },

@@ -78,3 +78,29 @@ tr.row{ cursor:pointer; } tr.row:hover td{ background:rgba(24,214,241,.05); colo
 .conn{ padding:1.3rem; display:grid; gap:.7rem; }
 .conn__top{ display:flex; align-items:center; justify-content:space-between; gap:.6rem; }
 @media(max-width:900px){ .adm{ grid-template-columns:1fr; } .adm__side{ position:static; height:auto; flex-direction:row; flex-wrap:wrap; align-items:center; } .adm__nav{ display:flex; flex-wrap:wrap; } .adm__grp{ display:none; } .adm__user{ margin:0; } }
+
+/* ── Tablero de Crecimiento (BI) ─────────────────────────────────────── */
+.grid-2{ display:grid; gap:1.2rem; grid-template-columns:1fr; } @media(min-width:900px){ .grid-2{ grid-template-columns:1fr 1fr; } }
+.grid-3{ display:grid; gap:1.2rem; grid-template-columns:1fr; } @media(min-width:760px){ .grid-3{ grid-template-columns:1fr 1fr; } } @media(min-width:1100px){ .grid-3{ grid-template-columns:1fr 1fr 1fr; } }
+.mt{ margin-top:1.2rem; }
+.funnel{ display:grid; gap:.55rem; }
+.funnel-step{ display:grid; grid-template-columns:120px 1fr auto; align-items:center; gap:.7rem; }
+.funnel-step > span:first-child{ font-size:.82rem; color:var(--text-secondary); }
+.funnel-track{ height:30px; border-radius:8px; background:rgba(5,17,38,.5); overflow:hidden; border:1px solid var(--line-soft); }
+.funnel-fill{ height:100%; background:var(--grad); display:flex; align-items:center; padding-left:.7rem; color:#041022; font-weight:700; font-size:.85rem; min-width:2.2rem; border-radius:8px 0 0 8px; transition:width .5s ease; }
+.funnel-step.clic{ cursor:pointer; } .funnel-step.clic:hover .funnel-fill{ filter:brightness(1.1); }
+.funnel-val{ font-weight:700; color:var(--neutral-light); font-size:.9rem; min-width:2.5rem; text-align:right; }
+.rates{ display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; }
+.rate-chip{ font-size:.72rem; color:var(--text-secondary); border:1px solid var(--line-soft); border-radius:999px; padding:.28rem .7rem; }
+.rate-chip b{ color:var(--cyan); }
+.hbars{ display:grid; gap:.55rem; }
+.hbar{ display:grid; grid-template-columns:110px 1fr 34px; align-items:center; gap:.6rem; font-size:.8rem; cursor:default; }
+.hbar.clic{ cursor:pointer; } .hbar.clic:hover .hbar-fill{ filter:brightness(1.15); }
+.hbar > span:first-child{ color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hbar-track{ height:9px; border-radius:5px; background:rgba(5,17,38,.5); overflow:hidden; }
+.hbar-fill{ height:100%; border-radius:5px; background:var(--grad); min-width:3px; transition:width .5s ease; }
+.hbar-val{ text-align:right; color:var(--neutral-light); font-weight:600; }
+.trend{ width:100%; height:150px; }
+.leg{ display:flex; gap:1.2rem; font-size:.72rem; color:var(--text-secondary); margin-bottom:.6rem; }
+.leg i{ width:10px; height:10px; border-radius:3px; display:inline-block; margin-right:.35rem; vertical-align:middle; }
+.empty{ color:var(--text-tertiary); font-size:.82rem; margin:.3rem 0; }

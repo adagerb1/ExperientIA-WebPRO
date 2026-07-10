@@ -39,6 +39,7 @@ $r->get('/admin/me', 'Admin\\AuthController', 'me');
 
 // ─── Admin (protegido por Bearer en cada controlador) ──────────────
 $r->get('/admin/resumen', 'Admin\\DashboardController', 'resumen');
+$r->get('/admin/analitica', 'Admin\\AnalyticsController', 'panel');
 $r->get('/admin/leads', 'Admin\\LeadsController', 'index');
 $r->get('/admin/leads/{id}', 'Admin\\LeadsController', 'show');
 $r->patch('/admin/leads/{id}', 'Admin\\LeadsController', 'update');

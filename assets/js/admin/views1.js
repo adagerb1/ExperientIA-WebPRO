@@ -19,25 +19,81 @@ export const Login = {
     if(r.ok){ setAuth(r.data.token,r.data.admin); this.$router.push('/admin'); } else { this.error=r.error||'Error'; } } },
 };
 
+// Barras horizontales reutilizables (segmentaciones del tablero).
+const HBars = {
+  props: { rows: { type: Array, default: () => [] }, labelFn: Function, onPick: Function },
+  template: `<div class="hbars"><p v-if="!rows.length" class="empty">Sin datos aún.</p>
+    <div v-for="r in rows" :key="r.clave" class="hbar" :class="{clic:!!onPick}" @click="onPick && onPick(r.clave)">
+      <span :title="lab(r.clave)">{{ lab(r.clave) }}</span>
+      <div class="hbar-track"><div class="hbar-fill" :style="{width:pct(r.total)+'%'}"></div></div>
+      <span class="hbar-val">{{ r.total }}</span></div></div>`,
+  methods: {
+    lab(k){ return this.labelFn ? this.labelFn(k) : k; },
+    pct(v){ const m = Math.max(1, ...this.rows.map(x => x.total)); return Math.max(3, v / m * 100); },
+  },
+};
+
 export const Dashboard = {
-  components: { Icon },
-  template: `<div><h1>Resumen</h1><p class="adm__sub">Centro de decisiones · datos en vivo (actualiza cada 20 s)</p>
+  components: { Icon, HBars },
+  template: `<div><h1>Tablero de <span class="grad-text">Crecimiento</span></h1>
+    <p class="adm__sub">Centro de comando de ExperientIA · datos en vivo (actualiza cada 20 s)</p>
     <div class="kpis">
       <button v-for="k in kpiList" :key="k.key" class="glass kpi" @click="k.action && k.action()">
         <b class="grad-text">{{ kpis[k.key] ?? '—' }}</b><span>{{ k.label }}</span><span class="ctx" v-if="k.ctx">{{ k.ctx }}</span></button></div>
-    <div class="panels">
-      <div class="glass panel"><h3>Leads por día (14 días)</h3>
-        <div class="chart-bars"><span v-for="(d,i) in tendencia" :key="i" :style="{height:barH(d.c)+'%'}" :title="d.d+': '+d.c"></span></div></div>
-      <div class="glass panel"><h3>Distribución por estado</h3>
-        <div class="dist"><div v-for="(c,st) in porEstado" :key="st" class="dist-row">
-          <span class="badge" :class="st">{{ estadoLabel(st) }}</span><div><div class="dist-bar" :style="{width:pct(c)+'%'}"></div></div><span>{{ c }}</span></div>
-          <p v-if="!Object.keys(porEstado).length" class="adm__sub" style="margin:0">Aún sin leads.</p></div></div></div>
-    <div class="glass panel" style="margin-top:1.2rem"><h3>Últimos leads</h3>
+
+    <div class="glass panel mt"><h3>Embudo de conversión</h3>
+      <div class="funnel">
+        <div v-for="e in embudo.etapas" :key="e.label" class="funnel-step" :class="{clic:!!e.clave}" @click="e.clave && irEstado(e.clave)">
+          <span>{{ e.label }}</span>
+          <div class="funnel-track"><div class="funnel-fill" :style="{width:funnelPct(e.valor)+'%'}">{{ e.valor }}</div></div>
+          <span class="funnel-val">{{ funnelPct(e.valor) }}%</span></div></div>
+      <div class="rates">
+        <span class="rate-chip">Tasa de contacto <b>{{ tasas.contacto }}%</b></span>
+        <span class="rate-chip">Calificación <b>{{ tasas.calificacion }}%</b></span>
+        <span class="rate-chip">Reserva <b>{{ tasas.reserva }}%</b></span>
+        <span class="rate-chip">Cierre <b>{{ tasas.cierre }}%</b></span></div></div>
+
+    <div class="grid-2 mt">
+      <div class="glass panel"><h3>Tendencia · 12 semanas</h3>
+        <div class="leg"><span><i style="background:var(--cyan)"></i>Leads</span><span><i style="background:var(--violet)"></i>Interacciones</span></div>
+        <svg class="trend" viewBox="0 0 320 150" preserveAspectRatio="none">
+          <polyline :points="linea('interacciones','#7a63ff')" fill="none" stroke="#7a63ff" stroke-width="2"/>
+          <polyline :points="linea('leads','#18d6f1')" fill="none" stroke="#18d6f1" stroke-width="2.5"/>
+        </svg>
+        <p class="empty" style="text-align:right">Últimas semanas · {{ tendencia.length ? tendencia[0].label+' → '+tendencia[tendencia.length-1].label : '—' }}</p></div>
+      <div class="glass panel"><h3>Pipeline comercial</h3>
+        <div class="hbars"><div v-for="p in pipeline" :key="p.clave" class="hbar clic" @click="irEstado(p.clave)">
+          <span><span class="badge" :class="p.clave">{{ estadoLabel(p.clave) }}</span></span>
+          <div class="hbar-track"><div class="hbar-fill" :style="{width:pctMax(p.total,pipeline)+'%'}"></div></div>
+          <span class="hbar-val">{{ p.total }}</span></div></div></div></div>
+
+    <div class="grid-2 mt">
+      <div class="glass panel"><h3>Fuentes de leads</h3><HBars :rows="fuentes" :onPick="null"/></div>
+      <div class="glass panel"><h3>Canales de entrada</h3><HBars :rows="canales"/></div></div>
+
+    <div class="grid-3 mt">
+      <div class="glass panel"><h3>Industrias</h3><HBars :rows="industrias"/></div>
+      <div class="glass panel"><h3>Tamaño de empresa</h3><HBars :rows="tamanos" :labelFn="sizeLabel"/></div>
+      <div class="glass panel"><h3>Países</h3><HBars :rows="paises"/></div></div>
+
+    <div class="grid-2 mt">
+      <div class="glass panel"><h3>Retos declarados <span class="empty">· contacto</span></h3><HBars :rows="desafios" :labelFn="desafioLabel"/></div>
+      <div class="glass panel"><h3>Soluciones más demandadas <span class="empty">· diagnóstico</span></h3><HBars :rows="soluciones" :labelFn="solucionLabel"/></div></div>
+
+    <div class="glass panel mt"><h3>Rendimiento de contenido <span class="empty">· descargas</span></h3>
+      <div class="hbars"><p v-if="!contenido.length" class="empty">Sin recursos aún.</p>
+        <div v-for="c in contenido" :key="c.titulo" class="hbar"><span :title="c.titulo">{{ c.titulo }}</span>
+          <div class="hbar-track"><div class="hbar-fill" :style="{width:pctMax(c.downloads,contenido,'downloads')+'%'}"></div></div>
+          <span class="hbar-val">{{ c.downloads }}</span></div></div></div>
+
+    <div class="glass panel mt"><h3>Últimos leads</h3>
       <table><thead><tr><th>Nombre</th><th>Empresa</th><th>Estado</th><th>Origen</th><th>Fecha</th></tr></thead><tbody>
         <tr v-for="l in ultimos" :key="l.id" class="row" @click="$router.push('/admin/leads/'+l.id)">
-          <td style="color:var(--neutral-light)">{{ l.name }}</td><td>{{ l.company||'—' }}</td><td><span class="badge" :class="l.status">{{ estadoLabel(l.status) }}</span></td><td>{{ l.source||'—' }}</td><td class="small">{{ (l.created_at||'').slice(0,16) }}</td></tr></tbody></table></div>
+          <td style="color:var(--neutral-light)">{{ l.name }}</td><td>{{ l.company||'—' }}</td><td><span class="badge" :class="l.status">{{ estadoLabel(l.status) }}</span></td><td>{{ l.source||'—' }}</td><td class="small">{{ (l.created_at||'').slice(0,16) }}</td></tr>
+        <tr v-if="!ultimos.length"><td colspan="5" class="empty" style="text-align:center;padding:1.4rem">Aún sin leads.</td></tr></tbody></table></div>
   </div>`,
-  data(){ return { kpis:{}, tendencia:[], porEstado:{}, ultimos:[], timer:null,
+  data(){ return { kpis:{}, ultimos:[], timer:null,
+    embudo:{etapas:[],tasas:{}}, tendencia:[], fuentes:[], canales:[], industrias:[], tamanos:[], paises:[], pipeline:[], desafios:[], soluciones:[], contenido:[],
     kpiList:[
       {key:'leads',label:'Leads totales',action:()=>this.$router.push('/admin/leads')},
       {key:'leads_nuevos',label:'Leads nuevos',ctx:'Clic para gestionar',action:()=>this.$router.push('/admin/leads?status=nuevo')},
@@ -46,11 +102,22 @@ export const Dashboard = {
       {key:'descargas',label:'Descargas'},
       {key:'conversaciones_ia',label:'Conversaciones IA'},
     ] }; },
+  computed:{ tasas(){ return this.embudo.tasas || {}; } },
   methods:{
-    async load(){ const r=await api.get('/admin/resumen'); if(r.ok){ this.kpis=r.data.kpis; this.tendencia=r.data.tendencia; this.porEstado=r.data.por_estado; this.ultimos=r.data.ultimos; } },
-    barH(c){ const max=Math.max(1,...this.tendencia.map(x=>x.c)); return Math.max(3,c/max*100); },
-    pct(c){ const tot=Object.values(this.porEstado).reduce((a,b)=>a+b,0)||1; return c/tot*100; },
+    async load(){
+      const [r, a] = await Promise.all([api.get('/admin/resumen'), api.get('/admin/analitica')]);
+      if(r.ok){ this.kpis=r.data.kpis; this.ultimos=r.data.ultimos; }
+      if(a.ok){ const d=a.data; this.embudo=d.embudo; this.tendencia=d.tendencia; this.fuentes=d.fuentes; this.canales=d.canales; this.industrias=d.industrias; this.tamanos=d.tamanos; this.paises=d.paises; this.pipeline=d.pipeline; this.desafios=d.desafios; this.soluciones=d.soluciones; this.contenido=d.contenido; }
+    },
+    irEstado(st){ if(st) this.$router.push('/admin/leads?status='+st); },
+    funnelPct(v){ const top=this.embudo.etapas[0]?this.embudo.etapas[0].valor:0; return top>0?Math.round(v/top*100):0; },
+    pctMax(v,arr,key){ const k=key||'total'; const m=Math.max(1,...arr.map(x=>x[k])); return Math.max(3,v/m*100); },
+    linea(key,color){ const n=this.tendencia.length; if(!n) return ''; const max=Math.max(1,...this.tendencia.flatMap(x=>[x.leads,x.interacciones]));
+      return this.tendencia.map((d,i)=>{ const x=n>1?i/(n-1)*320:160; const y=150-d[key]/max*138-6; return x.toFixed(1)+','+y.toFixed(1); }).join(' '); },
     estadoLabel(s){ return {nuevo:'Nuevo',contactado:'Contactado',calificado:'Calificado',propuesta:'Propuesta',cliente:'Cliente',descartado:'Descartado'}[s]||s; },
+    sizeLabel(s){ return {micro:'Micro',pequena:'Pequeña',mediana:'Mediana',grande:'Grande',corporativa:'Corporativa'}[s]||s; },
+    desafioLabel(s){ return {crecimiento:'Crecimiento',automatizacion:'Automatización',datos:'Datos',estrategia:'Estrategia',otro:'Otro'}[s]||s; },
+    solucionLabel(s){ return {estrategia:'Estrategia & Roadmap',automatizacion:'Automatización',datos:'Datos & Analítica',growth:'Growth'}[s]||s; },
   },
   mounted(){ this.load(); this.timer=setInterval(()=>this.load(),20000); },   // Short polling (Framework §3.B)
   unmounted(){ clearInterval(this.timer); },
