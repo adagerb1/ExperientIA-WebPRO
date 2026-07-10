@@ -1,0 +1,332 @@
+{
+    "slugs": {
+        "soluciones": "solucoes",
+        "tablero": "painel-de-crescimento",
+        "productos": "produtos",
+        "casos": "casos",
+        "recursos": "recursos",
+        "nosotros": "sobre",
+        "faq": "perguntas-frequentes",
+        "contacto": "contato",
+        "diagnostico": "diagnostico",
+        "agenda": "agendar"
+    },
+    "meta": {
+        "title_base": "ExperientIA — Automação · Growth · IA",
+        "description": "A ExperientIA traduz tecnologia em crescimento empresarial: estratégia, automação e inteligência artificial com resultados mensuráveis."
+    },
+    "nav": {
+        "soluciones": "Soluções",
+        "tablero": "Painel de Crescimento",
+        "productos": "Produtos",
+        "casos": "Casos",
+        "recursos": "Recursos",
+        "nosotros": "Sobre",
+        "faq": "FAQ",
+        "contacto": "Contato",
+        "cta": "Solicitar diagnóstico",
+        "menu_label": "Abrir menu",
+        "home_label": "Ir para o início"
+    },
+    "footer": {
+        "tagline": "Traduzimos tecnologia em crescimento empresarial.",
+        "col_soluciones": "Soluções",
+        "col_compania": "Empresa",
+        "col_contacto": "Contato",
+        "contacto_linea": "Diagnóstico executivo inicial sem custo.",
+        "ecosistema": "Parte do ecossistema",
+        "legal": "Todos os direitos reservados.",
+        "idiomas": "Idioma",
+        "seguir": "Siga-nos"
+    },
+    "common": {
+        "agendar": "Solicitar diagnóstico",
+        "ver_soluciones": "Ver soluções",
+        "ver_tablero": "Conhecer o Painel",
+        "contexto": "Contexto",
+        "intervencion": "Intervenção",
+        "resultados": "Resultados",
+        "problema_label": "O problema",
+        "como_label": "Como fazemos",
+        "cambia_label": "O que muda no negócio",
+        "leer": "Ler artigo",
+        "conocer_mas": "Saber mais",
+        "descargar": "Baixar",
+        "volver": "Voltar",
+        "enviar": "Enviar",
+        "agendar_sesion": "Agendar sessão 1:1",
+        "hacer_diagnostico": "Fazer o diagnóstico"
+    },
+    "home": {
+        "hero_eyebrow": "Firma de crescimento empresarial",
+        "hero_titulo1": "Impulsionamos o crescimento",
+        "hero_titulo2": "empresarial com IA.",
+        "hero_sub": "A ExperientIA converte estratégia, automação e dados em uma única direção: resultados mensuráveis para o seu negócio.",
+        "hero_cta1": "Solicitar diagnóstico",
+        "hero_cta2": "Conhecer o Painel",
+        "hero_nota": "Diagnóstico executivo inicial · Sem custo · Resposta em 48 h",
+        "proof_eyebrow": "01 · Resultados que governam a conversa",
+        "proof_titulo": "Crescimento com controle, não promessas.",
+        "proof_sectores": "Confiança de equipes diretivas em varejo, serviços financeiros, saúde e manufatura.",
+        "problema_eyebrow": "02 · O problema real",
+        "problema_titulo": "A tecnologia não é o problema. A falta de convergência, sim.",
+        "problema_sub": "As organizações acumulam ferramentas, dados e projetos. O que falta é uma direção que os converta em crescimento.",
+        "tablero_eyebrow": "03 · Painel de Crescimento",
+        "tablero_titulo": "Um centro de comando para governar o crescimento.",
+        "tablero_sub": "O Painel de Crescimento ExperientIA reúne receita, eficiência operacional e adoção de IA em uma única visão executiva, em tempo real.",
+        "tablero_cta": "Conhecer o Painel de Crescimento",
+        "soluciones_eyebrow": "04 · Soluções",
+        "soluciones_titulo": "Quatro frentes. Uma única direção: crescimento.",
+        "soluciones_sub": "Cada solução responde a um problema concreto do negócio e é medida pelo que muda, não pelo que instala.",
+        "soluciones_cta": "Ver todas as soluções",
+        "casos_eyebrow": "05 · Casos",
+        "casos_titulo": "Resultados em formato executive brief.",
+        "casos_sub": "Contexto, intervenção e resultados. É assim que reportamos, porque é assim que os conselhos decidem.",
+        "casos_cta": "Ver todos os casos",
+        "cta_titulo": "Pronto para converter IA em crescimento?",
+        "cta_sub": "Comece com um diagnóstico executivo: claro, acionável e sem fricção. Em 48 horas você terá uma leitura honesta do seu ponto de partida.",
+        "cta_cta1": "Solicitar diagnóstico",
+        "cta_cta2": "Fazer o diagnóstico on-line"
+    },
+    "soluciones": {
+        "meta_title": "Soluções",
+        "meta_desc": "Estratégia de IA, automação de operações, inteligência de dados e growth: soluções medidas pelo impacto no negócio.",
+        "eyebrow": "Soluções",
+        "titulo": "Menos ferramentas soltas. Mais crescimento governado.",
+        "sub": "Cada frente de trabalho responde três perguntas: que problema resolvemos, como fazemos e o que muda no negócio.",
+        "metodo_eyebrow": "Método",
+        "metodo_titulo": "Um método sereno para uma mudança profunda.",
+        "metodo": [
+            {
+                "num": "01",
+                "titulo": "Diagnóstico",
+                "texto": "Leitura honesta do ponto de partida: dados, processos, talento e oportunidade."
+            },
+            {
+                "num": "02",
+                "titulo": "Desenho",
+                "texto": "Roadmap priorizado por impacto, com métricas e donos definidos."
+            },
+            {
+                "num": "03",
+                "titulo": "Implementação",
+                "texto": "Execução em ciclos curtos, com resultados visíveis desde o primeiro trimestre."
+            },
+            {
+                "num": "04",
+                "titulo": "Escala",
+                "texto": "O que funciona se institucionaliza: governança, cultura e melhoria contínua."
+            }
+        ]
+    },
+    "tablero": {
+        "meta_title": "Painel de Crescimento",
+        "meta_desc": "O Painel de Crescimento ExperientIA: um centro de comando executivo com indicadores ao vivo, alertas inteligentes e governança do crescimento.",
+        "eyebrow": "Painel de Crescimento",
+        "titulo": "O ativo central da sua governança executiva.",
+        "sub": "Não é mais um dashboard. É o lugar onde a diretoria vê, entende e governa o crescimento do negócio, todos os dias.",
+        "cta": "Solicitar uma demo",
+        "features_eyebrow": "Capacidades",
+        "features_titulo": "Desenhado para o comitê de direção.",
+        "cta_titulo": "Veja seu negócio como um centro de comando.",
+        "cta_sub": "Solicite uma demo do Painel de Crescimento com dados de exemplo da sua indústria."
+    },
+    "productos": {
+        "meta_title": "Produtos",
+        "meta_desc": "Produtos institucionais da ExperientIA: Painel de Crescimento, Diagnóstico Executivo, Programas de Automação e Academia Executiva de IA.",
+        "eyebrow": "Produtos",
+        "titulo": "Ativos de crescimento, não ferramentas soltas.",
+        "sub": "Quatro produtos institucionais que empacotam método, tecnologia e acompanhamento executivo."
+    },
+    "casos": {
+        "meta_title": "Casos",
+        "meta_desc": "Casos ExperientIA em formato executive brief: contexto, intervenção e resultados mensuráveis.",
+        "eyebrow": "Casos",
+        "titulo": "Contexto, intervenção, resultados.",
+        "sub": "Reportamos como os conselhos decidem: sem enfeites, com números e com o que foi aprendido.",
+        "nota": "Casos representativos de programas ExperientIA. Números arredondados e anonimizados por confidencialidade."
+    },
+    "recursos": {
+        "meta_title": "Recursos",
+        "meta_desc": "Guias, playbooks e artigos ExperientIA para líderes que governam a IA e o crescimento empresarial.",
+        "eyebrow": "Recursos",
+        "titulo": "Critério para decidir, não ruído para acumular.",
+        "sub": "Material de trabalho para equipes diretivas: direto, aplicável e sem tecnicismos desnecessários.",
+        "gated_titulo": "Complete seus dados para baixar",
+        "gated_sub": "Enviamos o recurso ao seu e-mail e ele fica disponível imediatamente.",
+        "descarga_lista": "Seu download está pronto.",
+        "newsletter_titulo": "Inteligência executiva, uma vez por mês.",
+        "newsletter_sub": "Uma síntese com critério sobre IA, automação e crescimento. Sem spam, sem fumaça.",
+        "newsletter_placeholder": "Seu e-mail corporativo",
+        "newsletter_cta": "Assinar",
+        "newsletter_nota": "Cancele quando quiser.",
+        "newsletter_gracias": "Pronto. Nossa próxima edição está a caminho."
+    },
+    "nosotros": {
+        "meta_title": "Sobre",
+        "meta_desc": "A ExperientIA é uma firma de crescimento empresarial: traduzimos tecnologia em decisões claras e resultados sustentáveis.",
+        "eyebrow": "Sobre",
+        "titulo": "Nascemos para traduzir tecnologia em crescimento real.",
+        "sub": "A ExperientIA existe para transformar a complexidade tecnológica em decisões claras e resultados sustentáveis.",
+        "esencia_eyebrow": "Essência",
+        "esencia_titulo": "O que guia cada decisão.",
+        "valores": [
+            {
+                "icon": "target",
+                "titulo": "Clareza estratégica",
+                "texto": "Convertemos objetivos de negócio em rotas claras e acionáveis."
+            },
+            {
+                "icon": "bulb",
+                "titulo": "Inovação aplicada",
+                "texto": "Aplicamos IA e automação com propósito, focadas em gerar impacto real."
+            },
+            {
+                "icon": "shield",
+                "titulo": "Confiança empresarial",
+                "texto": "Agimos com transparência, segurança e foco no valor de longo prazo."
+            },
+            {
+                "icon": "growth",
+                "titulo": "Crescimento mensurável",
+                "texto": "Desenhamos soluções que se traduzem em resultados quantificáveis e sustentáveis."
+            }
+        ],
+        "personalidad_eyebrow": "Personalidade",
+        "personalidad_titulo": "Como pensamos, como criamos, como nos relacionamos.",
+        "rasgos": [
+            {
+                "titulo": "Premium",
+                "texto": "Qualidade superior em cada detalhe."
+            },
+            {
+                "titulo": "Humana",
+                "texto": "Escutamos, compreendemos, cocriamos."
+            },
+            {
+                "titulo": "Visionária",
+                "texto": "Antecipamos o futuro e convertemos possibilidades em estratégias."
+            },
+            {
+                "titulo": "Executável",
+                "texto": "Da estratégia à ação, com método e disciplina."
+            }
+        ],
+        "eco_eyebrow": "Ecossistema",
+        "eco_titulo": "Parte do ecossistema Tonny Dager.",
+        "eco_texto": "A ExperientIA é a firma de crescimento do ecossistema Tonny Dager: um mesmo universo de visão, padrões e critério executivo, com papéis de marca distintos. Onde Tonny Dager traz visão e liderança, a ExperientIA executa o crescimento.",
+        "eco_cta": "Visitar tonnydager.com",
+        "cta_titulo": "Vamos conhecer o seu negócio.",
+        "cta_sub": "Uma conversa executiva de 30 minutos vale mais do que cem slides.",
+        "cta_cta": "Agendar conversa"
+    },
+    "faq": {
+        "meta_title": "Perguntas frequentes",
+        "meta_desc": "Respostas diretas sobre como a ExperientIA converte IA, automação e dados em crescimento empresarial.",
+        "eyebrow": "FAQ",
+        "titulo": "Perguntas frequentes, respostas diretas.",
+        "sub": "O que as equipes diretivas nos perguntam antes de começar.",
+        "cta_titulo": "Ficou alguma pergunta?",
+        "cta_sub": "Escreva para nós ou agende uma sessão 1:1 de 30 minutos."
+    },
+    "contacto": {
+        "meta_title": "Contato",
+        "meta_desc": "Solicite um diagnóstico executivo ExperientIA: claro, acionável e sem fricção. Resposta em menos de 48 horas.",
+        "eyebrow": "Contato · Diagnóstico",
+        "titulo": "Vamos começar com clareza.",
+        "sub": "Conte-nos onde está o seu negócio hoje. Em menos de 48 horas respondemos com uma leitura executiva honesta e os próximos passos.",
+        "beneficios": [
+            {
+                "icon": "check",
+                "texto": "Diagnóstico inicial sem custo nem compromisso"
+            },
+            {
+                "icon": "clock",
+                "texto": "Resposta em menos de 48 horas"
+            },
+            {
+                "icon": "shield",
+                "texto": "Confidencialidade garantida desde o primeiro contato"
+            }
+        ],
+        "gracias_titulo": "Recebemos sua solicitação.",
+        "gracias_sub": "Responderemos em menos de 48 horas úteis. Se preferir, agende diretamente uma sessão 1:1."
+    },
+    "form": {
+        "nombre": "Nome e sobrenome",
+        "email": "E-mail corporativo",
+        "telefono": "WhatsApp",
+        "telefono_hint": "Selecione seu país e digite seu número",
+        "pais": "País",
+        "pais_placeholder": "Busque seu país…",
+        "empresa": "Empresa",
+        "rol": "Cargo",
+        "industria": "Indústria",
+        "industria_placeholder": "Busque sua indústria…",
+        "empleados": "Número de funcionários",
+        "empleados_opciones": {
+            "micro": "1–10 funcionários (Micro)",
+            "pequena": "11–50 funcionários (Pequena)",
+            "mediana": "51–200 funcionários (Média)",
+            "grande": "201–1000 funcionários (Grande)",
+            "corporativa": "Mais de 1000 (Corporativa)"
+        },
+        "desafio": "Desafio principal",
+        "mensaje": "Conte-nos brevemente seu contexto",
+        "enviar": "Enviar solicitação",
+        "enviando": "Enviando…",
+        "privacidad": "Seus dados são usados apenas para atender sua solicitação. Nunca os compartilhamos.",
+        "error_validacion": "Revise os campos destacados.",
+        "exito": "Enviado com sucesso.",
+        "error_telefono": "Verifique o número de WhatsApp: parece incompleto.",
+        "desafios": {
+            "crecimiento": "Crescimento e vendas",
+            "automatizacion": "Automação de operações",
+            "datos": "Dados e visibilidade executiva",
+            "estrategia": "Estratégia e investimento em IA",
+            "otro": "Outro"
+        }
+    },
+    "diagnostico": {
+        "meta_title": "Diagnóstico on-line",
+        "meta_desc": "Responda 8 perguntas e descubra qual solução de IA e automação gera mais valor para a sua empresa hoje.",
+        "eyebrow": "Diagnóstico on-line",
+        "titulo": "Descubra onde está a sua maior oportunidade.",
+        "sub": "8 perguntas, 3 minutos. No final mostramos qual frente de trabalho gera mais valor para você hoje e como é o primeiro passo.",
+        "empezar": "Começar diagnóstico",
+        "pregunta": "Pergunta",
+        "de": "de",
+        "siguiente": "Próxima",
+        "atras": "Voltar",
+        "ver_resultado": "Ver meu resultado",
+        "datos_titulo": "Um último passo: para onde enviamos seu resultado?",
+        "datos_sub": "Mostramos o resultado imediatamente e enviamos o detalhe ao seu e-mail.",
+        "resultado_eyebrow": "Seu resultado",
+        "resultado_titulo": "Sua maior oportunidade hoje:",
+        "resultado_sub": "Com base nas suas respostas, esta é a frente onde a IA e a automação geram mais valor no curto prazo.",
+        "resultado_cta": "Agendar sessão 1:1 para revisar",
+        "resultado_cta2": "Conhecer esta solução"
+    },
+    "agenda": {
+        "meta_title": "Agendar sessão 1:1",
+        "meta_desc": "Reserve uma sessão executiva 1:1 de 45 minutos para entender como a IA e a automação podem acelerar sua empresa.",
+        "eyebrow": "Sessão 1:1",
+        "titulo": "Agende sua sessão executiva.",
+        "sub": "45 minutos, um a um, para entender seu ponto de partida e a melhor opção para sua empresa. Sem custo e sem compromisso.",
+        "elegir_dia": "1 · Escolha o dia",
+        "elegir_hora": "2 · Escolha a hora",
+        "sus_datos": "3 · Seus dados",
+        "tema": "O que você gostaria de tratar na sessão?",
+        "confirmar": "Confirmar reserva",
+        "zona": "Horários exibidos no seu fuso horário",
+        "sin_horarios": "Não há horários disponíveis nos próximos dias. Escreva para nós e coordenamos.",
+        "gracias_titulo": "Sua sessão foi agendada.",
+        "gracias_sub": "Enviamos a confirmação por e-mail com os detalhes. Até breve.",
+        "reservado": "Reservado"
+    },
+    "not_found": {
+        "titulo": "Página não encontrada",
+        "sub": "A rota que você procura não existe ou mudou de lugar.",
+        "cta": "Voltar ao início"
+    }
+}

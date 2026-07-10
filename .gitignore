@@ -1,17 +1,9 @@
-# build output
-dist/
-# generated types
-.astro/
-
-# dependencies
-node_modules/
-
-# environment variables
 .env
-.env.production
-
-# macOS-specific files
+storage/logs/*
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/recursos/*
+!storage/recursos/.gitkeep
+app/db/dev.sqlite
+node_modules/
 .DS_Store
-
-# jetbrains setting folder
-.idea/
