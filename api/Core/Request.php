@@ -40,6 +40,17 @@ final class Request
         if (isset($_SERVER['CONTENT_TYPE'])) {
             $h['content-type'] = $_SERVER['CONTENT_TYPE'];
         }
+        // Fallback para la cabecera Authorization: en PHP-FPM/CGI, Apache suele
+        // no exponerla como HTTP_AUTHORIZATION. La recuperamos de otras fuentes.
+        if (empty($h['authorization'])) {
+            if (! empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+                $h['authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+            } elseif (function_exists('apache_request_headers')) {
+                foreach (apache_request_headers() as $k => $v) {
+                    if (strcasecmp($k, 'Authorization') === 0) { $h['authorization'] = $v; break; }
+                }
+            }
+        }
         return $h;
     }
 

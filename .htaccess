@@ -5,6 +5,10 @@ Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Pasar la cabecera Authorization a PHP (PHP-FPM/CGI la omite por defecto).
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
   # Forzar HTTPS (comentar si cPanel ya lo fuerza)
   RewriteCond %{HTTPS} off
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
