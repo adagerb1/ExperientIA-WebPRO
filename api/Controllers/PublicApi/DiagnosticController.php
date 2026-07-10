@@ -13,7 +13,7 @@ final class DiagnosticController extends Controller
     public function evaluar(): void
     {
         RateLimiter::public($this->req);
-        $preguntas = (require BASE_PATH . '/app/config/diagnostico.php')['preguntas'];
+        $preguntas = (require BASE_PATH . '/api/config/diagnostico.php')['preguntas'];
 
         $v = Validator::make($this->req->body)->honeypot()
             ->text('name', true, 160)->email('email', true)->phone('phone_wa')->text('phone_dial', false, 5)

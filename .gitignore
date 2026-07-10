@@ -4,6 +4,6 @@ storage/uploads/*
 !storage/uploads/.gitkeep
 storage/recursos/*
 !storage/recursos/.gitkeep
-app/db/dev.sqlite
+api/db/dev.sqlite
 node_modules/
 .DS_Store

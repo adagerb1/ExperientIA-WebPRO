@@ -95,10 +95,39 @@ export function toast(message, type = 'ok') {
 }
 
 // ---------- Meta por ruta (SEO en cliente) ----------
+const ORIGIN = 'https://experientia.pro';
+const OG_LOCALE = { es: 'es_ES', en: 'en_US', pt: 'pt_BR' };
+
+function upsertMeta(sel, attr, key, val) {
+  let el = document.head.querySelector(sel);
+  if (!el) { el = document.createElement('meta'); el.setAttribute(attr, key); document.head.appendChild(el); }
+  el.setAttribute('content', val);
+}
+function upsertLink(rel, hreflang, href) {
+  const q = hreflang ? `link[rel="${rel}"][hreflang="${hreflang}"]` : `link[rel="${rel}"]:not([hreflang])`;
+  let el = document.head.querySelector(q);
+  if (!el) { el = document.createElement('link'); el.setAttribute('rel', rel); if (hreflang) el.setAttribute('hreflang', hreflang); document.head.appendChild(el); }
+  el.setAttribute('href', href);
+}
+
 export function setMeta(title, desc) {
   document.title = title;
-  let m = document.querySelector('meta[name=description]');
-  if (m && desc) m.setAttribute('content', desc);
+  if (desc) upsertMeta('meta[name=description]', 'name', 'description', desc);
+
+  const path = location.pathname;
+  const canonical = ORIGIN + path;
+  upsertLink('canonical', null, canonical);
+  // Alternantes hreflang (misma ruta cambiando el prefijo de idioma)
+  for (const l of ['es', 'en', 'pt']) {
+    upsertLink('alternate', l, ORIGIN + path.replace(/^\/(es|en|pt)/, '/' + l));
+  }
+  upsertLink('alternate', 'x-default', ORIGIN + path.replace(/^\/(es|en|pt)/, '/es'));
+  // Open Graph
+  upsertMeta('meta[property="og:title"]', 'property', 'og:title', title);
+  if (desc) upsertMeta('meta[property="og:description"]', 'property', 'og:description', desc);
+  upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonical);
+  upsertMeta('meta[property="og:locale"]', 'property', 'og:locale', OG_LOCALE[store.locale] || 'es_ES');
+  document.documentElement.lang = store.locale;
 }
 
 // ---------- CSV export (; + BOM UTF-8, Framework §3.D) ----------

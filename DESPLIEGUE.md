@@ -1,68 +1,64 @@
-# Guía de despliegue · ExperientIA (Zero-Config)
+# Guía de despliegue · ExperientIA (Zero-Config, todo en `public_html`)
 
-Plataforma **sin paso de build**: los archivos se suben tal cual (FTP / cPanel File
-Manager / Git). No hay `npm run build`, ni Node.js, ni Webpack/Vite. Vue 3 y Vue
-Router se cargan por `importmap` desde `public/assets/vendor/` (ya versionados en el
-repo). El backend es PHP 8 (API REST, solo JSON) con MySQL vía PDO.
+Se descarga el repositorio, se sube el ZIP al hosting, **se descomprime dentro de
+`public_html` y funciona**. No hay que cambiar el *document root* del dominio, no
+hay paso de compilación (`npm`, Webpack, Vite) ni Node.js en el servidor.
+
+- **Frontend** 100 % estático (HTML + CSS + JS). Vue 3 y Vue Router se cargan por
+  `importmap` desde `assets/vendor/` (ya versionados en el repo). Ninguna vista
+  depende de PHP.
+- **Backend** 100 % API REST en PHP 8 (solo JSON, nunca renderiza HTML), bajo
+  `api/`. El mismo backend sirve al sitio, al portal admin, a Telegram/WhatsApp,
+  a AlexIA y a cualquier app móvil o servicio externo.
+- **Datos** MySQL vía PDO (SQLite solo en desarrollo local).
 
 ## Requisitos del servidor
 
 | Requisito | Mínimo |
 |-----------|--------|
 | PHP | 8.0+ (recomendado 8.2+) con `pdo_mysql`, `mbstring`, `json`, `curl` |
-| MySQL / MariaDB | 5.7+ / 10.4+ |
-| Apache | con `mod_rewrite` (el `.htaccess` ya viene incluido) |
-| HTTPS | certificado activo (el `.htaccess` fuerza redirección a HTTPS) |
+| MySQL / MariaDB | 5.7+ / 10.4+ (se administra con phpMyAdmin) |
+| Apache | con `mod_rewrite` (los `.htaccess` ya vienen incluidos) |
+| HTTPS | certificado activo |
 
-> No requiere Node.js en el servidor. SQLite solo se usa para desarrollo local.
-
-## 1. Subir los archivos
-
-Sube **todo el repositorio** al servidor. El *document root* del dominio debe
-apuntar a la carpeta **`public/`**.
-
-- **cPanel con dominio principal:** normalmente el root es `public_html/`. Opción A
-  (recomendada): coloca el proyecto fuera de `public_html` (p. ej. en
-  `~/experientia/`) y apunta el *Document Root* del dominio a
-  `~/experientia/public`. Opción B: sube el contenido de `public/` dentro de
-  `public_html/` y el resto del proyecto (`app/`, `lang/`, `storage/`, `.env`,
-  `install.php`) en el nivel superior `~/experientia/`, ajustando en tal caso las
-  rutas `dirname(__DIR__)` no es necesario tocarlas si mantienes la estructura
-  `public/` + carpetas hermanas.
-
-La estructura desplegada debe conservar esta jerarquía:
+## Estructura una vez descomprimido en `public_html`
 
 ```
-experientia/
-├── app/              # backend PHP (no accesible por web)
-├── lang/             # diccionarios de idioma fuente
-├── storage/          # logs y BD sqlite de desarrollo (no accesible por web)
-├── public/           # ← DOCUMENT ROOT del dominio
-│   ├── index.php     # shell SPA con meta SEO por ruta
-│   ├── api.php       # front controller de la API REST
-│   ├── sitemap.php   # sitemap dinámico (servido en /sitemap.xml)
-│   ├── robots.txt
-│   ├── .htaccess
-│   └── assets/       # css, js, vendor (Vue), fonts, img
-├── .env              # ← crear a partir de .env.example (NO se sube al repo)
-└── install.php       # ejecutar una vez, luego BORRAR
+public_html/                 ← aquí se descomprime el ZIP (document root del dominio)
+├── index.html               # Shell del sitio público (SPA, sin PHP)
+├── admin/
+│   └── index.html           # Shell del portal admin (SPA, sin PHP)
+├── assets/                  # css, js, vendor (Vue), fonts, img  ← FRONTEND
+├── api/                     # BACKEND: API REST JSON (única parte en PHP)
+│   ├── index.php            #   front controller de /api/*
+│   ├── sitemap.php          #   /sitemap.xml
+│   ├── .htaccess            #   blinda el resto de api/ (Core, db, config…)
+│   ├── Core/ Controllers/ Services/ Models/ config/ db/
+│   ├── bootstrap.php · helpers.php
+├── storage/                 # logs, uploads, recursos (no accesible por web)
+├── .htaccess                # ruteo: /api → backend, resto → SPA
+├── .env                     # ← crear a partir de .env.example
+├── favicon.svg · robots.txt
+└── install.php              # ejecutar una vez y BORRAR
 ```
 
-## 2. Crear la base de datos
+> Los `.htaccess` bloquean el acceso web a `.env`, `.sqlite`, `.log`, `.sql` y a
+> todo el interior de `api/` salvo `index.php` y `sitemap.php`. Aunque el backend
+> vive dentro de `public_html`, no es accesible ni descargable.
 
-En cPanel → *MySQL Databases*: crea una base de datos y un usuario, y asígnale
-todos los permisos sobre ella. Anota `nombre_bd`, `usuario`, `contraseña` y `host`
-(normalmente `localhost`).
+## Pasos
 
-## 3. Configurar `.env`
+### 1. Subir y descomprimir
+Sube el ZIP del repositorio a `public_html` (cPanel → *File Manager* → *Upload*) y
+**Extract** ahí mismo. No muevas nada ni cambies el *document root*.
 
-Copia `.env.example` a `.env` y complétalo:
+### 2. Crear la base de datos
+cPanel → *MySQL Databases*: crea base de datos y usuario, asígnale todos los
+permisos. Anota `nombre_bd`, `usuario`, `contraseña` y `host` (normalmente
+`localhost`). La administras con **phpMyAdmin**.
 
-```bash
-cp .env.example .env
-```
-
-Claves imprescindibles:
+### 3. Configurar `.env`
+Copia `.env.example` a `.env` (File Manager → *Copy* / *Rename*) y edítalo:
 
 ```ini
 APP_ENV=production
@@ -76,44 +72,32 @@ DB_USER=usuario
 DB_PASS=contraseña
 ```
 
-Los conectores (OpenAI/AlexIA, SendGrid, Telegram, WhatsApp, pasarelas de pago,
-Google Calendar) pueden dejarse vacíos aquí y configurarse después desde el panel
-admin (**Plataforma → Conectores**). El `.env` es solo el *fallback*.
+Los conectores (OpenAI/AlexIA, SendGrid, Telegram, WhatsApp, pasarelas, Google
+Calendar) pueden quedar vacíos y configurarse luego desde el panel
+(**Plataforma → Conectores**). El `.env` es solo el *fallback*.
 
-> El `.htaccess` bloquea el acceso web a `.env`, `.sqlite` y `.log`.
-
-## 4. Instalar (una sola vez)
-
-Desde el *Terminal* de cPanel o por SSH, en la raíz del proyecto:
+### 4. Instalar (una sola vez)
+Desde *Terminal* de cPanel o SSH, en `public_html`:
 
 ```bash
 php install.php "Tu Nombre" hello@experientia.pro "TuContraseñaSegura"
 ```
 
-Esto crea las tablas, siembra el contenido inicial (soluciones, productos, casos,
-FAQs, recursos, disponibilidad), registra los conectores y plantillas de email, y
-crea el usuario **propietario** del portal.
+Crea las tablas, siembra el contenido inicial, registra conectores y plantillas, y
+crea el usuario **propietario** del portal. **Borra `install.php`** al terminar.
 
-**Borra `install.php` del servidor** cuando termine.
-
-## 5. Verificar
-
-- Sitio público: `https://experientia.pro/` → redirige a `/es/`.
-- Idiomas: `/es/`, `/en/`, `/pt/`.
-- API salud: `https://experientia.pro/api/content` → responde JSON.
+### 5. Verificar
+- Sitio: `https://experientia.pro/` → redirige a `/es/` (idiomas `/es/ /en/ /pt/`).
+- API: `https://experientia.pro/api/content/soluciones` → responde JSON.
 - SEO: `https://experientia.pro/sitemap.xml` y `/robots.txt`.
-- Portal admin: `https://experientia.pro/admin` → login con el propietario creado.
+- Portal: `https://experientia.pro/admin` → login con el propietario.
 
-## 6. Actualizaciones posteriores
+## Actualizaciones
+Como no hay build, actualizar es reemplazar archivos (FTP / File Manager / `git
+pull`). Los cambios en `.html`, `.js`, `.css` son inmediatos. Para actualizar Vue,
+reemplaza los archivos de `assets/vendor/` (no hay CDN externo).
 
-Como no hay build, actualizar es sustituir archivos (FTP / `git pull`). Los cambios
-en `.js`, `.css`, `.html` son inmediatos. Si cambia el esquema, aplica las
-migraciones correspondientes en la BD. Si actualizas Vue, reemplaza los archivos en
-`public/assets/vendor/` (no hay CDN externo en producción).
-
-## Notas de seguridad
-
-- CORS restringido a los orígenes de `CORS_ALLOWED_ORIGINS`.
-- Rate limiting por IP (público) y por usuario (autenticado) — configurable en `.env`.
-- Toda entrada de formularios se sanitiza (anti SQL injection vía PDO + validación).
-- Autenticación Bearer por endpoint en el panel; `/admin` va con `noindex`.
+## Consumir el backend desde otros canales
+El backend es una API JSON estándar. Una app móvil (iOS/Android), un bot o
+cualquier servicio consume los mismos endpoints `https://experientia.pro/api/*`
+con **Bearer Token** — sin duplicar lógica ni crear otro backend.

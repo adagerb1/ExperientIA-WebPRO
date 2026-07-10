@@ -20,34 +20,51 @@ AI-first, performance-first.
 
 ## Arquitectura
 
-```
-app/                         # Backend PHP (no expuesto por web)
-├── bootstrap.php            # autoload PSR-4, .env, error handler
-├── Core/                    # Router, Controller (bulletproof), Database (PDO),
-│   │                        #   Token (Bearer), Validator, Cors, RateLimiter, Env
-│   └── Middleware/          # AuthMiddleware (RBAC por rol)
-├── Controllers/
-│   ├── PublicApi/           # Content, Lead, Resource, Diagnostic, Booking, Chat, Webhook
-│   └── Admin/               # Auth, Dashboard, Leads, Bookings, Content, Connectors, Chat
-├── Services/                # LeadService (dedupe), BookingService, Mailer, AlexIA
-│   └── Connectors/          # OpenAI, SendGrid(Mailer), Telegram, WhatsApp, Payment, GoogleCalendar
-└── db/                      # schema.sql, semillas.php, seed_extra.php
+Frontend, backend y datos **totalmente separados**. Todo vive dentro de
+`public_html` (se descomprime ahí y funciona, sin cambiar el document root). Las
+vistas son HTML/CSS/JS puro; el backend es una API JSON que **nunca renderiza
+HTML** y sirve por igual al sitio, al portal, a Telegram/WhatsApp, a AlexIA y a
+apps móviles.
 
-public/                      # ← Document root
-├── index.php                # Shell SPA + inyección de meta SEO por ruta (bots)
-├── api.php                  # Front controller de la API (/api/*)
-├── sitemap.php              # Sitemap dinámico con hreflang (/sitemap.xml)
-├── robots.txt · .htaccess · favicon.svg
-└── assets/
-    ├── css/                 # tokens.css, app.css (público), admin.css (portal)
-    ├── js/
-    │   ├── lib/             # core (store/api/i18n/CSV), ui, forms, layout, lang.*.json
-    │   ├── views/           # páginas públicas (pages1-4.js)
-    │   ├── admin/           # portal (main, views1, views2)
-    │   └── main.js          # bootstrap SPA público
-    ├── vendor/              # vue.esm-browser.prod.js + vue-router.esm-browser.prod.js
-    └── fonts/ · img/
 ```
+public_html/  (= raíz del repo)
+├── index.html               # FRONTEND · shell del sitio público (SPA, sin PHP)
+├── admin/index.html         # FRONTEND · shell del portal admin (SPA, sin PHP)
+├── assets/                  # FRONTEND
+│   ├── css/                 #   tokens.css, app.css (público), admin.css (portal)
+│   ├── js/
+│   │   ├── lib/             #   core (store/api/i18n/SEO/CSV), ui, forms, layout, lang.*.json
+│   │   ├── views/           #   páginas públicas (pages1-4.js)
+│   │   ├── admin/           #   portal (main, views1, views2)
+│   │   └── main.js          #   bootstrap SPA público
+│   ├── vendor/              #   vue.esm-browser.prod.js + vue-router.esm-browser.prod.js
+│   └── fonts/ · img/
+├── api/                     # BACKEND · API REST JSON (única parte en PHP)
+│   ├── index.php            #   front controller de /api/*
+│   ├── sitemap.php          #   /sitemap.xml (endpoint de datos)
+│   ├── bootstrap.php        #   autoload PSR-4, .env, error handler
+│   ├── helpers.php · .htaccess (blinda el resto)
+│   ├── Core/                #   Router, Controller (bulletproof), Database (PDO),
+│   │   │                    #     Token (Bearer), Validator, Cors, RateLimiter, Env
+│   │   └── Middleware/      #   AuthMiddleware (RBAC por rol)
+│   ├── Controllers/
+│   │   ├── PublicApi/       #   Content, Lead, Resource, Diagnostic, Booking, Chat, Webhook
+│   │   └── Admin/           #   Auth, Dashboard, Leads, Bookings, Content, Connectors, Chat
+│   ├── Services/            #   LeadService (dedupe), BookingService, Mailer, AlexIA
+│   │   └── Connectors/      #   OpenAI, SendGrid, Telegram, WhatsApp, Payment, GoogleCalendar
+│   ├── config/ · Models/
+│   └── db/                  #   schema.sql, semillas.php, seed_extra.php
+├── storage/                 # DATOS · logs, uploads, recursos (no accesible por web)
+├── .htaccess                # ruteo: /api → backend, /admin → admin, resto → SPA
+├── .env                     # config (protegido por .htaccess)
+├── favicon.svg · robots.txt
+└── install.php              # instalador de un solo uso (borrar tras usar)
+```
+
+**SEO en SPA estática:** cada ruta actualiza `title`, `description`, `canonical`,
+`hreflang`, Open Graph y `html lang` desde el cliente (`setMeta` en `core.js`);
+`sitemap.xml` (con slugs traducidos por idioma) y `robots.txt` completan el SEO
+técnico. Sin PHP en las vistas.
 
 ### Seguridad (aplicada de fábrica)
 
@@ -98,7 +115,7 @@ es solo *fallback* de las credenciales.
 ```bash
 cp .env.example .env      # DB_DRIVER=sqlite para desarrollo sin MySQL
 php install.php "Admin" hello@experientia.pro "ExperientIA2026!"
-php -S localhost:8092 -t public public/router-dev.php
+php -S localhost:8092 router-dev.php
 ```
 
 Abrir `http://localhost:8092/` (público) y `http://localhost:8092/admin` (portal).

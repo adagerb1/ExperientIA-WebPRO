@@ -8,7 +8,7 @@ header('Content-Type: application/xml; charset=UTF-8');
 
 $locales = ['es', 'en', 'pt'];
 $appUrl = rtrim(getenv('APP_URL') ?: 'https://experientia.pro', '/');
-$dir = __DIR__ . '/assets/js/lib';
+$dir = dirname(__DIR__) . '/assets/js/lib';
 
 // Slugs por idioma (misma fuente que consume el SPA y el shell SEO)
 $slugsByLoc = [];
@@ -53,7 +53,7 @@ foreach ($keys as $key) {
 
 // Recursos publicados (detalle) — best-effort, sin romper el sitemap si falta la BD
 try {
-    require_once __DIR__ . '/../app/bootstrap.php';
+    require_once __DIR__ . '/bootstrap.php';
     $rows = \Core\Database::run('SELECT slug FROM resources WHERE active = 1')->fetchAll();
     foreach ($rows as $r) {
         $paths = [];

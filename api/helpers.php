@@ -22,6 +22,6 @@ function now_utc(): string { return gmdate('Y-m-d H:i:s'); }
 function biz(string $key): mixed
 {
     static $c = null;
-    $c ??= require dirname(__DIR__) . '/app/config/business.php';
+    $c ??= require __DIR__ . '/config/business.php';
     return $c[$key] ?? null;
 }

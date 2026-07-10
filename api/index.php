@@ -4,8 +4,8 @@
  * Punto de entrada de todo /api/*.
  */
 
-require dirname(__DIR__) . '/app/bootstrap.php';
-require dirname(__DIR__) . '/app/helpers.php';
+require __DIR__ . '/bootstrap.php';
+require __DIR__ . '/helpers.php';
 
 use Core\Request;
 use Core\Cors;
