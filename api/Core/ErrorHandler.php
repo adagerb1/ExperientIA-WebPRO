@@ -13,6 +13,11 @@ final class ErrorHandler
             if (! (error_reporting() & $severity)) {
                 return false;
             }
+            // Las deprecaciones de PHP no deben ser fatales (evita 500 al subir de
+            // versión de PHP). Se ignoran; los errores reales sí se convierten.
+            if (in_array($severity, [E_DEPRECATED, E_USER_DEPRECATED], true)) {
+                return true;
+            }
             throw new \ErrorException($message, 0, $severity, $file, $line);
         });
 

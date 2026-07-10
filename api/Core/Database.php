@@ -29,9 +29,10 @@ final class Database
                     Env::get('DB_PORT', '3306'),
                     Env::get('DB_NAME', 'experientia')
                 );
-                self::$pdo = new PDO($dsn, Env::get('DB_USER'), Env::get('DB_PASS'), [
-                    PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci',
-                ]);
+                // charset=utf8mb4 en el DSN + SET NAMES tras conectar (evita la
+                // constante PDO::MYSQL_ATTR_INIT_COMMAND, deprecada en PHP 8.5).
+                self::$pdo = new PDO($dsn, Env::get('DB_USER'), Env::get('DB_PASS'));
+                self::$pdo->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
             }
             self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             self::$pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
