@@ -106,7 +106,7 @@ export const Conectores = {
 };
 
 export const Plantillas = {
-  template: `<div><h1>Plantillas de email</h1><p class="adm__sub">Correos automáticos (SendGrid o servidor) · variables entre {{ '{{...}}' }}</p>
+  template: `<div><h1>Plantillas de email</h1><p class="adm__sub">Correos automáticos (SendGrid o servidor) · variables entre <code v-pre>{{ ... }}</code></p>
     <div style="display:grid;gap:1rem">
       <div v-for="tpl in items" :key="tpl.tkey" class="glass panel"><h3>{{ nombre(tpl.tkey) }}</h3>
         <div class="tabs" style="margin-bottom:.8rem"><button v-for="l in ['es','en','pt']" :key="l" :class="{active:tab[tpl.tkey]===l}" @click="tab[tpl.tkey]=l">{{ l.toUpperCase() }}</button></div>
