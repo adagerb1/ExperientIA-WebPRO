@@ -15,7 +15,7 @@ final class ChatController extends Controller
         RateLimiter::hit('alexia:' . $this->req->ip(), 20, 60);
         $v = Validator::make($this->req->body)->honeypot()->textarea('mensaje', true, 2000)->int('conversation_id');
         $d = $v->failOrValidated();
-        $locale = in_array($this->req->input('locale', 'es'), biz('locales'), true) ? $this->req->input('locale') : 'es';
+        $locale = in_array($l = $this->req->input('locale', 'es'), biz('locales'), true) ? $l : 'es';
 
         $out = AlexIA::chat('comercial', 'web', $d['mensaje'], [
             'locale' => $locale,

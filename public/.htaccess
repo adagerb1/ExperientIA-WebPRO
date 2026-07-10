@@ -8,6 +8,8 @@ Options -Indexes
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
   # API → api.php
   RewriteRule ^api/ api.php [L]
+  # Sitemap dinámico (con hreflang) servido en /sitemap.xml
+  RewriteRule ^sitemap\.xml$ sitemap.php [L]
   # Archivos reales se sirven directo
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d

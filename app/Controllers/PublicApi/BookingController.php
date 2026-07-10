@@ -36,7 +36,7 @@ final class BookingController extends Controller
             Response::error('Ese horario ya fue reservado. Elija otro.', 409, ['campos' => ['slot']]);
         }
 
-        $d['locale'] = in_array($this->req->input('locale', 'es'), biz('locales'), true) ? $this->req->input('locale') : 'es';
+        $d['locale'] = in_array($l = $this->req->input('locale', 'es'), biz('locales'), true) ? $l : 'es';
         $cfgTz = new \DateTimeZone(biz('booking')['timezone']);
         $lead = LeadService::capture($d, 'reserva',
             'Agendó sesión 1:1 · ' . $inicio->setTimezone($cfgTz)->format('d/m/Y H:i'), ['tema' => $d['tema']]);

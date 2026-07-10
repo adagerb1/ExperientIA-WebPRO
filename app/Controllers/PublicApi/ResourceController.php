@@ -24,7 +24,7 @@ final class ResourceController extends Controller
             ->country('country', true)->text('company', false, 160)
             ->in('industry', array_keys(biz('industries')))->in('company_size', array_keys(biz('company_sizes')));
         $d = $v->failOrValidated();
-        $d['locale'] = in_array($this->req->input('locale', 'es'), biz('locales'), true) ? $this->req->input('locale') : 'es';
+        $d['locale'] = in_array($l = $this->req->input('locale', 'es'), biz('locales'), true) ? $l : 'es';
 
         LeadService::capture($d, 'descarga', 'Descargó: ' . tr($rec['titulo'], 'es'), ['recurso' => $rec['slug']]);
         Database::run('UPDATE resources SET downloads = downloads + 1 WHERE id = ?', [$rec['id']]);

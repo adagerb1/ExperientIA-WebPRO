@@ -38,7 +38,7 @@ final class Mailer
     public static function notifyLead(array $lead, string $titulo, array $payload): void
     {
         $to = Env::get('MAIL_NOTIFY', 'hello@experientia.pro');
-        $wa = $lead['phone_wa'] ? "+{$lead['phone_wa']}" : '—';
+        $wa = !empty($lead['phone_wa']) ? "+{$lead['phone_wa']}" : '—';
         $det = '';
         foreach ($payload as $k => $v) {
             if (is_scalar($v) && $v !== '') { $det .= '<li><b>' . htmlspecialchars((string) $k) . ':</b> ' . htmlspecialchars((string) $v) . '</li>'; }
