@@ -94,6 +94,19 @@ export const Segmentos = {
       <div class="glass stat seg-cta"><button class="btn btn-grad" @click="exportar" :disabled="!p.total"><Icon name="doc" :size="15"/> Exportar audiencia</button><span class="ctx">{{ p.total }} contactos · CSV</span></div>
     </div>
 
+    <div class="glass panel seg-send mt" v-if="p">
+      <h3>Enviar al segmento</h3>
+      <div class="seg-send-tabs">
+        <button type="button" :class="{active:envio.canal==='email'}" @click="envio.canal='email'"><Icon name="mail" :size="15"/> Correo · {{ p.con_email }}</button>
+        <button type="button" :class="{active:envio.canal==='whatsapp'}" :disabled="!p.canales.whatsapp" @click="envio.canal='whatsapp'"><Icon name="send" :size="15"/> WhatsApp · {{ p.con_whatsapp }}<em v-if="!p.canales.whatsapp"> (no configurado)</em></button>
+      </div>
+      <input v-if="envio.canal==='email'" class="inp" v-model="envio.asunto" placeholder="Asunto del correo (usa {nombre} si quieres)">
+      <textarea class="inp" rows="4" v-model="envio.mensaje" placeholder="Escribe tu mensaje… puedes usar {nombre} y {empresa} para personalizar."></textarea>
+      <div class="seg-send-foot">
+        <span class="small">Se enviará a <b>{{ destinatarios }}</b> contacto(s) con {{ envio.canal==='email'?'correo':'WhatsApp' }}. Máx. 500 por envío.</span>
+        <button class="btn btn-grad" :disabled="enviando || !destinatarios || envio.mensaje.length<3" @click="enviar">{{ enviando?'Enviando…':'Enviar a '+destinatarios }}</button></div>
+    </div>
+
     <div class="grid-2 mt" v-if="p">
       <div class="glass panel"><h3>Por industria</h3><Bars :rows="p.por_industria"/></div>
       <div class="glass panel"><h3>Por origen</h3><Bars :rows="p.por_origen"/></div>
@@ -106,7 +119,8 @@ export const Segmentos = {
   </div>`,
   data() {
     return {
-      p: null, timer: null,
+      p: null, timer: null, enviando: false,
+      envio: { canal: 'email', asunto: '', mensaje: '' },
       f: { industry: '', company_size: '', country: '', source: '', channel: '', status: '', locale: '', utm_source: '', utm_campaign: '', has_email: false, has_phone: false, q: '' },
       industrias: {},
       tamanos: ['1-10', '11-50', '51-200', '201-1000', '1000+'],
@@ -114,6 +128,7 @@ export const Segmentos = {
       estados: ['nuevo', 'contactado', 'calificado', 'propuesta', 'cliente', 'descartado'],
     };
   },
+  computed: { destinatarios() { return this.p ? (this.envio.canal === 'email' ? this.p.con_email : this.p.con_whatsapp) : 0; } },
   watch: { f: { deep: true, handler() { this.debounced(); } } },
   async mounted() { const meta = await loadMeta(); this.industrias = Object.fromEntries((meta.industries || []).map(i => [i.key, tr(i.nombre)])); await this.load(); },
   methods: {
@@ -131,6 +146,16 @@ export const Segmentos = {
         exportCSV('segmento-experientia.csv', r.data.rows, ['name', 'email', 'phone_wa', 'phone_dial', 'country', 'company', 'role', 'industry', 'company_size', 'status', 'source', 'channel', 'locale', 'utm_source', 'utm_medium', 'utm_campaign', 'landing_page', 'created_at']);
         toast(r.data.total + ' contactos exportados.');
       } else { toast('El segmento no tiene contactos.'); }
+    },
+    filtrosObj() { const o = {}; for (const [k, v] of Object.entries(this.f)) { if (v === true) o[k] = '1'; else if (v) o[k] = v; } return o; },
+    async enviar() {
+      const canalTxt = this.envio.canal === 'email' ? 'correo' : 'WhatsApp';
+      if (!confirm(`¿Enviar este ${canalTxt} a ${this.destinatarios} contacto(s) del segmento? Esta acción envía mensajes reales.`)) return;
+      this.enviando = true;
+      const r = await api.post('/admin/segmentos/enviar', { ...this.filtrosObj(), canal: this.envio.canal, asunto: this.envio.asunto, mensaje: this.envio.mensaje });
+      this.enviando = false;
+      if (r.ok) { toast(`${r.data.enviados} enviado(s)` + (r.data.fallidos ? `, ${r.data.fallidos} fallido(s)` : '') + (r.data.tope ? ' · se alcanzó el tope de 500' : '') + '.'); this.envio.mensaje = ''; this.envio.asunto = ''; }
+      else { toast(r.error || 'No se pudo enviar.'); }
     },
   },
 };

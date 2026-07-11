@@ -54,6 +54,7 @@ $r->post('/admin/leads/{id}/sugerencia', 'Admin\\LeadsController', 'sugerencia')
 $r->get('/admin/campanas', 'Admin\\CampaignsController', 'panel');
 $r->get('/admin/segmentos/preview', 'Admin\\SegmentsController', 'preview');
 $r->get('/admin/segmentos/export', 'Admin\\SegmentsController', 'export');
+$r->post('/admin/segmentos/enviar', 'Admin\\SegmentsController', 'enviar');
 $r->get('/admin/reservas', 'Admin\\BookingsController', 'index');
 $r->patch('/admin/reservas/{id}', 'Admin\\BookingsController', 'update');
 // Rutas específicas ANTES de las genéricas /admin/{tabla} (evita colisiones).

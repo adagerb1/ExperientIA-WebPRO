@@ -280,3 +280,12 @@ th:hover .sort-arrow{ opacity:1; }
 .inp-sm{ padding:.35rem .5rem; font-size:.78rem; flex:1; min-width:0; }
 .pipe-card-act .btn{ flex:0 0 auto; }
 .pipe-empty{ font-size:.8rem; color:var(--text-tertiary); text-align:center; padding:1rem; }
+
+/* Envío a segmentos */
+.seg-send{ display:grid; gap:.8rem; }
+.seg-send-tabs{ display:flex; gap:.5rem; flex-wrap:wrap; }
+.seg-send-tabs button{ display:inline-flex; align-items:center; gap:.45rem; padding:.5rem .9rem; border-radius:999px; border:1px solid var(--line-soft); background:rgba(5,17,38,.4); color:var(--text-secondary); font-size:.82rem; cursor:pointer; transition:border-color var(--motion),color var(--motion); }
+.seg-send-tabs button.active{ color:var(--cyan); border-color:rgba(24,214,241,.5); background:rgba(24,214,241,.1); }
+.seg-send-tabs button:disabled{ opacity:.5; cursor:not-allowed; }
+.seg-send-tabs em{ font-style:normal; font-size:.72rem; color:var(--text-tertiary); }
+.seg-send-foot{ display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
