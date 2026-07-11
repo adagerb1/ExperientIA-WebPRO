@@ -2,7 +2,7 @@
 import { createApp, h } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import { store, loadDict, setMeta } from './lib/core.js';
-import { SiteHeader, SiteFooter, Toasts, AlexIA } from './lib/layout.js';
+import { SiteBackdrop, SiteHeader, SiteFooter, Toasts, AlexIA } from './lib/layout.js';
 import { reveal } from './lib/ui.js';
 import { Home, Soluciones } from './views/pages1.js';
 import { Tablero, Productos, Casos, Nosotros, FAQ } from './views/pages2.js';
@@ -42,8 +42,8 @@ routes.push({ path: '/:pathMatch(.*)*', component: NotFound });
 const router = createRouter({ history: createWebHistory(), routes, scrollBehavior(){ return { top: 0 }; } });
 
 const App = {
-  components: { SiteHeader, SiteFooter, Toasts, AlexIA },
-  template: `<div><SiteHeader/><main id="main"><router-view v-slot="{Component}"><component :is="Component"/></router-view></main><SiteFooter/><Toasts/><AlexIA/></div>`,
+  components: { SiteBackdrop, SiteHeader, SiteFooter, Toasts, AlexIA },
+  template: `<div><SiteBackdrop/><SiteHeader/><main id="main"><router-view v-slot="{Component}"><component :is="Component"/></router-view></main><SiteFooter/><Toasts/><AlexIA/></div>`,
 };
 
 (async () => {

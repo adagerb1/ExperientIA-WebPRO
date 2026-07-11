@@ -33,30 +33,69 @@ export const Combo = {
   beforeUnmount() { document.removeEventListener('click', this._h); },
 };
 
-// Input de teléfono WhatsApp con bandera + indicativo (usa intl-tel-input global)
+// Indicativos telefónicos por país (ISO 3166-1 → código). Cobertura amplia,
+// LatAm/Iberia priorizados. Sin dependencias externas.
+const DIAL = {
+  CO:'57',MX:'52',AR:'54',CL:'56',PE:'51',EC:'593',VE:'58',BO:'591',PY:'595',UY:'598',
+  BR:'55',PA:'507',CR:'506',GT:'502',SV:'503',HN:'504',NI:'505',DO:'1',CU:'53',PR:'1',
+  ES:'34',US:'1',CA:'1',PT:'351',
+  GB:'44',FR:'33',DE:'49',IT:'39',NL:'31',BE:'32',CH:'41',AT:'43',IE:'353',SE:'46',
+  NO:'47',DK:'45',FI:'358',PL:'48',CZ:'420',GR:'30',RO:'40',HU:'36',UA:'380',RU:'7',
+  TR:'90',IL:'972',AE:'971',SA:'966',QA:'974',EG:'20',MA:'212',ZA:'27',NG:'234',KE:'254',
+  IN:'91',CN:'86',JP:'81',KR:'82',ID:'62',PH:'63',TH:'66',VN:'84',MY:'60',SG:'65',
+  AU:'61',NZ:'64',HK:'852',TW:'886',
+};
+const flagEmoji = (iso) => iso.replace(/./g, (c) => String.fromCodePoint(127397 + c.charCodeAt(0)));
+
+// Campo WhatsApp compuesto: select con banderas + indicativo e input de número.
+// Si el usuario escribe el número con indicativo (+57 / 0057), lo detecta y ubica.
 export const PhoneInput = {
   props: { modelValue: String },
   emits: ['update:modelValue', 'dial'],
-  template: `<input ref="el" type="tel" class="field-el" style="width:100%;padding:.85rem 1rem;border-radius:var(--r-sm);border:1px solid var(--line-strong);background:rgba(5,17,38,.5);color:var(--neutral-light);font-family:var(--font);font-size:.95rem" autocomplete="tel" />`,
-  mounted() {
-    const load = () => {
-      if (!window.intlTelInput) { setTimeout(load, 100); return; }
-      this.iti = window.intlTelInput(this.$refs.el, {
-        initialCountry: 'co', separateDialCode: true, countrySearch: true,
-        preferredCountries: ['co','mx','us','br','ar','cl','pe','ec','es'],
-      });
-      const sync = () => {
-        const num = (this.iti.getNumber() || '').replace(/\D/g, '');
-        this.$emit('update:modelValue', num);
-        this.$emit('dial', (this.iti.getSelectedCountry() || {}).dialCode || '');
-      };
-      this.$refs.el.addEventListener('change', sync);
-      this.$refs.el.addEventListener('keyup', sync);
-      this.$refs.el.addEventListener('countrychange', sync);
-    };
-    load();
+  template: `<div class="phone-field">
+    <select class="phone-cc" v-model="iso" @change="emit" :title="nombre(iso)">
+      <option v-for="c in lista" :key="c.iso" :value="c.iso">{{ c.flag }} +{{ c.dial }}</option></select>
+    <input class="phone-num" type="tel" inputmode="tel" v-model="num" @input="onInput" :placeholder="ph" autocomplete="tel"></div>`,
+  data() { return { iso: 'CO', num: '', nombres: {} }; },
+  computed: {
+    ph() { return t('form.telefono_placeholder') || 'Número de WhatsApp'; },
+    lista() {
+      const pref = ['CO','MX','AR','CL','PE','EC','VE','BR','ES','US'];
+      const keys = Object.keys(DIAL);
+      const ordenadas = [...pref.filter(k => DIAL[k]), ...keys.filter(k => !pref.includes(k)).sort((a, b) => this.nombre(a).localeCompare(this.nombre(b)))];
+      return ordenadas.map((iso) => ({ iso, dial: DIAL[iso], flag: flagEmoji(iso) }));
+    },
+    selected() { return { iso: this.iso, dial: DIAL[this.iso] || '' }; },
   },
-  methods: { valid() { return !this.$refs.el.value.trim() || (this.iti && this.iti.isValidNumber()); } },
+  methods: {
+    nombre(iso) { return this.nombres[iso] || iso; },
+    onInput() {
+      const raw = this.num.trim();
+      if (raw.startsWith('+') || raw.startsWith('00')) {
+        const digits = raw.replace(/^00/, '').replace(/\D/g, '');
+        const match = this.lista.slice().sort((a, b) => b.dial.length - a.dial.length).find((c) => digits.startsWith(c.dial));
+        if (match) { this.iso = match.iso; this.num = digits.slice(match.dial.length); }
+      }
+      this.emit();
+    },
+    emit() {
+      const nat = this.num.replace(/\D/g, '');
+      this.$emit('update:modelValue', nat ? this.selected.dial + nat : '');
+      this.$emit('dial', this.selected.dial);
+    },
+    valid() { const nat = this.num.replace(/\D/g, ''); return nat === '' || nat.length >= 6; },
+    parse(v) {
+      const digits = (v || '').replace(/\D/g, '');
+      if (!digits) { this.num = ''; return; }
+      const match = this.lista.slice().sort((a, b) => b.dial.length - a.dial.length).find((c) => digits.startsWith(c.dial));
+      if (match) { this.iso = match.iso; this.num = digits.slice(match.dial.length); } else { this.num = digits; }
+    },
+  },
+  async mounted() {
+    try { const p = await paises(); this.nombres = p[store.locale] || p.es || {}; } catch (e) { /* nombres opcionales */ }
+    if (this.modelValue) { this.parse(this.modelValue); }
+    this.emit();
+  },
 };
 
 // Campos de captura de lead compartidos

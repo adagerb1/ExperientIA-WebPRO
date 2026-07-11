@@ -94,6 +94,35 @@ export const AlexIA = {
   },
 };
 
+// Fondo global con profundidad y parallax al hacer scroll (más fuerte arriba).
+export const SiteBackdrop = {
+  template: `<div class="backdrop" aria-hidden="true" ref="bd">
+    <div class="bd-layer bd-neb"></div>
+    <div class="bd-layer bd-grid"></div>
+    <div class="bd-layer bd-shards">
+      <span class="bd-shard s1"></span><span class="bd-shard s2"></span><span class="bd-shard s3"></span><span class="bd-shard s4"></span><span class="bd-shard s5"></span></div>
+  </div>`,
+  mounted() {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { return; }
+    this.raf = null;
+    this.onScroll = () => {
+      if (this.raf) { return; }
+      this.raf = requestAnimationFrame(() => {
+        this.raf = null;
+        const y = window.scrollY || 0;
+        const el = this.$refs.bd;
+        if (!el) { return; }
+        el.style.setProperty('--p1', (y * -0.06) + 'px');
+        el.style.setProperty('--p2', (y * -0.14) + 'px');
+        el.style.setProperty('--p3', (y * -0.28) + 'px');
+      });
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+    this.onScroll();
+  },
+  beforeUnmount() { if (this.onScroll) { window.removeEventListener('scroll', this.onScroll); } },
+};
+
 export const PageHero = {
   template: `<section class="page-hero"><div class="bg-atmos"><div class="halo halo-cyan" style="width:520px;height:520px;top:-260px;right:-140px"></div><div class="halo halo-violet" style="width:420px;height:420px;top:40px;left:-200px;opacity:.35"></div></div>
     <div class="container page-hero__in"><p class="eyebrow" v-reveal>{{ eyebrow }}</p><h1 class="display" v-reveal :style="{'--d':'.08s'}">{{ titulo }}</h1><p class="lead" v-reveal :style="{'--d':'.16s'}" v-if="sub">{{ sub }}</p><slot/></div></section>`,
