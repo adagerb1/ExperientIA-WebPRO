@@ -58,6 +58,8 @@ final class LeadService
             $pdo->prepare("INSERT INTO leads ({$cols}) VALUES ({$ph})")->execute(array_values($attrs));
             $id = $pdo->lastInsertId();
             $lead = ['id' => $id] + $attrs;
+            // Nurturing: inscribe al lead nuevo en las secuencias de la etapa "nuevo".
+            SequenceService::enroll((int) $id, 'nuevo');
         }
 
         $pdo->prepare('INSERT INTO touchpoints (lead_id, type, title, payload, created_at) VALUES (?,?,?,?,?)')

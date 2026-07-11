@@ -107,3 +107,17 @@ reemplaza los archivos de `assets/vendor/` (no hay CDN externo).
 El backend es una API JSON estándar. Una app móvil (iOS/Android), un bot o
 cualquier servicio consume los mismos endpoints `https://experientia.pro/api/*`
 con **Bearer Token** — sin duplicar lógica ni crear otro backend.
+
+## Automatizaciones (nurturing) — cron opcional
+
+Las secuencias de nurturing (Admin → Automatizaciones) envían sus mensajes cuando
+vence el retraso de cada paso. Para que corran solas, añade un **cron job** en cPanel:
+
+```
+*/15 * * * * curl -s "https://TU-DOMINIO/api/cron/run?key=TU_CRON_KEY" >/dev/null 2>&1
+```
+
+- Define `CRON_KEY` en tu `.env` (si no la defines, se usa `APP_SECRET`).
+- Sin cron, igual puedes disparar los envíos con el botón **“Procesar ahora”** del panel.
+- Requiere un método de envío configurado: **SendGrid** (correo) o **WhatsApp Business**.
+- La secuencia de ejemplo se instala **pausada**; actívala cuando quieras que envíe.

@@ -32,6 +32,8 @@ $r->post('/reserva', 'PublicApi\\BookingController', 'reservar');
 $r->post('/alexia', 'PublicApi\\ChatController', 'mensaje');           // AlexIA comercial (web)
 
 // ─── Webhooks de conectores (entrantes de terceros) ────────────────
+$r->get('/cron/run', 'PublicApi\\CronController', 'run');
+$r->post('/cron/run', 'PublicApi\\CronController', 'run');
 $r->post('/webhook/telegram/{bot}', 'PublicApi\\WebhookController', 'telegram');
 $r->post('/webhook/whatsapp', 'PublicApi\\WebhookController', 'whatsapp');
 $r->get('/webhook/whatsapp', 'PublicApi\\WebhookController', 'whatsappVerify');
@@ -51,6 +53,10 @@ $r->delete('/admin/leads/{id}', 'Admin\\LeadsController', 'destroy');
 $r->get('/admin/leads-export', 'Admin\\LeadsController', 'export');
 $r->get('/admin/pipeline', 'Admin\\LeadsController', 'pipeline');
 $r->post('/admin/leads/{id}/sugerencia', 'Admin\\LeadsController', 'sugerencia');
+$r->get('/admin/secuencias', 'Admin\\SequencesController', 'index');
+$r->post('/admin/secuencias', 'Admin\\SequencesController', 'save');
+$r->delete('/admin/secuencias/{id}', 'Admin\\SequencesController', 'destroy');
+$r->post('/admin/secuencias/procesar', 'Admin\\SequencesController', 'procesar');
 $r->get('/admin/campanas', 'Admin\\CampaignsController', 'panel');
 $r->get('/admin/segmentos/preview', 'Admin\\SegmentsController', 'preview');
 $r->get('/admin/segmentos/export', 'Admin\\SegmentsController', 'export');

@@ -69,6 +69,8 @@ final class LeadsController extends Controller
             $a = biz('lead_statuses')[$nuevoEstado] ?? $nuevoEstado;
             Database::run('INSERT INTO touchpoints (lead_id, type, title, payload, created_at) VALUES (?,?,?,?,?)',
                 [$id, 'estado', "Estado: {$de} → {$a}", json_encode(['por' => $admin['name'] ?? 'admin'], JSON_UNESCAPED_UNICODE), now_utc()]);
+            // Inscribe en las secuencias de nurturing de la nueva etapa.
+            \Services\SequenceService::enroll((int) $id, $nuevoEstado);
         }
         Response::ok(['message' => 'ok']);
     }

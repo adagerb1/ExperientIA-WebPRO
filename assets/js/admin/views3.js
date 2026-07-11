@@ -95,7 +95,8 @@ export const Segmentos = {
     </div>
 
     <div class="glass panel seg-send mt" v-if="p">
-      <h3>Enviar al segmento</h3>
+      <div class="seg-send-head"><h3>Enviar al segmento</h3>
+        <select v-if="plantillas.length" class="inp" @change="usarPlantilla($event.target.value)"><option value="">Usar una plantilla…</option><option v-for="t in plantillas" :key="t.id" :value="t.id">{{ t.nombre }} ({{ t.canal }})</option></select></div>
       <div class="seg-send-tabs">
         <button type="button" :class="{active:envio.canal==='email'}" @click="envio.canal='email'"><Icon name="mail" :size="15"/> Correo · {{ p.con_email }}</button>
         <button type="button" :class="{active:envio.canal==='whatsapp'}" :disabled="!p.canales.whatsapp" @click="envio.canal='whatsapp'"><Icon name="send" :size="15"/> WhatsApp · {{ p.con_whatsapp }}<em v-if="!p.canales.whatsapp"> (no configurado)</em></button>
@@ -119,7 +120,7 @@ export const Segmentos = {
   </div>`,
   data() {
     return {
-      p: null, timer: null, enviando: false,
+      p: null, timer: null, enviando: false, plantillas: [],
       envio: { canal: 'email', asunto: '', mensaje: '' },
       f: { industry: '', company_size: '', country: '', source: '', channel: '', status: '', locale: '', utm_source: '', utm_campaign: '', has_email: false, has_phone: false, q: '' },
       industrias: {},
@@ -130,7 +131,7 @@ export const Segmentos = {
   },
   computed: { destinatarios() { return this.p ? (this.envio.canal === 'email' ? this.p.con_email : this.p.con_whatsapp) : 0; } },
   watch: { f: { deep: true, handler() { this.debounced(); } } },
-  async mounted() { const meta = await loadMeta(); this.industrias = Object.fromEntries((meta.industries || []).map(i => [i.key, tr(i.nombre)])); await this.load(); },
+  async mounted() { const meta = await loadMeta(); this.industrias = Object.fromEntries((meta.industries || []).map(i => [i.key, tr(i.nombre)])); const tp = await api.get('/admin/campaign_templates/list'); if (tp.ok) this.plantillas = tp.data; await this.load(); },
   methods: {
     qs() {
       const p = new URLSearchParams();
@@ -148,6 +149,7 @@ export const Segmentos = {
       } else { toast('El segmento no tiene contactos.'); }
     },
     filtrosObj() { const o = {}; for (const [k, v] of Object.entries(this.f)) { if (v === true) o[k] = '1'; else if (v) o[k] = v; } return o; },
+    usarPlantilla(id) { const t = this.plantillas.find(x => String(x.id) === String(id)); if (!t) return; this.envio.canal = t.canal || 'email'; this.envio.asunto = tr(t.asunto) || ''; this.envio.mensaje = tr(t.cuerpo) || ''; },
     async enviar() {
       const canalTxt = this.envio.canal === 'email' ? 'correo' : 'WhatsApp';
       if (!confirm(`¿Enviar este ${canalTxt} a ${this.destinatarios} contacto(s) del segmento? Esta acción envía mensajes reales.`)) return;

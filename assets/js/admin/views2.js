@@ -40,6 +40,10 @@ const MODULOS = {
     {n:'weekday',l:'Día (1=Lun … 7=Dom)',t:'num'},{n:'start_time',l:'Desde (HH:MM)',t:'text'},{n:'end_time',l:'Hasta (HH:MM)',t:'text'},{n:'active',l:'Activa',t:'bool'}]},
   industries:{titulo:'Industrias',list:['nombre','ikey','active'],campos:[
     {n:'ikey',l:'Clave interna',t:'text'},{n:'nombre',l:'Nombre',t:'i18n'},{n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activa',t:'bool'}]},
+  campaign_templates:{titulo:'Plantillas de campaña',list:['nombre','canal','active'],campos:[
+    {n:'nombre',l:'Nombre',t:'text'},{n:'canal',l:'Canal',t:'sel',op:['email','whatsapp']},
+    {n:'asunto',l:'Asunto (solo correo)',t:'i18n'},{n:'cuerpo',l:'Mensaje · usa {nombre} y {empresa}',t:'i18ta'},
+    {n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activa',t:'bool'}]},
 };
 
 const DOW = { 1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo' };

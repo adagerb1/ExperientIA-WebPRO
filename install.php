@@ -77,6 +77,26 @@ function exp_run_install(PDO $pdo, bool $sqlite, ?array $admin = null): array
     }
     $log[] = 'Taxonomías sembradas (industrias y países).';
 
+    // 2.7) Automatización (plantillas de campaña + secuencia de ejemplo pausada)
+    if ((int) $pdo->query('SELECT COUNT(*) FROM campaign_templates')->fetchColumn() === 0) {
+        $seedA = require __DIR__ . '/api/db/seed_automation.php';
+        $tids = [];
+        foreach ($seedA['templates'] as $t) {
+            $pdo->prepare('INSERT INTO campaign_templates (nombre, canal, asunto, cuerpo, sort, active, updated_at) VALUES (?,?,?,?,?,1,?)')
+                ->execute([$t['nombre'], $t['canal'], json_encode($t['asunto'], JSON_UNESCAPED_UNICODE), json_encode($t['cuerpo'], JSON_UNESCAPED_UNICODE), count($tids), now_utc()]);
+            $tids[] = (int) $pdo->lastInsertId();
+        }
+        $s = $seedA['sequence'];
+        $pdo->prepare('INSERT INTO sequences (nombre, trigger_status, active, created_at) VALUES (?,?,?,?)')->execute([$s['nombre'], $s['trigger_status'], $s['active'], now_utc()]);
+        $sid = (int) $pdo->lastInsertId();
+        $o = 0;
+        foreach ($s['steps'] as $st) {
+            $pdo->prepare('INSERT INTO sequence_steps (sequence_id, orden, delay_hours, template_id, active) VALUES (?,?,?,?,1)')
+                ->execute([$sid, $o++, $st['delay_hours'], $tids[$st['template_idx']] ?? null]);
+        }
+    }
+    $log[] = 'Automatización sembrada (plantillas + secuencia pausada).';
+
     // 3) Conectores + plantillas de email
     $extra = require __DIR__ . '/api/db/seed_extra.php';
     foreach ($extra['connectors'] as $prov) {

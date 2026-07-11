@@ -113,6 +113,42 @@ try {
     }
 } catch (\Throwable $e) { echo "! diagnostics: " . $e->getMessage() . "\n"; }
 
+// Automatización: plantillas de campaña y secuencias de nurturing.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS campaign_templates (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, canal TEXT NOT NULL DEFAULT \'email\', asunto TEXT NULL, cuerpo TEXT NOT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, updated_at TEXT NULL)');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequences (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre TEXT NOT NULL, trigger_status TEXT NOT NULL, active INTEGER NOT NULL DEFAULT 1, created_at TEXT NULL)');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequence_steps (id INTEGER PRIMARY KEY AUTOINCREMENT, sequence_id INTEGER NOT NULL, orden INTEGER NOT NULL DEFAULT 0, delay_hours INTEGER NOT NULL DEFAULT 0, template_id INTEGER NULL, active INTEGER NOT NULL DEFAULT 1)');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequence_enrollments (id INTEGER PRIMARY KEY AUTOINCREMENT, sequence_id INTEGER NOT NULL, lead_id INTEGER NOT NULL, step_index INTEGER NOT NULL DEFAULT 0, next_run_at TEXT NULL, status TEXT NOT NULL DEFAULT \'activa\', created_at TEXT NULL, updated_at TEXT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS campaign_templates (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(160) NOT NULL, canal VARCHAR(20) NOT NULL DEFAULT \'email\', asunto JSON NULL, cuerpo JSON NOT NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequences (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, nombre VARCHAR(160) NOT NULL, trigger_status VARCHAR(20) NOT NULL, active TINYINT NOT NULL DEFAULT 1, created_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequence_steps (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, sequence_id INT UNSIGNED NOT NULL, orden INT NOT NULL DEFAULT 0, delay_hours INT NOT NULL DEFAULT 0, template_id INT UNSIGNED NULL, active TINYINT NOT NULL DEFAULT 1) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS sequence_enrollments (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, sequence_id INT UNSIGNED NOT NULL, lead_id INT UNSIGNED NOT NULL, step_index INT NOT NULL DEFAULT 0, next_run_at DATETIME NULL, status VARCHAR(20) NOT NULL DEFAULT \'activa\', created_at DATETIME NULL, updated_at DATETIME NULL, INDEX idx_due (status, next_run_at)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+    echo "· tablas de automatización listas\n";
+    if ((int) $pdo->query('SELECT COUNT(*) FROM campaign_templates')->fetchColumn() === 0) {
+        $seedA = require __DIR__ . '/api/db/seed_automation.php';
+        $tids = [];
+        foreach ($seedA['templates'] as $t) {
+            $pdo->prepare('INSERT INTO campaign_templates (nombre, canal, asunto, cuerpo, sort, active, updated_at) VALUES (?,?,?,?,?,1,?)')
+                ->execute([$t['nombre'], $t['canal'], json_encode($t['asunto'], JSON_UNESCAPED_UNICODE), json_encode($t['cuerpo'], JSON_UNESCAPED_UNICODE), count($tids), now_utc()]);
+            $tids[] = (int) $pdo->lastInsertId();
+        }
+        if ((int) $pdo->query('SELECT COUNT(*) FROM sequences')->fetchColumn() === 0) {
+            $s = $seedA['sequence'];
+            $pdo->prepare('INSERT INTO sequences (nombre, trigger_status, active, created_at) VALUES (?,?,?,?)')->execute([$s['nombre'], $s['trigger_status'], $s['active'], now_utc()]);
+            $sid = (int) $pdo->lastInsertId();
+            $o = 0;
+            foreach ($s['steps'] as $st) {
+                $pdo->prepare('INSERT INTO sequence_steps (sequence_id, orden, delay_hours, template_id, active) VALUES (?,?,?,?,1)')
+                    ->execute([$sid, $o++, $st['delay_hours'], $tids[$st['template_idx']] ?? null]);
+            }
+        }
+        echo "+ automatización sembrada (plantillas + secuencia pausada)\n";
+    }
+} catch (\Throwable $e) { echo '! automatización: ' . $e->getMessage() . "\n"; }
+
 // Taxonomías: industrias y países (crear tablas si faltan + sembrar si vacías).
 try {
     if ($sqlite) {

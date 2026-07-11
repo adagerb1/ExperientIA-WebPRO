@@ -9,6 +9,7 @@ import { Login, Dashboard, Leads, LeadDetail } from './views1.js';
 import { Reservas, Contenido, Conectores, Plantillas } from './views2.js';
 import { Campanas, Segmentos } from './views3.js';
 import { Pipeline } from './pipeline.js';
+import { Secuencias } from './sequences.js';
 import { Diagnosticos } from './diagnosticos.js';
 import { Recursos } from './recursos.js';
 import { AlexiaWidget } from './alexia.js';
@@ -30,7 +31,7 @@ const Shell = {
   data(){ return { store,
     crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
     cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/diagnosticos',icon:'target',label:'Diagnósticos'},{to:'/admin/recursos',icon:'doc',label:'Recursos'},{to:'/admin/industrias',icon:'cube',label:'Industrias'}],
-    plat:[{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}],
+    plat:[{to:'/admin/secuencias',icon:'gear',label:'Automatizaciones'},{to:'/admin/plantillas-campana',icon:'send',label:'Plantillas campaña'},{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}],
   }; },
   methods:{ go(to){ this.$router.push(to); }, active(to){ return this.$route.path===to || (to!=='/admin'&&this.$route.path.startsWith(to)); }, salir(){ logout(); } },
 };
@@ -44,6 +45,8 @@ const routes = [
     { path: 'campanas', component: Campanas },
     { path: 'segmentos', component: Segmentos },
     { path: 'pipeline', component: Pipeline },
+    { path: 'secuencias', component: Secuencias },
+    { path: 'plantillas-campana', component: Contenido, props: { modulo: 'campaign_templates' } },
     { path: 'reservas', component: Reservas },
     { path: 'disponibilidad', component: Contenido, props: { modulo: 'availability_rules' } },
     { path: 'soluciones', component: Contenido, props: { modulo: 'solutions' } },
