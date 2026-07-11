@@ -72,11 +72,29 @@ final class ContentController extends Controller
         Response::ok(['file_path' => $nombre]);
     }
 
+    private static array $colsCache = [];
+
+    /** Columnas reales de la tabla (portable). Evita fallar por columnas sin migrar. */
+    private function tableColumns(string $tabla): array
+    {
+        if (isset(self::$colsCache[$tabla])) { return self::$colsCache[$tabla]; }
+        try {
+            if (Database::isSqlite()) {
+                $cols = array_column(Database::pdo()->query("PRAGMA table_info({$tabla})")->fetchAll(), 'name');
+            } else {
+                $cols = array_column(Database::pdo()->query("SHOW COLUMNS FROM {$tabla}")->fetchAll(), 'Field');
+            }
+        } catch (\Throwable $e) { $cols = []; }
+        return self::$colsCache[$tabla] = $cols;
+    }
+
     private function datos(string $tabla): array
     {
+        $existentes = $this->tableColumns($tabla);
         $out = [];
         foreach (self::TABLAS[$tabla] as $c) {
             if (! array_key_exists($c, $this->req->body)) { continue; }
+            if ($existentes && ! in_array($c, $existentes, true)) { continue; } // columna aún no migrada
             $v = $this->req->body[$c];
             $out[$c] = in_array($c, self::JSON_FIELDS, true) && is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : $v;
         }
