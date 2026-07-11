@@ -242,11 +242,21 @@ p { margin: 0; color: var(--text-secondary); }
 
 /* ============ Diagnóstico ============ */
 .diag{ max-width:44rem; margin-inline:auto; }
+.diag__step{ min-height:300px; }
+/* Transición entre preguntas (sin scroll): deslizamiento suave */
+.diag-next-enter-active,.diag-prev-enter-active{ transition:opacity .34s ease, transform .34s cubic-bezier(.2,.9,.3,1.1); }
+.diag-next-leave-active,.diag-prev-leave-active{ transition:opacity .18s ease, transform .18s ease; }
+.diag-next-enter-from{ opacity:0; transform:translateX(34px); } .diag-next-leave-to{ opacity:0; transform:translateX(-30px); }
+.diag-prev-enter-from{ opacity:0; transform:translateX(-34px); } .diag-prev-leave-to{ opacity:0; transform:translateX(30px); }
+.diag__opt span{ display:block; }
+.diag__opt{ transform:translateZ(0); }
+.diag__opt:hover{ transform:translateY(-2px); }
+.diag__opt.sel{ background:linear-gradient(140deg, rgba(24,214,241,.10), var(--glass-bg)); }
 .diag__bar{ height:4px; border-radius:2px; background:rgba(217,226,240,.12); margin-bottom:2rem; overflow:hidden; }
 .diag__bar i{ display:block; height:100%; width:var(--p,0%); background:var(--grad); transition:width var(--motion-slow); }
 .diag__num{ font-size:.78rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); }
 .diag__opts{ display:grid; gap:.8rem; margin-top:.4rem; }
-.diag__opt{ display:block; padding:1.05rem 1.3rem; border:1px solid var(--line-soft); border-radius:var(--r-md); background:var(--glass-bg); cursor:pointer; color:var(--text-secondary); transition:border-color var(--motion),color var(--motion); }
+.diag__opt{ display:block; padding:1.05rem 1.3rem; border:1px solid var(--line-soft); border-radius:var(--r-md); background:var(--glass-bg); cursor:pointer; color:var(--text-secondary); transition:border-color var(--motion),color var(--motion),transform var(--motion),background var(--motion); }
 .diag__opt:hover{ border-color:rgba(24,214,241,.35); }
 .diag__opt.sel{ border-color:var(--cyan); color:var(--neutral-light); box-shadow:0 0 0 1px var(--cyan), 0 12px 34px -18px var(--cyan-glow); }
 .diag__nav{ display:flex; justify-content:space-between; gap:1rem; margin-top:1.4rem; }
@@ -405,3 +415,18 @@ p { margin: 0; color: var(--text-secondary); }
 .ax-send:disabled{ opacity:.5; cursor:default; }
 @media(max-width:520px){ .ax-panel{ right:3vw; left:3vw; width:auto; bottom:92px; } }
 @media (prefers-reduced-motion: reduce){ .ax-fab-ring,.ax-in,.ax-status,.ax-wave i{ animation:none !important; } }
+
+/* Reproductor de audio · narración de AlexIA (liquid glass) */
+.ax-audio{ display:flex; align-items:center; gap:1rem; padding:.85rem 1.05rem; border-radius:18px; margin-bottom:1.6rem;
+  border:1px solid rgba(160,190,240,.16); background:linear-gradient(150deg, rgba(30,52,96,.42), rgba(10,22,48,.5));
+  -webkit-backdrop-filter:blur(18px) saturate(160%); backdrop-filter:blur(18px) saturate(160%);
+  box-shadow:0 20px 50px -30px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12); }
+.ax-audio-play{ width:46px; height:46px; border-radius:14px; border:none; cursor:pointer; color:#04101f; flex-shrink:0;
+  background:linear-gradient(135deg,var(--cyan),var(--violet)); display:grid; place-items:center; box-shadow:0 8px 22px -8px var(--cyan-glow); transition:transform var(--motion); }
+.ax-audio-play:hover{ transform:scale(1.06); }
+.ax-audio-mid{ flex:1; display:grid; gap:.5rem; min-width:0; }
+.ax-audio-track{ height:7px; border-radius:4px; background:rgba(217,226,240,.14); cursor:pointer; position:relative; }
+.ax-audio-fill{ height:100%; border-radius:4px; background:var(--grad); position:relative; min-width:2px; }
+.ax-audio-knob{ position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(24,214,241,.35); }
+.ax-audio-meta{ display:flex; justify-content:space-between; align-items:center; font-size:.72rem; color:var(--text-tertiary); gap:.6rem; }
+.ax-audio-by{ display:inline-flex; align-items:center; gap:.3rem; color:var(--cyan); font-weight:600; letter-spacing:.02em; }

@@ -8,6 +8,30 @@ function blankLead(){ return { name:'',email:'',phone_wa:'',phone_dial:'',countr
 const RCATS = { ia_negocios:'IA aplicada a negocios', automatizacion:'Automatización', growth:'Growth', estrategia:'Estrategia', marketing:'Marketing estratégico', crm:'CRM', ventas:'Ventas', experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes', datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital' };
 const catLabel = (k)=> RCATS[k]||k;
 
+// Reproductor de audio liquid glass · narración de AlexIA
+const AlexiaAudio = {
+  components: { Icon },
+  props: { src: String },
+  template: `<div class="ax-audio glass">
+    <button type="button" class="ax-audio-play" @click="toggle" :aria-label="playing?'Pausar':'Reproducir'">
+      <svg v-if="playing" width="16" height="16" viewBox="0 0 16 16"><rect x="3.5" y="2.5" width="3.2" height="11" rx="1" fill="currentColor"/><rect x="9.3" y="2.5" width="3.2" height="11" rx="1" fill="currentColor"/></svg>
+      <Icon v-else name="play" :size="18"/></button>
+    <div class="ax-audio-mid">
+      <div class="ax-audio-track" ref="track" @click="seek"><div class="ax-audio-fill" :style="{width:pct+'%'}"><span class="ax-audio-knob"></span></div></div>
+      <div class="ax-audio-meta"><span>{{ fmt(cur) }} / {{ fmt(dur) }}</span>
+        <span class="ax-audio-by"><Icon name="sparkle" :size="11"/> Narrado por AlexIA</span></div></div>
+    <audio ref="a" :src="src" preload="metadata" @timeupdate="onTime" @loadedmetadata="onMeta" @ended="playing=false"></audio></div>`,
+  data(){ return { playing:false, cur:0, dur:0 }; },
+  computed:{ pct(){ return this.dur ? this.cur/this.dur*100 : 0; } },
+  methods:{
+    toggle(){ const a=this.$refs.a; if(this.playing){ a.pause(); this.playing=false; } else { a.play().then(()=>{this.playing=true;}).catch(()=>{}); } },
+    onTime(){ this.cur=this.$refs.a.currentTime; },
+    onMeta(){ this.dur=this.$refs.a.duration||0; },
+    seek(e){ const t=this.$refs.track.getBoundingClientRect(); this.$refs.a.currentTime=Math.max(0,Math.min(1,(e.clientX-t.left)/t.width))*this.dur; },
+    fmt(s){ s=Math.floor(s||0); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); },
+  },
+};
+
 export const Recursos = {
   components: { Icon, PageHero },
   template: `<div>
@@ -46,7 +70,7 @@ export const RecursoDetalle = {
       <div class="articulo__meta" v-reveal>
         <span v-for="c in (rec.categories||[])" :key="c" class="chip chip-soft">{{ catLabel(c) }}</span>
         <span class="rec-meta">{{ rec.author||'ExperientIA' }} · {{ rec.read_minutes||5 }} min de lectura</span></div>
-      <audio v-if="rec.audio_path" :src="rec.audio_path" controls class="articulo__audio" v-reveal></audio>
+      <AlexiaAudio v-if="rec.audio_path" :src="rec.audio_path" v-reveal/>
       <div class="articulo__body" v-reveal v-html="tr(rec.cuerpo)"></div></div></section>
     <section class="section" v-else><div class="container contacto__grid">
       <aside><ul class="beneficios"><li class="glass card" v-reveal><span class="icon-chip"><Icon name="doc"/></span><p>{{ tr(rec.extracto) }}</p></li>
@@ -59,7 +83,7 @@ export const RecursoDetalle = {
         <p class="err" v-if="error">{{ error }}</p><p class="small">{{ t('form.privacidad') }}</p></form></div></section>
     <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('recursos')" :secondaryLabel="t('nav.recursos')"/>
   </div>`,
-  components: { Icon, LeadFields, SectionCTA, PageHero },
+  components: { Icon, LeadFields, SectionCTA, PageHero, AlexiaAudio },
   data(){ return { rec:null, lead:blankLead(), listo:false, url:'', loading:false, error:'' }; },
   computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel },
   async mounted(){ const all=await fc('recursos'); this.rec=all.find(r=>r.slug===this.$route.params.slug); if(this.rec) setMeta(tr(this.rec.titulo)+' · ExperientIA', tr(this.rec.extracto)); },

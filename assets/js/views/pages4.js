@@ -19,40 +19,45 @@ export const Diagnostico = {
         <div style="display:flex;flex-wrap:wrap;gap:.9rem"><router-link :to="pageUrl('agenda')" class="btn btn-primary">{{ t('diagnostico.resultado_cta') }}</router-link><router-link :to="pageUrl('soluciones')" class="btn btn-ghost">{{ t('diagnostico.resultado_cta2') }}</router-link></div></div>
 
       <form v-else @submit.prevent="enviar">
-        <div class="diag__bar"><i :style="{'--p':(paso/total*100)+'%'}"></i></div>
-        <div v-for="(p,qi) in preguntas" :key="p.id" v-show="paso===qi">
-          <p class="diag__num">{{ t('diagnostico.pregunta') }} {{ qi+1 }} {{ t('diagnostico.de') }} {{ total+1 }}</p>
-          <h2 class="h3" style="font-size:1.35rem;margin:.4rem 0">{{ tr(p.texto) }}</h2>
-          <div class="diag__opts"><label v-for="(o,oi) in p.opciones" :key="oi" class="diag__opt" :class="{sel:respuestas[p.id]===oi}">
-            <input type="radio" style="display:none" :value="oi" v-model="respuestas[p.id]" @change="autoNext(qi)"> {{ tr(o.texto) }}</label></div>
-          <div class="diag__nav"><button v-if="qi>0" type="button" class="btn btn-ghost" @click="paso--">{{ t('diagnostico.atras') }}</button><span v-else></span>
-            <button type="button" class="btn btn-primary" @click="next(qi)">{{ t('diagnostico.siguiente') }}</button></div></div>
-
-        <div v-show="paso===total">
-          <p class="diag__num">{{ t('diagnostico.pregunta') }} {{ total+1 }} {{ t('diagnostico.de') }} {{ total+1 }}</p>
-          <h2 class="h3" style="font-size:1.35rem;margin:.4rem 0">{{ t('diagnostico.datos_titulo') }}</h2><p class="small">{{ t('diagnostico.datos_sub') }}</p>
-          <div style="margin-top:1rem"><LeadFields ref="lf" v-model="lead" :full="false"/></div>
-          <div class="diag__nav"><button type="button" class="btn btn-ghost" @click="paso--">{{ t('diagnostico.atras') }}</button>
-            <button class="btn btn-grad" :disabled="loading">{{ loading?t('form.enviando'):t('diagnostico.ver_resultado') }}</button></div>
-          <p class="err" v-if="error">{{ error }}</p></div>
+        <div class="diag__bar"><i :style="{'--p':((paso)/(total)*100)+'%'}"></i></div>
+        <transition :name="dir>0?'diag-next':'diag-prev'" mode="out-in">
+        <div :key="paso" class="diag__step">
+          <template v-if="paso < total">
+            <p class="diag__num">{{ t('diagnostico.pregunta') }} {{ paso+1 }} {{ t('diagnostico.de') }} {{ total+1 }}</p>
+            <h2 class="h3" style="font-size:1.35rem;margin:.4rem 0 1.1rem">{{ tr(preguntas[paso].texto) }}</h2>
+            <div class="diag__opts"><label v-for="(o,oi) in preguntas[paso].opciones" :key="oi" class="diag__opt" :class="{sel:respuestas[preguntas[paso].id]===oi}">
+              <input type="radio" style="display:none" :value="oi" v-model="respuestas[preguntas[paso].id]" @change="autoNext(paso)"><span>{{ tr(o.texto) }}</span></label></div>
+            <div class="diag__nav"><button v-if="paso>0" type="button" class="btn btn-ghost" @click="prev">{{ t('diagnostico.atras') }}</button><span v-else></span>
+              <button type="button" class="btn btn-primary" @click="next(paso)">{{ t('diagnostico.siguiente') }}</button></div>
+          </template>
+          <template v-else>
+            <p class="diag__num">{{ t('diagnostico.pregunta') }} {{ total+1 }} {{ t('diagnostico.de') }} {{ total+1 }}</p>
+            <h2 class="h3" style="font-size:1.35rem;margin:.4rem 0">{{ t('diagnostico.datos_titulo') }}</h2><p class="small">{{ t('diagnostico.datos_sub') }}</p>
+            <div style="margin-top:1rem"><LeadFields ref="lf" v-model="lead" :full="false"/></div>
+            <div class="diag__nav"><button type="button" class="btn btn-ghost" @click="prev">{{ t('diagnostico.atras') }}</button>
+              <button class="btn btn-grad" :disabled="loading">{{ loading?t('form.enviando'):t('diagnostico.ver_resultado') }}</button></div>
+            <p class="err" v-if="error">{{ error }}</p>
+          </template>
+        </div></transition>
       </form></div></section>
   </div>`,
-  data(){ return { preguntas:[], respuestas:{}, paso:0, lead:blankLead(), resultado:null, loading:false, error:'' }; },
+  data(){ return { preguntas:[], respuestas:{}, paso:0, dir:1, lead:blankLead(), resultado:null, loading:false, error:'' }; },
   computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, total(){ return this.preguntas.length; } },
   async mounted(){ setMeta(t('diagnostico.meta_title')+' · ExperientIA', t('diagnostico.meta_desc'));
     const r=await api.get('/content/soluciones'); // asegura contenido cacheado
     const dr=await fetch('/assets/js/lib/diagnostico.json'); this.preguntas=(await dr.json()).preguntas||[];
   },
   methods:{
-    next(qi){ if(this.respuestas[this.preguntas[qi].id]===undefined) return; this.paso++; this.scroll(); },
-    autoNext(qi){ setTimeout(()=>{ if(this.paso===qi) { this.paso++; this.scroll(); } },250); },
-    scroll(){ this.$el.querySelector('.diag').scrollIntoView({behavior:'smooth',block:'start'}); },
+    // Sin scroll: solo transición suave entre pasos (no molesta al usuario C-Level).
+    next(qi){ if(this.respuestas[this.preguntas[qi].id]===undefined) return; this.dir=1; this.paso++; },
+    prev(){ this.dir=-1; if(this.paso>0) this.paso--; },
+    autoNext(qi){ setTimeout(()=>{ if(this.paso===qi){ this.dir=1; this.paso++; } },260); },
     async enviar(){
       if(!this.$refs.lf.validate(['name','email','country'])) return;
       this.loading=true; this.error='';
       const r=await api.post('/diagnostico',{...this.lead,respuestas:this.respuestas,locale:store.locale});
       this.loading=false;
-      if(r.ok){ this.resultado=r.data.solucion; this.scroll(); } else { this.error=r.error||'Error'; this.$refs.lf.setErrors(r.campos); }
+      if(r.ok){ this.resultado=r.data.solucion; } else { this.error=r.error||'Error'; this.$refs.lf.setErrors(r.campos); }
     },
   },
 };
