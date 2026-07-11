@@ -27,6 +27,8 @@ const ICONS = {
   analitica:'<rect x="3" y="4" width="18" height="15" rx="2"/><path d="M3 8.5h18"/><path d="M7 15.5v-2.2M10.3 15.5v-3.8M13.6 15.5v-2.8M16.9 15.5v-4.6"/>',
   people:'<circle cx="9" cy="8.2" r="3"/><path d="M3.8 19.5c0-2.9 2.3-5.2 5.2-5.2s5.2 2.3 5.2 5.2"/><circle cx="16.8" cy="9" r="2.4"/><path d="M16 14.6c2.4.3 4.2 2.2 4.2 4.9"/>',
   check:'<path d="m4.5 12.5 5 5L19.5 6.5"/>', arrow:'<path d="M4 12h15"/><path d="m13.5 6 6 6-6 6"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', trash:'<path d="M4 7h16M9.5 7V5h5v2M6 7l1 13h10l1-13"/>',
+  users:'<circle cx="9" cy="8.2" r="3"/><path d="M3.8 19.5c0-2.9 2.3-5.2 5.2-5.2s5.2 2.3 5.2 5.2"/><circle cx="16.8" cy="9" r="2.4"/><path d="M16 14.6c2.4.3 4.2 2.2 4.2 4.9"/>',
   mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/>',
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.4 2"/>',
   eye:'<path d="M2.5 12S6 5.8 12 5.8 21.5 12 21.5 12 18 18.2 12 18.2 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.6"/>',

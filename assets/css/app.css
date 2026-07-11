@@ -518,3 +518,13 @@ p { margin: 0; color: var(--text-secondary); }
 @media(max-width:520px){ .land-metrics{ grid-template-columns:1fr; gap:1.3rem; } }
 
 .land-faqs .faq-list{ max-width:52rem; margin-inline:auto; }
+
+/* Selector de diagnósticos (varios tipos) */
+.diag-picker{ max-width:52rem; margin-inline:auto; }
+.diag-picker-grid{ display:grid; gap:1.1rem; grid-template-columns:1fr; }
+@media(min-width:680px){ .diag-picker-grid{ grid-template-columns:1fr 1fr; } }
+.diag-pick{ text-align:left; cursor:pointer; display:grid; gap:.8rem; align-content:start; padding:1.8rem; border:1px solid var(--glass-border); transition:transform var(--motion),border-color var(--motion); }
+.diag-pick:hover{ transform:translateY(-4px); border-color:rgba(24,214,241,.35); }
+.diag-pick .link-arrow{ margin-top:.2rem; }
+.diag-back{ margin-bottom:1rem; }
+.diag-back .link-arrow{ background:none; border:none; cursor:pointer; padding:0; font:inherit; }

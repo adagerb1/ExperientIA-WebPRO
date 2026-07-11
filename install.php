@@ -44,6 +44,23 @@ function exp_run_install(PDO $pdo, bool $sqlite, ?array $admin = null): array
     }
     $log[] = 'Contenido inicial sembrado (soluciones, productos, casos, FAQs, recursos, disponibilidad).';
 
+    // 2.5) Diagnósticos dinámicos
+    foreach (require __DIR__ . '/api/db/seed_diagnostics.php' as $dg) {
+        $ex = $pdo->prepare('SELECT COUNT(*) FROM diagnostics WHERE dkey = ?');
+        $ex->execute([$dg['dkey']]);
+        if ((int) $ex->fetchColumn() > 0) { continue; }
+        $row = ['dkey' => $dg['dkey'], 'icon' => $dg['icon'],
+            'nombre' => json_encode($dg['nombre'], JSON_UNESCAPED_UNICODE),
+            'intro' => json_encode($dg['intro'] ?? null, JSON_UNESCAPED_UNICODE),
+            'preguntas' => json_encode($dg['preguntas'], JSON_UNESCAPED_UNICODE),
+            'resultados' => json_encode($dg['resultados'], JSON_UNESCAPED_UNICODE),
+            'default_result' => $dg['default_result'] ?? null, 'sort' => $dg['sort'] ?? 0, 'active' => $dg['active'] ?? 1];
+        $cols = implode(',', array_keys($row));
+        $ph = implode(',', array_fill(0, count($row), '?'));
+        $pdo->prepare("INSERT INTO diagnostics ({$cols}) VALUES ({$ph})")->execute(array_values($row));
+    }
+    $log[] = 'Diagnósticos dinámicos sembrados.';
+
     // 3) Conectores + plantillas de email
     $extra = require __DIR__ . '/api/db/seed_extra.php';
     foreach ($extra['connectors'] as $prov) {

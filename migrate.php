@@ -82,6 +82,37 @@ foreach ($deseadas as $tabla => $cols) {
     }
 }
 
+// Tabla de diagnósticos dinámicos (crear si falta + sembrar si está vacía).
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS diagnostics (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, dkey TEXT NOT NULL UNIQUE, icon TEXT NOT NULL DEFAULT \'target\',
+            nombre TEXT NOT NULL, intro TEXT NULL, preguntas TEXT NOT NULL, resultados TEXT NOT NULL,
+            default_result TEXT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS diagnostics (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, dkey VARCHAR(40) NOT NULL UNIQUE, icon VARCHAR(30) NOT NULL DEFAULT \'target\',
+            nombre JSON NOT NULL, intro JSON NULL, preguntas JSON NOT NULL, resultados JSON NOT NULL,
+            default_result VARCHAR(40) NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1)
+            ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+    foreach (require __DIR__ . '/api/db/seed_diagnostics.php' as $dg) {
+        $ex = $pdo->prepare('SELECT COUNT(*) FROM diagnostics WHERE dkey = ?');
+        $ex->execute([$dg['dkey']]);
+        if ((int) $ex->fetchColumn() > 0) { continue; }
+        $row = ['dkey' => $dg['dkey'], 'icon' => $dg['icon'],
+            'nombre' => json_encode($dg['nombre'], JSON_UNESCAPED_UNICODE),
+            'intro' => json_encode($dg['intro'] ?? null, JSON_UNESCAPED_UNICODE),
+            'preguntas' => json_encode($dg['preguntas'], JSON_UNESCAPED_UNICODE),
+            'resultados' => json_encode($dg['resultados'], JSON_UNESCAPED_UNICODE),
+            'default_result' => $dg['default_result'] ?? null, 'sort' => $dg['sort'] ?? 0, 'active' => $dg['active'] ?? 1];
+        $cols = implode(',', array_keys($row));
+        $ph = implode(',', array_fill(0, count($row), '?'));
+        $pdo->prepare("INSERT INTO diagnostics ({$cols}) VALUES ({$ph})")->execute(array_values($row));
+        echo "+ diagnóstico '{$dg['dkey']}' sembrado\n";
+    }
+} catch (\Throwable $e) { echo "! diagnostics: " . $e->getMessage() . "\n"; }
+
 // Los artículos ya publicados (active=1 + published_at) pasan a status='published'.
 try {
     $pdo->exec("UPDATE resources SET status = 'published' WHERE (status IS NULL OR status = '' OR status = 'draft') AND active = 1 AND published_at IS NOT NULL");

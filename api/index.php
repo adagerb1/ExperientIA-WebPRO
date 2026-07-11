@@ -24,6 +24,8 @@ $r->post('/newsletter', 'PublicApi\\LeadController', 'newsletter');
 $r->post('/interes', 'PublicApi\\LeadController', 'interes');
 $r->post('/descarga', 'PublicApi\\ResourceController', 'descargar');
 $r->get('/descarga-archivo', 'PublicApi\\ResourceController', 'archivo');
+$r->get('/diagnosticos', 'PublicApi\\DiagnosticController', 'index');
+$r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
 $r->post('/reserva', 'PublicApi\\BookingController', 'reservar');
 $r->post('/alexia', 'PublicApi\\ChatController', 'mensaje');           // AlexIA comercial (web)

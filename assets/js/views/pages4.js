@@ -5,7 +5,7 @@ import { PageHero } from '../lib/layout.js';
 import { LeadFields } from '../lib/forms.js';
 function blankLead(){ return { name:'',email:'',phone_wa:'',phone_dial:'',country:'',company:'',industry:'',company_size:'',website:'' }; }
 
-const PREGUNTAS = null; // se cargan del backend vía content? No: van embebidas en lang; usamos endpoint dedicado
+const tx = (key,fb)=>{ const v=t(key); return (v && v!==key)?v:fb; };
 
 export const Diagnostico = {
   components: { Icon, LeadFields, PageHero },
@@ -16,9 +16,21 @@ export const Diagnostico = {
         <p class="eyebrow">{{ t('diagnostico.resultado_eyebrow') }}</p><h2 class="h2">{{ t('diagnostico.resultado_titulo') }}</h2>
         <div class="chip-row" style="justify-content:flex-start;gap:.9rem"><span class="icon-chip"><Icon :name="resultado.icon"/></span><span class="chip">{{ resultado.pilar }}</span></div>
         <h3 class="h3 grad-text" style="font-size:1.6rem">{{ resultado.titulo }}</h3><p class="lead">{{ resultado.cambia }}</p><p>{{ t('diagnostico.resultado_sub') }}</p>
-        <div style="display:flex;flex-wrap:wrap;gap:.9rem"><router-link :to="pageUrl('agenda')" class="btn btn-primary">{{ t('diagnostico.resultado_cta') }}</router-link><router-link :to="pageUrl('soluciones')" class="btn btn-ghost">{{ t('diagnostico.resultado_cta2') }}</router-link></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:.9rem"><router-link :to="pageUrl('agenda')" class="btn btn-primary">{{ t('diagnostico.resultado_cta') }}</router-link>
+          <router-link v-if="resultado.solucion_skey" :to="pageUrl('soluciones',{slug:resultado.solucion_skey})" class="btn btn-ghost">{{ tx('diagnostico.resultado_ver_sol','Ver la solución recomendada') }}</router-link>
+          <router-link v-else :to="pageUrl('soluciones')" class="btn btn-ghost">{{ t('diagnostico.resultado_cta2') }}</router-link></div></div>
 
-      <form v-else @submit.prevent="enviar">
+      <div v-else-if="!dkey && diagnosticos.length>1" class="diag-picker" v-reveal>
+        <h2 class="h3" style="text-align:center;margin-bottom:.4rem">{{ tx('diagnostico.picker_t','Elige tu diagnóstico') }}</h2>
+        <p class="small" style="text-align:center;margin-bottom:1.6rem">{{ tx('diagnostico.picker_s','Cada uno toma menos de 2 minutos y termina con una recomendación concreta.') }}</p>
+        <div class="diag-picker-grid">
+          <button v-for="d in diagnosticos" :key="d.dkey" class="glass glass-lit card diag-pick" @click="pickDiag(d.dkey)">
+            <span class="icon-chip"><Icon :name="d.icon"/></span>
+            <h3 class="h3">{{ tr(d.nombre) }}</h3><p>{{ tr(d.intro) }}</p>
+            <span class="link-arrow">{{ tx('diagnostico.empezar','Empezar') }} <Icon name="arrow" :size="16"/></span></button></div></div>
+
+      <form v-else-if="diag" @submit.prevent="enviar">
+        <p v-if="diagnosticos.length>1 && paso===0" class="diag-back"><button type="button" class="link-arrow" @click="volverPicker"><Icon name="arrow" :size="15" style="transform:rotate(180deg)"/> {{ tx('diagnostico.cambiar','Cambiar diagnóstico') }}</button></p>
         <div class="diag__bar"><i :style="{'--p':((paso)/(total)*100)+'%'}"></i></div>
         <transition :name="dir>0?'diag-next':'diag-prev'" mode="out-in">
         <div :key="paso" class="diag__step">
@@ -41,13 +53,18 @@ export const Diagnostico = {
         </div></transition>
       </form></div></section>
   </div>`,
-  data(){ return { preguntas:[], respuestas:{}, paso:0, dir:1, lead:blankLead(), resultado:null, loading:false, error:'' }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, total(){ return this.preguntas.length; } },
+  data(){ return { diagnosticos:[], dkey:null, diag:null, preguntas:[], respuestas:{}, paso:0, dir:1, lead:blankLead(), resultado:null, loading:false, error:'' }; },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, tx:()=>tx, total(){ return this.preguntas.length; } },
   async mounted(){ setMeta(t('diagnostico.meta_title')+' · ExperientIA', t('diagnostico.meta_desc'));
-    const r=await api.get('/content/soluciones'); // asegura contenido cacheado
-    const dr=await fetch('/assets/js/lib/diagnostico.json'); this.preguntas=(await dr.json()).preguntas||[];
+    await api.get('/content/soluciones'); // asegura contenido cacheado
+    const r=await api.get('/diagnosticos'); this.diagnosticos=r.ok?r.data:[];
+    const pedido=new URLSearchParams(location.search).get('tipo');
+    const inicial = (pedido && this.diagnosticos.some(d=>d.dkey===pedido)) ? pedido : (this.diagnosticos.length===1 ? this.diagnosticos[0].dkey : null);
+    if(inicial) await this.pickDiag(inicial);
   },
   methods:{
+    async pickDiag(dkey){ const r=await api.get('/diagnosticos/'+dkey); if(!r.ok) return; this.diag=r.data; this.preguntas=r.data.preguntas||[]; this.dkey=dkey; this.respuestas={}; this.paso=0; this.dir=1; },
+    volverPicker(){ this.dkey=null; this.diag=null; this.preguntas=[]; this.respuestas={}; this.paso=0; },
     // Sin scroll: solo transición suave entre pasos (no molesta al usuario C-Level).
     next(qi){ if(this.respuestas[this.preguntas[qi].id]===undefined) return; this.dir=1; this.paso++; },
     prev(){ this.dir=-1; if(this.paso>0) this.paso--; },
@@ -55,9 +72,9 @@ export const Diagnostico = {
     async enviar(){
       if(!this.$refs.lf.validate(['name','email','country'])) return;
       this.loading=true; this.error='';
-      const r=await api.post('/diagnostico',{...this.lead,respuestas:this.respuestas,locale:store.locale});
+      const r=await api.post('/diagnostico',{...this.lead,dkey:this.dkey,respuestas:this.respuestas,locale:store.locale});
       this.loading=false;
-      if(r.ok){ this.resultado=r.data.solucion; } else { this.error=r.error||'Error'; this.$refs.lf.setErrors(r.campos); }
+      if(r.ok){ this.resultado=r.data.resultado; } else { this.error=r.error||'Error'; this.$refs.lf.setErrors(r.campos); }
     },
   },
 };
