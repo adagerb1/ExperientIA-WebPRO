@@ -28,11 +28,20 @@ CREATE TABLE IF NOT EXISTS leads (
   channel VARCHAR(20) NOT NULL DEFAULT 'web',      -- web | telegram | whatsapp
   locale CHAR(2) NOT NULL DEFAULT 'es',
   notes TEXT NULL,
+  utm_source VARCHAR(120) NULL,
+  utm_medium VARCHAR(120) NULL,
+  utm_campaign VARCHAR(160) NULL,
+  utm_content VARCHAR(160) NULL,
+  utm_term VARCHAR(160) NULL,
+  referrer VARCHAR(255) NULL,
+  landing_page VARCHAR(255) NULL,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL,
   INDEX idx_email (email),
   INDEX idx_phone (phone_wa),
-  INDEX idx_status (status)
+  INDEX idx_status (status),
+  INDEX idx_utm_campaign (utm_campaign),
+  INDEX idx_utm_source (utm_source)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS touchpoints (

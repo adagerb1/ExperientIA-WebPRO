@@ -49,11 +49,41 @@ export function pageUrl(key, params = {}) {
   return `/${store.locale}/${slug}` + (params.slug ? `/${params.slug}` : '');
 }
 
+// ---------- Atribución de marketing (first-touch) ----------
+// Captura UTM + referrer + landing en el primer clic y la persiste, para que
+// cada lead sepa qué campaña/pauta lo trajo. Se adjunta sola a los formularios.
+const ATTRIB_KEY = 'exp_attrib';
+const CAPTURE_PATHS = ['/interes', '/contacto', '/newsletter', '/diagnostico', '/reserva', '/descarga'];
+function captureAttribution() {
+  try {
+    if (localStorage.getItem(ATTRIB_KEY)) return; // first-touch: no sobrescribir
+    const p = new URLSearchParams(location.search);
+    const a = {};
+    for (const k of ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']) {
+      const v = p.get(k); if (v) a[k] = v.slice(0, 160);
+    }
+    // Referrer externo (no el propio sitio) y landing de entrada
+    if (document.referrer && !document.referrer.includes(location.host)) a.referrer = document.referrer.slice(0, 255);
+    a.landing_page = (location.pathname + location.search).slice(0, 255);
+    // Solo persistir si hay señal de campaña o referrer (evita guardar navegación interna vacía)
+    if (a.utm_source || a.utm_campaign || a.referrer) localStorage.setItem(ATTRIB_KEY, JSON.stringify(a));
+  } catch (e) {}
+}
+export function attribution() {
+  try { return JSON.parse(localStorage.getItem(ATTRIB_KEY) || '{}'); } catch (e) { return {}; }
+}
+captureAttribution();
+
 // ---------- Cliente API ----------
 let CSRF = null;
 async function apiFetch(method, path, body, opts = {}) {
   const headers = { 'Accept': 'application/json' };
   if (store.token) headers['Authorization'] = 'Bearer ' + store.token;
+  // Adjunta atribución a los envíos de formularios públicos (captación de leads).
+  if (method === 'POST' && body && !(body instanceof FormData) && CAPTURE_PATHS.includes(path)) {
+    const a = attribution();
+    if (Object.keys(a).length) body = { ...a, ...body };
+  }
   let payload;
   if (body instanceof FormData) { payload = body; }
   else if (body) { headers['Content-Type'] = 'application/json'; payload = JSON.stringify(body); }

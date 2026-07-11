@@ -26,7 +26,16 @@ final class LeadService
             'company' => $data['company'] ?? null, 'role' => $data['role'] ?? null,
             'industry' => $data['industry'] ?? null, 'company_size' => $data['company_size'] ?? null,
             'locale' => $data['locale'] ?? 'es',
+            // Atribución de marketing (first-touch): solo se rellena si viene y está vacía.
+            'utm_source' => $data['utm_source'] ?? null, 'utm_medium' => $data['utm_medium'] ?? null,
+            'utm_campaign' => $data['utm_campaign'] ?? null, 'utm_content' => $data['utm_content'] ?? null,
+            'utm_term' => $data['utm_term'] ?? null, 'referrer' => $data['referrer'] ?? null,
+            'landing_page' => $data['landing_page'] ?? null,
         ], fn ($v) => $v !== null && $v !== '');
+
+        // Blindaje: descartar columnas que no existan aún (BD sin migrar) para no romper el INSERT.
+        $existentes = self::leadColumns($pdo);
+        $attrs = array_intersect_key($attrs, array_flip($existentes));
 
         if ($lead) {
             $upd = [];
@@ -58,5 +67,19 @@ final class LeadService
         \Services\Mailer::notifyLead($lead, $titulo, $payload);
 
         return $lead;
+    }
+
+    /** Columnas reales de la tabla leads (cacheadas), portable MySQL/SQLite. */
+    private static array $cols = [];
+    private static function leadColumns(\PDO $pdo): array
+    {
+        if (self::$cols) { return self::$cols; }
+        $out = [];
+        if (Database::isSqlite()) {
+            foreach ($pdo->query('PRAGMA table_info(leads)')->fetchAll() as $c) { $out[] = $c['name']; }
+        } else {
+            foreach ($pdo->query('SHOW COLUMNS FROM leads')->fetchAll() as $c) { $out[] = $c['Field']; }
+        }
+        return self::$cols = $out;
     }
 }

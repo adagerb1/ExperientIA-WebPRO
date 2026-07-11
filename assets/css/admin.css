@@ -204,3 +204,29 @@ th:hover .sort-arrow{ opacity:1; }
 .aic-legend{ display:grid; gap:.3rem; } .aic-leg{ font-size:.75rem; color:var(--text-secondary); } .aic-leg i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:.4rem; }
 .aic-empty{ font-size:.78rem; color:var(--text-tertiary); }
 @media(max-width:520px){ .ai-widget{ right:3vw; left:3vw; width:auto; bottom:90px; } }
+
+/* ============ Campañas y Segmentos ============ */
+.stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin-bottom:1.4rem; }
+.stat .ctx{ font-size:.7rem; color:var(--cyan); margin-top:.15rem; text-transform:none; letter-spacing:0; }
+.num{ text-align:right; font-variant-numeric:tabular-nums; }
+.adm__bar{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; flex-wrap:wrap; }
+
+/* Barras de desglose */
+.bars{ display:grid; gap:.6rem; }
+.bar{ display:grid; grid-template-columns:minmax(90px,1.1fr) 2fr auto; align-items:center; gap:.7rem; }
+.bar-lbl{ font-size:.82rem; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.bar-track{ height:8px; border-radius:5px; background:rgba(217,226,240,.1); overflow:hidden; }
+.bar-fill{ height:100%; border-radius:5px; background:var(--grad); transition:width .6s cubic-bezier(.22,1,.36,1); }
+.bar-val{ font-size:.8rem; font-variant-numeric:tabular-nums; color:var(--neutral-light); white-space:nowrap; }
+.bar-val i{ color:var(--cyan); font-style:normal; }
+
+/* Constructor de segmentos */
+.seg-builder{ display:grid; gap:1rem; }
+.seg-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.8rem; }
+.seg-grid label{ display:grid; gap:.35rem; font-size:.75rem; color:var(--text-secondary); text-transform:uppercase; letter-spacing:.05em; }
+.seg-flags{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; border-top:1px solid var(--line-soft); padding-top:1rem; }
+.chk{ display:inline-flex; align-items:center; gap:.45rem; font-size:.85rem; color:var(--neutral-light); cursor:pointer; }
+.chk input{ width:16px; height:16px; accent-color:var(--cyan); }
+.seg-cta{ display:grid; gap:.5rem; align-content:center; }
+.seg-cta .btn{ justify-content:center; }
+.seg-note{ font-size:.75rem; color:var(--text-tertiary); padding:.7rem 1rem; }

@@ -21,6 +21,7 @@ final class LeadController extends Controller
             ->textarea('mensaje', false, 3000);
         $d = $v->failOrValidated();
         $d['locale'] = $this->locale();
+        $d = array_merge($d, \Core\Attribution::fromRequest($this->req));
         LeadService::capture($d, 'contacto', 'Solicitó diagnóstico ejecutivo',
             ['desafio' => $d['desafio'], 'mensaje' => $d['mensaje']]);
         Response::ok(['message' => 'ok']);
@@ -38,6 +39,7 @@ final class LeadController extends Controller
         $reqLocale = $this->req->input('locale', 'es');
         $d['locale'] = in_array($reqLocale, biz('locales'), true) ? $reqLocale : 'es';
         $titulo = trim((string) ($d['titulo'] ?? '')) ?: 'una solución';
+        $d = array_merge($d, \Core\Attribution::fromRequest($this->req));
         LeadService::capture($d, 'interes', 'Interés desde landing: ' . $titulo,
             ['origen' => $d['origen'] ?? '', 'titulo' => $d['titulo'] ?? '']);
         Response::ok(['message' => 'ok']);
@@ -50,6 +52,7 @@ final class LeadController extends Controller
         $d = $v->failOrValidated();
         $d['name'] = $d['email'];
         $d['locale'] = $this->locale();
+        $d = array_merge($d, \Core\Attribution::fromRequest($this->req));
         LeadService::capture($d, 'newsletter', 'Se suscribió al newsletter');
         Response::ok(['message' => 'ok']);
     }

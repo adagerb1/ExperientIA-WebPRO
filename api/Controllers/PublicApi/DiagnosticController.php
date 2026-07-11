@@ -40,6 +40,7 @@ final class DiagnosticController extends Controller
         $sol = Database::run('SELECT * FROM solutions WHERE skey = ?', [$resultado])->fetch();
         $reqLocale = $this->req->input('locale', 'es');
         $d['locale'] = in_array($reqLocale, biz('locales'), true) ? $reqLocale : 'es';
+        $d = array_merge($d, \Core\Attribution::fromRequest($this->req));
         LeadService::capture($d, 'diagnostico',
             'Completó el diagnóstico → ' . ($sol ? tr($sol['titulo'], 'es') : $resultado),
             ['resultado' => $resultado, 'puntajes' => json_encode($scores), 'respuestas' => json_encode($legibles, JSON_UNESCAPED_UNICODE)]);

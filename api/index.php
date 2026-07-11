@@ -46,6 +46,9 @@ $r->get('/admin/leads/{id}', 'Admin\\LeadsController', 'show');
 $r->patch('/admin/leads/{id}', 'Admin\\LeadsController', 'update');
 $r->delete('/admin/leads/{id}', 'Admin\\LeadsController', 'destroy');
 $r->get('/admin/leads-export', 'Admin\\LeadsController', 'export');
+$r->get('/admin/campanas', 'Admin\\CampaignsController', 'panel');
+$r->get('/admin/segmentos/preview', 'Admin\\SegmentsController', 'preview');
+$r->get('/admin/segmentos/export', 'Admin\\SegmentsController', 'export');
 $r->get('/admin/reservas', 'Admin\\BookingsController', 'index');
 $r->patch('/admin/reservas/{id}', 'Admin\\BookingsController', 'update');
 // Rutas específicas ANTES de las genéricas /admin/{tabla} (evita colisiones).

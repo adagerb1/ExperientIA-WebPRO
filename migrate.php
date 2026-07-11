@@ -21,6 +21,15 @@ $sqlite = Database::isSqlite();
 
 /** Columnas deseadas por tabla: nombre => tipo MySQL. */
 $deseadas = [
+    'leads' => [
+        'utm_source' => 'VARCHAR(120) NULL',
+        'utm_medium' => 'VARCHAR(120) NULL',
+        'utm_campaign' => 'VARCHAR(160) NULL',
+        'utm_content' => 'VARCHAR(160) NULL',
+        'utm_term' => 'VARCHAR(160) NULL',
+        'referrer' => 'VARCHAR(255) NULL',
+        'landing_page' => 'VARCHAR(255) NULL',
+    ],
     'resources' => [
         'categories' => 'JSON NULL',
         'author' => 'VARCHAR(120) NULL',

@@ -37,6 +37,7 @@ final class BookingController extends Controller
         }
 
         $d['locale'] = in_array($l = $this->req->input('locale', 'es'), biz('locales'), true) ? $l : 'es';
+        $d = array_merge($d, \Core\Attribution::fromRequest($this->req));
         $cfgTz = new \DateTimeZone(biz('booking')['timezone']);
         $lead = LeadService::capture($d, 'reserva',
             'Agendó sesión 1:1 · ' . $inicio->setTimezone($cfgTz)->format('d/m/Y H:i'), ['tema' => $d['tema']]);
