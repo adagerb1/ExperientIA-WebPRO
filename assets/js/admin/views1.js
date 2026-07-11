@@ -33,44 +33,13 @@ const HBars = {
   },
 };
 
-// AlexIA · Estratega — analiza la data del negocio y recomienda decisiones.
-const AlexiaPanel = {
-  components: { Icon },
-  template: `<div class="glass panel alexia-panel mt">
-    <div class="ap-head"><div><h3>AlexIA · <span class="grad-text">Estratega</span></h3>
-      <p class="empty">Analiza tu data y recomienda dónde enfocar el crecimiento.</p></div>
-      <button class="btn btn-primary btn-sm" @click="analizar" :disabled="loading"><Icon name="sparkle" :size="14"/> {{ loading?'Analizando…':'Analizar mi crecimiento' }}</button></div>
-    <p v-if="error" class="small" style="color:#ff7d9d">{{ error }}</p>
-    <p v-if="resumen" class="ap-resumen">{{ resumen }}</p>
-    <ol v-if="recs.length" class="ap-recs"><li v-for="(r,i) in recs" :key="i" class="ap-rec">
-      <div class="ap-rec-h"><b>{{ r.titulo }}</b><span class="prio" :class="r.prioridad">{{ r.prioridad }}</span></div>
-      <p>{{ r.detalle }}</p><span v-if="r.accion" class="ap-accion">→ {{ r.accion }}</span></li></ol>
-    <div class="ap-ask">
-      <input class="inp" v-model="q" placeholder="Pregúntale a AlexIA sobre tus datos…" @keydown.enter="preguntar" :disabled="asking">
-      <button class="btn btn-ghost btn-sm" @click="preguntar" :disabled="asking">Preguntar</button></div>
-    <p v-if="answer" class="ap-answer">{{ answer }}</p></div>`,
-  data(){ return { loading:false, asking:false, resumen:'', recs:[], error:'', q:'', answer:'', convId:null }; },
-  methods:{
-    async analizar(){ this.loading=true; this.error=''; this.resumen=''; this.recs=[];
-      const r=await api.post('/admin/alexia/estrategia',{}); this.loading=false;
-      if(r.ok){ this.resumen=r.data.resumen||''; this.recs=r.data.recomendaciones||[];
-        if(!this.recs.length&&!this.resumen) this.error='AlexIA no devolvió recomendaciones. Intenta de nuevo.'; }
-      else this.error=r.error||'AlexIA no está disponible. Configura y activa OpenAI o Claude en Conectores.'; },
-    async preguntar(){ const t=this.q.trim(); if(!t||this.asking)return; this.asking=true; this.answer='Pensando…';
-      const r=await api.post('/admin/alexia',{mensaje:t,conversation_id:this.convId}); this.asking=false;
-      if(r.ok){ this.convId=r.data.conversation_id; this.answer=r.data.reply; this.q=''; } else this.answer=r.error||'No disponible.'; },
-  },
-};
-
 export const Dashboard = {
-  components: { Icon, HBars, AlexiaPanel },
+  components: { Icon, HBars },
   template: `<div><h1>Tablero de <span class="grad-text">Crecimiento</span></h1>
     <p class="adm__sub">Centro de comando de ExperientIA · datos en vivo (actualiza cada 20 s)</p>
     <div class="kpis">
       <button v-for="k in kpiList" :key="k.key" class="glass kpi" @click="k.action && k.action()">
         <b class="grad-text">{{ kpis[k.key] ?? '—' }}</b><span>{{ k.label }}</span><span class="ctx" v-if="k.ctx">{{ k.ctx }}</span></button></div>
-
-    <AlexiaPanel/>
 
     <div class="glass panel mt"><h3>Embudo de conversión</h3>
       <div class="funnel">

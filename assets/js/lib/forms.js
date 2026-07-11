@@ -14,7 +14,7 @@ export const Combo = {
   props: { modelValue: String, options: Array, placeholder: String },
   emits: ['update:modelValue'],
   template: `<div class="combo" @keydown.escape="open=false">
-    <input class="field-el combo__input" readonly :value="label" :placeholder="placeholder" @click="toggle" @focus="toggle" />
+    <input class="field-el combo__input" readonly :value="label" :placeholder="placeholder" @mousedown.prevent="toggle" />
     <div class="combo__pop" v-if="open">
       <div style="padding:.5rem"><input ref="q" v-model="query" :placeholder="placeholder" style="width:100%;padding:.5rem .7rem;border-radius:8px;border:1px solid var(--line-soft);background:rgba(5,17,38,.6);color:var(--neutral-light)" @click.stop /></div>
       <div class="combo__opt" v-for="o in filtered" :key="o.value" @mousedown.prevent="pick(o)">{{ o.label }}</div>

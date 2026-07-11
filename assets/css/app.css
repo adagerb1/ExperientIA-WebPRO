@@ -298,13 +298,13 @@ p { margin: 0; color: var(--text-secondary); }
 .field-el:focus-visible{ outline:2px solid var(--cyan); outline-offset:1px; border-color:transparent; }
 .lbl{ font-size:.72rem; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--text-tertiary); margin-bottom:.5rem; }
 
-/* Campo WhatsApp compuesto (select bandera+indicativo + número) */
-.phone-field{ display:flex; gap:.5rem; }
-.phone-cc{ flex:0 0 auto; width:auto; padding:.85rem .6rem; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:rgba(5,17,38,.5); color:var(--neutral-light); font-family:var(--font); font-size:.95rem; cursor:pointer; }
-.phone-cc:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
-.phone-cc option{ background:#0a1b3a; color:#f6f8fb; }
-.phone-num{ flex:1 1 auto; width:100%; padding:.85rem 1rem; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:rgba(5,17,38,.5); color:var(--neutral-light); font-family:var(--font); font-size:.95rem; }
-.phone-num:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
+/* Campo WhatsApp compuesto (select bandera+indicativo 20% + número 80%, agrupados) */
+.phone-field{ display:flex; gap:.5rem; align-items:stretch; }
+.phone-field .phone-cc{ flex:0 0 20%; width:auto; min-width:92px; max-width:130px; padding:.85rem .5rem; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:rgba(5,17,38,.5); color:var(--neutral-light); font-family:var(--font); font-size:.95rem; cursor:pointer; text-align:center; }
+.phone-field .phone-cc:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
+.phone-field .phone-cc option{ background:#0a1b3a; color:#f6f8fb; }
+.phone-field .phone-num{ flex:1 1 80%; width:auto; padding:.85rem 1rem; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:rgba(5,17,38,.5); color:var(--neutral-light); font-family:var(--font); font-size:.95rem; }
+.phone-field .phone-num:focus{ outline:2px solid var(--cyan); outline-offset:1px; }
 
 /* Fondo global con profundidad + parallax (más intenso en la parte superior) */
 .backdrop{ position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden;
