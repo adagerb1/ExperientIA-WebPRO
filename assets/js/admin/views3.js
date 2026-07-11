@@ -1,5 +1,5 @@
 // Portal admin · Campañas (atribución UTM) y Segmentos (audiencias exportables).
-import { api, exportCSV, toast } from '../lib/core.js';
+import { api, exportCSV, toast, tr, loadMeta } from '../lib/core.js';
 import { Icon, CountUp } from '../lib/ui.js';
 import { SmartTable } from './table.js';
 
@@ -108,14 +108,14 @@ export const Segmentos = {
     return {
       p: null, timer: null,
       f: { industry: '', company_size: '', country: '', source: '', channel: '', status: '', locale: '', utm_source: '', utm_campaign: '', has_email: false, has_phone: false, q: '' },
-      industrias: { tecnologia: 'Tecnología y software', retail: 'Retail y comercio', financiero: 'Servicios financieros', salud: 'Salud', manufactura: 'Manufactura', educacion: 'Educación', logistica: 'Logística y transporte', agroindustria: 'Agroindustria', turismo: 'Turismo y hospitalidad', profesionales: 'Servicios profesionales', construccion: 'Construcción e inmobiliario', energia: 'Energía', gobierno: 'Gobierno y ONG', medios: 'Medios y marketing', otro: 'Otra industria' },
+      industrias: {},
       tamanos: ['1-10', '11-50', '51-200', '201-1000', '1000+'],
       origenes: ['contacto', 'interes', 'diagnostico', 'reserva', 'descarga', 'newsletter', 'telegram', 'whatsapp'],
       estados: ['nuevo', 'contactado', 'calificado', 'propuesta', 'cliente', 'descartado'],
     };
   },
   watch: { f: { deep: true, handler() { this.debounced(); } } },
-  async mounted() { await this.load(); },
+  async mounted() { const meta = await loadMeta(); this.industrias = Object.fromEntries((meta.industries || []).map(i => [i.key, tr(i.nombre)])); await this.load(); },
   methods: {
     qs() {
       const p = new URLSearchParams();

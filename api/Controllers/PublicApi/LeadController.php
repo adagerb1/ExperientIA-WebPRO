@@ -15,7 +15,7 @@ final class LeadController extends Controller
         $v = Validator::make($this->req->body)->honeypot()
             ->text('name', true, 160)->email('email', true)->phone('phone_wa')->text('phone_dial', false, 5)
             ->country('country', true)->text('company', true, 160)->text('role', false, 120)
-            ->in('industry', array_keys(biz('industries')), true)
+            ->in('industry', \Core\Taxonomy::industryKeys(), true)
             ->in('company_size', array_keys(biz('company_sizes')), true)
             ->in('desafio', ['crecimiento', 'automatizacion', 'datos', 'estrategia', 'otro'], true)
             ->textarea('mensaje', false, 3000);

@@ -17,6 +17,8 @@ final class ContentController extends Controller
         'resources' => ['slug', 'type', 'categories', 'tipo_label', 'titulo', 'extracto', 'cuerpo', 'author', 'read_minutes', 'cover_image', 'audio_path', 'video_url', 'file_path', 'gated', 'featured', 'seo_title', 'seo_desc', 'status', 'sort', 'active', 'published_at'],
         'availability_rules' => ['weekday', 'start_time', 'end_time', 'active'],
         'diagnostics' => ['dkey', 'icon', 'nombre', 'intro', 'preguntas', 'resultados', 'default_result', 'sort', 'active'],
+        'industries' => ['ikey', 'nombre', 'sort', 'active'],
+        'countries' => ['iso', 'nombre', 'dial', 'sort', 'active'],
     ];
     private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'seo_title', 'seo_desc', 'intro', 'preguntas'];
 

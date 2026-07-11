@@ -52,7 +52,7 @@ final class DiagnosticController extends Controller
         $v = Validator::make($this->req->body)->honeypot()
             ->text('name', true, 160)->email('email', true)->phone('phone_wa')->text('phone_dial', false, 5)
             ->country('country', true)->text('company', false, 160)
-            ->in('industry', array_keys(biz('industries')))->in('company_size', array_keys(biz('company_sizes')));
+            ->in('industry', \Core\Taxonomy::industryKeys())->in('company_size', array_keys(biz('company_sizes')));
         $d = $v->failOrValidated();
 
         $respuestas = $this->req->input('respuestas', []);

@@ -25,6 +25,14 @@ export async function loadDict(locale) {
   store.dict = dictCache[locale];
 }
 
+// Metadatos de formularios (industrias, países…) desde la BD, cacheados.
+let metaCache = null, metaPromise = null;
+export async function loadMeta() {
+  if (metaCache) return metaCache;
+  if (!metaPromise) metaPromise = fetch('/api/meta').then(r => r.json()).then(j => (metaCache = (j.ok ? j.data : { industries: [], countries: [] }))).catch(() => ({ industries: [], countries: [] }));
+  return metaPromise;
+}
+
 // t('home.hero_titulo1') con acceso por puntos; devuelve la clave si falta.
 export function t(path) {
   let v = store.dict;

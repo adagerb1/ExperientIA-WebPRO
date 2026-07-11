@@ -1,5 +1,5 @@
 // ExperientIA · Componentes de formulario (combobox buscable, teléfono WhatsApp, campos de lead)
-import { t, store, api, pageUrl } from './core.js';
+import { t, tr, store, api, pageUrl, loadMeta } from './core.js';
 import { Icon } from './ui.js';
 
 let PAISES = null;
@@ -123,17 +123,16 @@ export const LeadFields = {
       <div class="field"><label>{{ t('form.empleados') }} <span v-if="full">*</span></label><Combo v-model="d.company_size" :options="opcTam" :placeholder="t('form.empleados')" /></div>
     </div>
   </div>`,
-  data() { return { d: this.modelValue, errors: {}, phoneError: false, opcPais: [] }; },
+  data() { return { d: this.modelValue, errors: {}, phoneError: false, opcPais: [], metaInd: [] }; },
   computed: {
     t: () => t,
-    opcInd() { const m = this.industrias; return Object.keys(m).map(k => ({ value: k, label: m[k] })); },
+    opcInd() { return this.metaInd.map(i => ({ value: i.key, label: tr(i.nombre) })); },
     opcTam() { const m = t('form.empleados_opciones') || {}; return Object.keys(m).map(k => ({ value: k, label: m[k] })); },
-    industrias() { return { tecnologia:'Tecnología y software',retail:'Retail y comercio',financiero:'Servicios financieros',salud:'Salud',manufactura:'Manufactura',educacion:'Educación',logistica:'Logística y transporte',agroindustria:'Agroindustria',turismo:'Turismo y hospitalidad',profesionales:'Servicios profesionales',construccion:'Construcción e inmobiliario',energia:'Energía',gobierno:'Gobierno y ONG',medios:'Medios y marketing',otro:'Otra industria' }; },
   },
   async mounted() {
-    const p = await paises();
-    const lista = p[store.locale] || p.es;
-    this.opcPais = Object.keys(lista).map(k => ({ value: k, label: lista[k] })).sort((a, b) => a.label.localeCompare(b.label));
+    const meta = await loadMeta();
+    this.metaInd = meta.industries || [];
+    this.opcPais = (meta.countries || []).map(c => ({ value: c.iso, label: tr(c.nombre) })).sort((a, b) => a.label.localeCompare(b.label));
   },
   watch: { d: { deep: true, handler(v) { this.$emit('update:modelValue', v); } } },
   methods: {

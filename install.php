@@ -61,6 +61,22 @@ function exp_run_install(PDO $pdo, bool $sqlite, ?array $admin = null): array
     }
     $log[] = 'Diagnósticos dinámicos sembrados.';
 
+    // 2.6) Taxonomías (industrias y países)
+    $taxo = require __DIR__ . '/api/db/seed_taxonomies.php';
+    if ((int) $pdo->query('SELECT COUNT(*) FROM industries')->fetchColumn() === 0) {
+        foreach ($taxo['industries'] as $it) {
+            $pdo->prepare('INSERT INTO industries (ikey, nombre, sort, active) VALUES (?,?,?,?)')
+                ->execute([$it['ikey'], json_encode($it['nombre'], JSON_UNESCAPED_UNICODE), $it['sort'], $it['active']]);
+        }
+    }
+    if ((int) $pdo->query('SELECT COUNT(*) FROM countries')->fetchColumn() === 0) {
+        foreach ($taxo['countries'] as $c) {
+            $pdo->prepare('INSERT INTO countries (iso, nombre, dial, sort, active) VALUES (?,?,?,?,?)')
+                ->execute([$c['iso'], json_encode($c['nombre'], JSON_UNESCAPED_UNICODE), $c['dial'], $c['sort'], $c['active']]);
+        }
+    }
+    $log[] = 'Taxonomías sembradas (industrias y países).';
+
     // 3) Conectores + plantillas de email
     $extra = require __DIR__ . '/api/db/seed_extra.php';
     foreach ($extra['connectors'] as $prov) {

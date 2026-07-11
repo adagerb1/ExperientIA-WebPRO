@@ -38,6 +38,8 @@ const MODULOS = {
     {n:'slug',l:'Slug (URL)',t:'text'},{n:'type',l:'Tipo',t:'sel',op:['article','download']},{n:'tipo_label',l:'Etiqueta',t:'i18n'},{n:'titulo',l:'Título',t:'i18n'},{n:'extracto',l:'Extracto',t:'i18ta'},{n:'cuerpo',l:'Contenido (HTML)',t:'i18ta'},{n:'file_path',l:'Archivo PDF',t:'file'},{n:'published_at',l:'Publicado (YYYY-MM-DD HH:MM:SS)',t:'text'},{n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activo',t:'bool'}]},
   availability_rules:{titulo:'Disponibilidad',list:['weekday','start_time','end_time','active'],campos:[
     {n:'weekday',l:'Día (1=Lun … 7=Dom)',t:'num'},{n:'start_time',l:'Desde (HH:MM)',t:'text'},{n:'end_time',l:'Hasta (HH:MM)',t:'text'},{n:'active',l:'Activa',t:'bool'}]},
+  industries:{titulo:'Industrias',list:['nombre','ikey','active'],campos:[
+    {n:'ikey',l:'Clave interna',t:'text'},{n:'nombre',l:'Nombre',t:'i18n'},{n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activa',t:'bool'}]},
 };
 
 const DOW = { 1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo' };

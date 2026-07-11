@@ -113,6 +113,32 @@ try {
     }
 } catch (\Throwable $e) { echo "! diagnostics: " . $e->getMessage() . "\n"; }
 
+// Taxonomías: industrias y países (crear tablas si faltan + sembrar si vacías).
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS industries (id INTEGER PRIMARY KEY AUTOINCREMENT, ikey TEXT NOT NULL UNIQUE, nombre TEXT NOT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1)');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS countries (id INTEGER PRIMARY KEY AUTOINCREMENT, iso TEXT NOT NULL UNIQUE, nombre TEXT NOT NULL, dial TEXT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS industries (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, ikey VARCHAR(40) NOT NULL UNIQUE, nombre JSON NOT NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS countries (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, iso CHAR(2) NOT NULL UNIQUE, nombre JSON NOT NULL, dial VARCHAR(8) NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+    $taxo = require __DIR__ . '/api/db/seed_taxonomies.php';
+    if ((int) $pdo->query('SELECT COUNT(*) FROM industries')->fetchColumn() === 0) {
+        foreach ($taxo['industries'] as $it) {
+            $pdo->prepare('INSERT INTO industries (ikey, nombre, sort, active) VALUES (?,?,?,?)')
+                ->execute([$it['ikey'], json_encode($it['nombre'], JSON_UNESCAPED_UNICODE), $it['sort'], $it['active']]);
+        }
+        echo "+ industrias sembradas\n";
+    }
+    if ((int) $pdo->query('SELECT COUNT(*) FROM countries')->fetchColumn() === 0) {
+        foreach ($taxo['countries'] as $c) {
+            $pdo->prepare('INSERT INTO countries (iso, nombre, dial, sort, active) VALUES (?,?,?,?,?)')
+                ->execute([$c['iso'], json_encode($c['nombre'], JSON_UNESCAPED_UNICODE), $c['dial'], $c['sort'], $c['active']]);
+        }
+        echo "+ países sembrados\n";
+    }
+} catch (\Throwable $e) { echo '! taxonomías: ' . $e->getMessage() . "\n"; }
+
 // Los artículos ya publicados (active=1 + published_at) pasan a status='published'.
 try {
     $pdo->exec("UPDATE resources SET status = 'published' WHERE (status IS NULL OR status = '' OR status = 'draft') AND active = 1 AND published_at IS NOT NULL");
