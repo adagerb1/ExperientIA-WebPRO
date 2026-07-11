@@ -2,7 +2,9 @@
 import { t, tr, pageUrl, api, setMeta } from '../lib/core.js';
 import { Icon, DashMock, BrandSymbol } from '../lib/ui.js';
 import { PageHero, SectionCTA } from '../lib/layout.js';
+import { slugify } from './pages5.js';
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
+const tx = (key,fb)=>{ const v=t(key); return (v && v!==key)?v:fb; };
 
 export const Tablero = {
   components: { Icon, DashMock, PageHero, SectionCTA },
@@ -39,14 +41,15 @@ export const Productos = {
   template: `<div>
     <PageHero :eyebrow="t('productos.eyebrow')" :titulo="t('productos.titulo')" :sub="t('productos.sub')"/>
     <section class="section"><div class="container" style="display:grid;gap:1.5rem" :style="dosCol">
-      <article v-for="(p,i) in items" :key="p.id" class="glass card" :class="{'glass-lit':p.destacado}" v-reveal :style="{'--d':i*.08+'s',display:'grid',gap:'1rem',alignContent:'start',padding:'2rem'}">
+      <router-link v-for="(p,i) in items" :key="p.id" :to="dest(p)" class="glass card sol-card" :class="{'glass-lit':p.destacado}" v-reveal :style="{'--d':i*.08+'s',display:'grid',gap:'1rem',alignContent:'start',padding:'2rem'}">
         <div class="chip-row"><span class="icon-chip"><Icon :name="p.icon"/></span><span class="chip chip--cyan">{{ tr(p.rol) }}</span></div>
         <h2 class="h3">{{ tr(p.nombre) }}</h2><p>{{ tr(p.texto) }}</p>
-        <router-link :to="p.destacado?pageUrl('tablero'):pageUrl('contacto')" class="link-arrow">{{ t('common.conocer_mas') }} <Icon name="arrow" :size="16"/></router-link></article></div></section>
+        <span class="link-arrow">{{ tx('common.conocer_mas','Conocer más') }} <Icon name="arrow" :size="16"/></span></router-link></div></section>
     <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('casos')" :secondaryLabel="t('nav.casos')"/>
   </div>`,
   data(){ return { items:[], dosCol: window.innerWidth>=860?{gridTemplateColumns:'repeat(2,1fr)'}:{} }; },
   computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl },
+  methods:{ tx, dest(p){ return p.destacado ? pageUrl('tablero') : pageUrl('productos',{slug:slugify(tr(p.nombre,'es'))}); } },
   async mounted(){ setMeta(t('productos.meta_title')+' · ExperientIA', t('productos.meta_desc')); this.items=await fc('productos'); },
 };
 

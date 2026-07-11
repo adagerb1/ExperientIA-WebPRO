@@ -430,3 +430,47 @@ p { margin: 0; color: var(--text-secondary); }
 .ax-audio-knob{ position:absolute; right:-5px; top:50%; transform:translateY(-50%); width:12px; height:12px; border-radius:50%; background:#fff; box-shadow:0 0 0 3px rgba(24,214,241,.35); }
 .ax-audio-meta{ display:flex; justify-content:space-between; align-items:center; font-size:.72rem; color:var(--text-tertiary); gap:.6rem; }
 .ax-audio-by{ display:inline-flex; align-items:center; gap:.3rem; color:var(--cyan); font-weight:600; letter-spacing:.02em; }
+
+/* ============ Landing pages de venta (solución / producto / recurso) ============ */
+.sol-card{ position:relative; text-decoration:none; color:inherit; transition:transform var(--motion), border-color var(--motion), box-shadow var(--motion); }
+.sol-card:hover{ transform:translateY(-4px); border-color:rgba(24,214,241,.32); box-shadow:0 30px 60px -34px rgba(0,0,0,.7); }
+.sol-card .link-arrow{ margin-top:auto; }
+
+.land-grid{ display:grid; gap:1.75rem; align-items:start; }
+@media(min-width:900px){ .land-grid{ grid-template-columns:1.7fr .9fr; } }
+.land-body{ display:grid; gap:1.25rem; }
+.land-aside{ display:grid; gap:1.25rem; }
+@media(min-width:900px){ .land-aside{ position:sticky; top:96px; } }
+.land-cta{ display:grid; gap:.9rem; text-align:left; }
+.land-cta .btn{ justify-content:center; }
+.land-cta p:first-of-type{ color:var(--text-secondary); font-size:.95rem; }
+
+.land-final{ text-align:center; display:grid; gap:1.1rem; justify-items:center; padding:clamp(2rem,5vw,3.4rem); }
+.land-final .lead{ max-width:44rem; }
+.land-cta-row{ display:flex; flex-wrap:wrap; gap:.75rem; }
+.land-final .land-cta-row{ justify-content:center; }
+
+/* Barra sticky mobile (First Mobile): CTA siempre visible */
+.land-sticky{ position:fixed; left:0; right:0; bottom:0; z-index:60; display:none; align-items:center; justify-content:space-between; gap:.9rem;
+  padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom)); background:linear-gradient(180deg, rgba(6,15,34,.4), rgba(6,15,34,.92));
+  -webkit-backdrop-filter:blur(16px) saturate(150%); backdrop-filter:blur(16px) saturate(150%); border-top:1px solid rgba(160,190,240,.16); }
+.land-sticky span{ font-weight:600; font-size:.9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.land-sticky .btn{ flex:0 0 auto; }
+.btn-sm{ padding:.55rem .9rem; font-size:.85rem; }
+@media(max-width:760px){ .land-sticky{ display:flex; } main{ padding-bottom:74px; } }
+
+/* Modal de captación de leads */
+.lm-bg{ position:fixed; inset:0; z-index:120; display:grid; place-items:center; padding:1.1rem;
+  background:rgba(3,9,22,.62); -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); animation:lmfade .2s ease; }
+@keyframes lmfade{ from{ opacity:0 } to{ opacity:1 } }
+.lm{ width:100%; max-width:29rem; max-height:92vh; overflow-y:auto; padding:clamp(1.5rem,4vw,2.2rem); position:relative; animation:lmpop .28s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes lmpop{ from{ opacity:0; transform:translateY(14px) scale(.97) } to{ opacity:1; transform:none } }
+.lm-x{ position:absolute; top:.85rem; right:.85rem; width:34px; height:34px; border-radius:11px; border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.04); color:var(--text-secondary); cursor:pointer; display:grid; place-items:center; transition:background var(--motion); }
+.lm-x:hover{ background:rgba(255,255,255,.1); color:#fff; }
+.lm h3{ margin-bottom:.3rem; padding-right:2rem; }
+.lm .lm-sub{ color:var(--text-secondary); font-size:.92rem; margin-bottom:1.2rem; }
+.lm .btn{ width:100%; justify-content:center; margin-top:.4rem; }
+.lm-ok{ display:grid; gap:.9rem; justify-items:center; text-align:center; padding:1.5rem .5rem; }
+.lm-ok .lm-ok-ic{ width:60px; height:60px; border-radius:50%; display:grid; place-items:center; color:#04101f; background:linear-gradient(135deg,var(--cyan),var(--violet)); box-shadow:0 12px 30px -12px var(--cyan-glow); }
+@media (prefers-reduced-motion: reduce){ .lm-bg,.lm{ animation:none !important; } }

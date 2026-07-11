@@ -1,5 +1,6 @@
 // ExperientIA · Componentes de formulario (combobox buscable, teléfono WhatsApp, campos de lead)
-import { t, store } from './core.js';
+import { t, store, api, pageUrl } from './core.js';
+import { Icon } from './ui.js';
 
 let PAISES = null;
 async function paises() {
@@ -143,5 +144,40 @@ export const LeadFields = {
       return Object.keys(this.errors).length === 0 && !this.phoneError;
     },
     setErrors(campos) { this.errors = {}; (campos || []).forEach(c => this.errors[c] = true); },
+  },
+};
+
+// Modal de captación para landings (formulario ligero, mobile-first)
+const blankInteres = () => ({ name:'', email:'', phone_wa:'', phone_dial:'', country:'', website:'' });
+export const LeadModal = {
+  components: { LeadFields, Icon },
+  props: { titulo: String, origen: String },
+  emits: ['close'],
+  template: `<div class="lm-bg" @click.self="$emit('close')"><div class="glass glass-lit lm">
+    <button class="lm-x" @click="$emit('close')" aria-label="Cerrar">✕</button>
+    <div v-if="done" class="lm-ok">
+      <span class="icon-chip"><Icon name="check"/></span>
+      <h3 class="h3">{{ tx('landing.gracias_t','¡Gracias!') }}</h3>
+      <p>{{ tx('landing.gracias_s','Recibimos tus datos. Te contactaremos muy pronto para mostrarte cómo aplicarlo a tu negocio.') }}</p>
+      <router-link :to="pageUrl('agenda')" class="btn btn-primary" @click="$emit('close')">{{ tx('landing.agendar','Agendar ahora') }}</router-link></div>
+    <form v-else @submit.prevent="enviar">
+      <h3 class="h3">{{ tx('landing.form_t','Hablemos de tu caso') }}</h3>
+      <p class="small" v-if="titulo">{{ titulo }}</p>
+      <div style="margin-top:1.1rem"><LeadFields ref="lf" v-model="lead" :full="false" :company="false"/></div>
+      <button class="btn btn-grad" style="width:100%;margin-top:1.2rem" :disabled="loading">{{ loading?t('form.enviando'):tx('landing.cta','Quiero más información') }}</button>
+      <p class="err" v-if="error">{{ error }}</p>
+      <p class="small" style="margin-top:.7rem">{{ t('form.privacidad') }}</p></form>
+  </div></div>`,
+  data() { return { lead: blankInteres(), loading: false, done: false, error: '' }; },
+  computed: { t: () => t, pageUrl: () => pageUrl },
+  methods: {
+    tx(key, fb) { const v = t(key); return (v && v !== key) ? v : fb; },
+    async enviar() {
+      if (!this.$refs.lf.validate(['name', 'email'])) { return; }
+      this.loading = true; this.error = '';
+      const r = await api.post('/interes', { ...this.lead, origen: this.origen, titulo: this.titulo, locale: store.locale });
+      this.loading = false;
+      if (r.ok) { this.done = true; } else { this.error = r.error || 'Error'; this.$refs.lf.setErrors(r.campos); }
+    },
   },
 };

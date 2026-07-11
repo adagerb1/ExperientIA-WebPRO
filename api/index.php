@@ -21,6 +21,7 @@ $r->get('/content/{seccion}', 'PublicApi\\ContentController', 'show');
 $r->get('/slots', 'PublicApi\\BookingController', 'slots');
 $r->post('/contacto', 'PublicApi\\LeadController', 'contacto');
 $r->post('/newsletter', 'PublicApi\\LeadController', 'newsletter');
+$r->post('/interes', 'PublicApi\\LeadController', 'interes');
 $r->post('/descarga', 'PublicApi\\ResourceController', 'descargar');
 $r->get('/descarga-archivo', 'PublicApi\\ResourceController', 'archivo');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');

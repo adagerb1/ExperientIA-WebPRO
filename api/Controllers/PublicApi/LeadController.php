@@ -26,6 +26,23 @@ final class LeadController extends Controller
         Response::ok(['message' => 'ok']);
     }
 
+    /** Captación desde una landing de solución/producto/recurso (formulario ligero). */
+    public function interes(): void
+    {
+        RateLimiter::public($this->req);
+        $v = Validator::make($this->req->body)->honeypot()
+            ->text('name', true, 160)->email('email', true)->phone('phone_wa')->text('phone_dial', false, 5)
+            ->country('country', false)->text('company', false, 160)
+            ->text('origen', false, 120)->text('titulo', false, 200);
+        $d = $v->failOrValidated();
+        $reqLocale = $this->req->input('locale', 'es');
+        $d['locale'] = in_array($reqLocale, biz('locales'), true) ? $reqLocale : 'es';
+        $titulo = trim((string) ($d['titulo'] ?? '')) ?: 'una solución';
+        LeadService::capture($d, 'interes', 'Interés desde landing: ' . $titulo,
+            ['origen' => $d['origen'] ?? '', 'titulo' => $d['titulo'] ?? '']);
+        Response::ok(['message' => 'ok']);
+    }
+
     public function newsletter(): void
     {
         RateLimiter::public($this->req);

@@ -88,13 +88,14 @@ export const Soluciones = {
   template: `<div>
     <PageHero :eyebrow="t('soluciones.eyebrow')" :titulo="t('soluciones.titulo')" :sub="t('soluciones.sub')"/>
     <section class="section"><div class="container" style="display:grid;gap:1.5rem" :style="dosCol">
-      <article v-for="(s,i) in items" :key="s.id" class="glass glass-lit card" v-reveal :style="{'--d':(i%2)*.08+'s',display:'grid',gap:'1.4rem',alignContent:'start',padding:'2rem'}">
+      <router-link v-for="(s,i) in items" :key="s.id" :to="pageUrl('soluciones',{slug:s.skey})" class="glass glass-lit card sol-card" v-reveal :style="{'--d':(i%2)*.08+'s',display:'grid',gap:'1.4rem',alignContent:'start',padding:'2rem'}">
         <header style="display:flex;gap:1rem;align-items:center"><span class="icon-chip"><Icon :name="s.icon"/></span>
           <div><p style="font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--violet);margin-bottom:.25rem">{{ tr(s.pilar) }}</p><h2 class="h3">{{ tr(s.titulo) }}</h2></div></header>
         <div><h3 class="lbl">{{ t('common.problema_label') }}</h3><p>{{ tr(s.problema) }}</p></div>
         <div><h3 class="lbl">{{ t('common.como_label') }}</h3><ul class="check-list">
           <li v-for="(l,j) in trLines(s.como)" :key="j"><span class="check-chip"><Icon name="check" :size="13"/></span>{{ l }}</li></ul></div>
-        <div style="border-top:1px solid var(--line-soft);padding-top:1.2rem"><h3 class="lbl" style="color:var(--cyan)">{{ t('common.cambia_label') }}</h3><p>{{ tr(s.cambia) }}</p></div></article></div></section>
+        <div style="border-top:1px solid var(--line-soft);padding-top:1.2rem"><h3 class="lbl" style="color:var(--cyan)">{{ t('common.cambia_label') }}</h3><p>{{ tr(s.cambia) }}</p></div>
+        <span class="link-arrow">{{ tx('landing.ver_sol','Ver solución') }} <Icon name="arrow" :size="16"/></span></router-link></div></section>
     <section class="section"><div class="bg-atmos"><div class="halo halo-violet" style="width:480px;height:480px;top:-160px;right:-240px;opacity:.3"></div></div>
       <div class="container"><div class="section-head"><p class="eyebrow" v-reveal>{{ t('soluciones.metodo_eyebrow') }}</p><h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ t('soluciones.metodo_titulo') }}</h2></div>
       <ol style="list-style:none;margin:0;padding:0;display:grid;gap:1.25rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
@@ -104,5 +105,6 @@ export const Soluciones = {
   </div>`,
   data() { return { items: [], dosCol: window.innerWidth >= 900 ? { gridTemplateColumns: 'repeat(2,1fr)' } : {} }; },
   computed: { t: () => t, tr: () => tr, trLines: () => trLines, pageUrl: () => pageUrl, metodo() { return t('soluciones.metodo') || []; } },
+  methods: { tx(k, fb) { const v = t(k); return (v && v !== k) ? v : fb; } },
   async mounted() { setMeta(t('soluciones.meta_title') + ' · ExperientIA', t('soluciones.meta_desc')); this.items = await fetchContent('soluciones'); },
 };
