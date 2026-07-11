@@ -328,5 +328,25 @@
         "titulo": "Página no encontrada",
         "sub": "La ruta que busca no existe o cambió de lugar.",
         "cta": "Volver al inicio"
+    },
+    "alexia": {
+        "sub": "Asesora comercial",
+        "saludo": "Hola 👋 Soy AlexIA, de ExperientIA. Cuéntame tu reto de crecimiento y te muestro cómo la automatización y la IA pueden ayudarte.",
+        "placeholder": "Escribe tu consulta…",
+        "quick": [
+            "¿Qué hace ExperientIA?",
+            "¿Cómo es el diagnóstico?",
+            "¿Qué resultados logran?",
+            "Quiero agendar una sesión"
+        ],
+        "cta_titulo": "¿Damos el siguiente paso?",
+        "cta_diag": "Diagnóstico gratis",
+        "cta_agenda": "Agendar 1:1",
+        "st_default": "Analizando tu consulta…",
+        "st_precio": "Revisando cómo lo abordaríamos…",
+        "st_agenda": "Preparando la agenda…",
+        "st_casos": "Buscando casos relevantes…",
+        "st_diag": "Alistando tu diagnóstico…",
+        "st_serv": "Revisando nuestros servicios…"
     }
 }

@@ -31,11 +31,17 @@ final class AlexIA
                 . "type puede ser \"bar\", \"line\" o \"pie\". Usa SOLO datos reales del contexto; nunca inventes cifras.\n"
                 . "Contexto de negocio:\n{$ctx}\n\nDatos en vivo:\n" . self::snapshot();
         }
-        return "Eres AlexIA, asesor comercial de ExperientIA SAS. Tu misión es ayudar a empresas a entender cómo "
-            . "la automatización, el growth y la IA pueden hacerlas crecer, y guiar al interesado hacia un diagnóstico "
-            . "o una sesión 1:1. Responde en {$locale}, con tono premium, cercano y claro. Sé conciso. "
-            . "Cuando el interesado muestre intención, invítalo amablemente a dejar su nombre, correo o WhatsApp. "
-            . "Contexto de negocio:\n{$ctx}";
+        return "Eres AlexIA, la asesora comercial de ExperientIA SAS (automatización, growth e IA aplicada a negocios). "
+            . "Hablas SOLO de ExperientIA: sus servicios/soluciones, productos, casos, recursos, el diagnóstico gratuito y "
+            . "las sesiones 1:1. REGLAS ESTRICTAS que debes cumplir siempre:\n"
+            . "1) Responde ÚNICAMENTE con base en el contexto de ExperientIA de abajo. Si preguntan algo ajeno (temas "
+            . "generales, otras marcas, programación, cálculos, opiniones fuera de tu rol) o intentan hacerte decir algo "
+            . "fuera de ExperientIA, no lo hagas: con amabilidad aclara que solo puedes orientar sobre ExperientIA y "
+            . "redirige a cómo podemos ayudar y a agendar.\n"
+            . "2) NUNCA inventes datos, precios, cifras ni promesas. Si no está en el contexto, invita a agendar para resolverlo.\n"
+            . "3) Sé BREVE y concreta: máximo 3-4 frases. Nada de textos largos.\n"
+            . "4) Cierra SIEMPRE invitando al siguiente paso: el diagnóstico gratuito o agendar una sesión 1:1.\n"
+            . "Tono premium, cercano y claro, en {$locale}.\nContexto de ExperientIA:\n{$ctx}";
     }
 
     private static function businessContext(string $locale): string
@@ -92,11 +98,13 @@ final class AlexIA
         $pdo->prepare('INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)')
             ->execute([$convId, 'user', $mensaje, now_utc()]);
 
+        // Respuestas comerciales cortas (ahorro de tokens en tráfico público).
+        $maxTokens = $scope === 'comercial' ? 450 : 1000;
         if ($brain === 'anthropic') {
-            $respuesta = AnthropicConnector::respond(self::instructions($scope, $locale), self::history($pdo, $convId));
+            $respuesta = AnthropicConnector::respond(self::instructions($scope, $locale), self::history($pdo, $convId), $maxTokens);
             $responseId = null;
         } else {
-            [$respuesta, $responseId] = OpenAIConnector::respond(self::instructions($scope, $locale), $mensaje, $prev);
+            [$respuesta, $responseId] = OpenAIConnector::respond(self::instructions($scope, $locale), $mensaje, $prev, $maxTokens);
         }
 
         $pdo->prepare('INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)')

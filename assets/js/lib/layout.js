@@ -62,35 +62,66 @@ export const Toasts = {
 };
 
 // Widget AlexIA (comercial, web)
+const axEsc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
+
 export const AlexIA = {
   components: { Icon },
   template: `<div>
-    <button class="alexia-fab" @click="toggle" aria-label="AlexIA"><Icon :name="open?'arrow':'sparkle'" :size="24"/></button>
-    <div class="alexia-panel" v-if="open">
-      <div class="alexia-head"><span class="dot"></span><b style="color:var(--neutral-light)">AlexIA</b><span class="small" style="margin-left:auto">{{ t('alexia.sub') }}</span></div>
-      <div class="alexia-msgs" ref="msgs">
-        <div class="alexia-msg a">{{ t('alexia.saludo') }}</div>
-        <div v-for="(m,i) in msgs" :key="i" class="alexia-msg" :class="m.role==='user'?'u':'a'">{{ m.text }}</div>
-        <div v-if="loading" class="alexia-msg a" style="opacity:.6">…</div>
+    <button class="ax-fab" :class="{on:open}" @click="toggle" aria-label="AlexIA"><span class="ax-fab-ring"></span>
+      <Icon v-if="!open" name="sparkle" :size="24"/><span v-else class="ax-fab-x">✕</span></button>
+    <transition name="ax-pop">
+    <div class="ax-panel glass" v-if="open">
+      <div class="ax-head"><div class="ax-ava"><Icon name="sparkle" :size="18"/></div>
+        <div class="ax-head-t"><b>AlexIA</b><span>{{ tx('alexia.sub','Asesora comercial') }}</span></div>
+        <button class="ax-close" @click="open=false" aria-label="Cerrar">✕</button></div>
+      <div class="ax-msgs" ref="msgs">
+        <div class="ax-msg a ax-in"><p v-html="saludo"></p></div>
+        <div v-if="!msgs.length" class="ax-chips ax-in">
+          <button v-for="q in quick" :key="q" @click="ask(q)">{{ q }}</button></div>
+        <template v-for="(m,i) in msgs" :key="i">
+          <div class="ax-msg ax-in" :class="m.role==='user'?'u':'a'"><p v-html="m.html"></p></div>
+          <div v-if="m.role==='assistant' && i===msgs.length-1 && !loading" class="ax-cta ax-in">
+            <span>{{ tx('alexia.cta_titulo','¿Damos el siguiente paso?') }}</span>
+            <div class="ax-cta-btns"><router-link :to="pageUrl('diagnostico')" class="ax-cta-btn" @click="open=false">{{ tx('alexia.cta_diag','Diagnóstico gratis') }}</router-link>
+              <router-link :to="pageUrl('agenda')" class="ax-cta-btn ghost" @click="open=false">{{ tx('alexia.cta_agenda','Agendar 1:1') }}</router-link></div></div>
+        </template>
+        <div v-if="loading" class="ax-msg a ax-thinking ax-in"><span class="ax-ava sm"><Icon name="sparkle" :size="12"/></span>
+          <span class="ax-status">{{ statusText }}</span><span class="ax-wave"><i></i><i></i><i></i></span></div>
       </div>
-      <div class="alexia-in"><textarea v-model="text" :placeholder="t('alexia.placeholder')" @keydown.enter.exact.prevent="send"></textarea>
-        <button class="alexia-send" @click="send" :disabled="loading"><Icon name="send" :size="18"/></button></div>
-    </div></div>`,
-  data() { return { open: false, text: '', msgs: [], loading: false, convId: null }; },
-  computed: { t: () => t },
+      <div class="ax-quickbar" v-if="msgs.length && !loading"><button v-for="q in quick.slice(0,3)" :key="q" @click="ask(q)">{{ q }}</button></div>
+      <div class="ax-inbox"><textarea v-model="text" :placeholder="tx('alexia.placeholder','Escribe tu consulta…')" rows="1" @keydown.enter.exact.prevent="send"></textarea>
+        <button class="ax-send" @click="send" :disabled="loading"><Icon name="send" :size="18"/></button></div>
+    </div></transition></div>`,
+  data() { return { open: false, text: '', msgs: [], loading: false, convId: null, statusText: '' }; },
+  computed: {
+    t: () => t, pageUrl: () => pageUrl,
+    saludo() { return '<p>' + axEsc(this.tx('alexia.saludo', 'Hola 👋 Soy AlexIA, de ExperientIA. Cuéntame tu reto de crecimiento y te muestro cómo la automatización y la IA pueden ayudarte.')) + '</p>'; },
+    quick() { const q = t('alexia.quick'); return Array.isArray(q) ? q : ['¿Qué hace ExperientIA?', '¿Cómo es el diagnóstico?', '¿Qué resultados logran?', 'Quiero agendar una sesión']; },
+  },
   methods: {
+    tx(key, fb) { const v = t(key); return (v && v !== key) ? v : fb; },
     toggle() { this.open = !this.open; },
+    status(q) {
+      const s = q.toLowerCase();
+      if (/precio|costo|plan|inversi|tarifa|cuánto|cuanto/.test(s)) { return this.tx('alexia.st_precio', 'Revisando cómo lo abordaríamos…'); }
+      if (/agenda|reuni|sesi|cita|llamada/.test(s)) { return this.tx('alexia.st_agenda', 'Preparando la agenda…'); }
+      if (/resultado|caso|éxito|exito|roi/.test(s)) { return this.tx('alexia.st_casos', 'Buscando casos relevantes…'); }
+      if (/diagn/.test(s)) { return this.tx('alexia.st_diag', 'Alistando tu diagnóstico…'); }
+      if (/servicio|soluci|producto|hac[eé]|ofrec/.test(s)) { return this.tx('alexia.st_serv', 'Revisando nuestros servicios…'); }
+      return this.tx('alexia.st_default', 'Analizando tu consulta…');
+    },
+    ask(q) { this.text = q; this.send(); },
     async send() {
-      const txt = this.text.trim(); if (!txt || this.loading) return;
-      this.msgs.push({ role: 'user', text: txt }); this.text = ''; this.loading = true;
-      this.scroll();
+      const txt = this.text.trim(); if (!txt || this.loading) { return; }
+      this.msgs.push({ role: 'user', html: '<p>' + axEsc(txt) + '</p>' });
+      this.text = ''; this.loading = true; this.statusText = this.status(txt); this.scroll();
       const r = await api.post('/alexia', { mensaje: txt, conversation_id: this.convId, locale: store.locale });
       this.loading = false;
-      if (r.ok) { this.convId = r.data.conversation_id; this.msgs.push({ role: 'assistant', text: r.data.reply }); }
-      else { this.msgs.push({ role: 'assistant', text: r.error || 'AlexIA no está disponible ahora.' }); }
+      if (r.ok) { this.convId = r.data.conversation_id; this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(r.data.reply).replace(/\n+/g, '</p><p>') + '</p>' }); }
+      else { this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(r.error || 'AlexIA no está disponible ahora. Escríbenos o agenda una sesión.') + '</p>' }); }
       this.scroll();
     },
-    scroll() { this.$nextTick(() => { const m = this.$refs.msgs; if (m) m.scrollTop = m.scrollHeight; }); },
+    scroll() { this.$nextTick(() => { const m = this.$refs.msgs; if (m) { m.scrollTop = m.scrollHeight; } }); },
   },
 };
 

@@ -16,7 +16,7 @@ final class OpenAIConnector
     }
 
     /** Genera respuesta de texto. Devuelve [texto, response_id]. */
-    public static function respond(string $instructions, string $userInput, ?string $previousResponseId = null): array
+    public static function respond(string $instructions, string $userInput, ?string $previousResponseId = null, ?int $maxTokens = null): array
     {
         $cfg = ConnectorRegistry::config('openai');
         $body = [
@@ -25,6 +25,9 @@ final class OpenAIConnector
             'input' => $userInput,
             'store' => true,
         ];
+        if ($maxTokens) {
+            $body['max_output_tokens'] = $maxTokens;
+        }
         if ($previousResponseId) {
             $body['previous_response_id'] = $previousResponseId;
         }

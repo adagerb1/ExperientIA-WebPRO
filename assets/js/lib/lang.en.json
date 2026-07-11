@@ -328,5 +328,25 @@
         "titulo": "Page not found",
         "sub": "The route you are looking for does not exist or has moved.",
         "cta": "Back to home"
+    },
+    "alexia": {
+        "sub": "Sales advisor",
+        "saludo": "Hi 👋 I am AlexIA, from ExperientIA. Tell me your growth challenge and I will show you how automation and AI can help.",
+        "placeholder": "Type your question…",
+        "quick": [
+            "What does ExperientIA do?",
+            "How does the diagnostic work?",
+            "What results do you get?",
+            "I want to book a session"
+        ],
+        "cta_titulo": "Shall we take the next step?",
+        "cta_diag": "Free diagnostic",
+        "cta_agenda": "Book a 1:1",
+        "st_default": "Analyzing your question…",
+        "st_precio": "Reviewing how we would approach it…",
+        "st_agenda": "Preparing the calendar…",
+        "st_casos": "Looking for relevant cases…",
+        "st_diag": "Getting your diagnostic ready…",
+        "st_serv": "Reviewing our services…"
     }
 }

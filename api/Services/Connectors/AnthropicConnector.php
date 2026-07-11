@@ -19,12 +19,12 @@ final class AnthropicConnector
      * Genera una respuesta de texto. $historial es una lista de
      * ['role'=>'user'|'assistant','content'=>string]. Devuelve el texto.
      */
-    public static function respond(string $instructions, array $historial): string
+    public static function respond(string $instructions, array $historial, ?int $maxTokens = null): string
     {
         $cfg = ConnectorRegistry::config('anthropic');
         $r = Http::json('POST', 'https://api.anthropic.com/v1/messages', [
             'model' => $cfg['model'] ?: 'claude-sonnet-4-5',
-            'max_tokens' => 1200,
+            'max_tokens' => $maxTokens ?: 1200,
             'system' => $instructions,
             'messages' => $historial,
         ], [
