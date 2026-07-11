@@ -18,10 +18,18 @@ final class AlexIA
     {
         $ctx = self::businessContext($locale);
         if ($scope === 'interno') {
-            return "Eres AlexIA, el estratega interno de ExperientIA SAS para el equipo del portal administrativo. "
-                . "Ayudas a interpretar leads, métricas del CRM, agenda y contenido, y a tomar decisiones de crecimiento. "
-                . "Responde en {$locale}, de forma ejecutiva, breve y accionable. Basa tus respuestas en los datos; "
-                . "si no tienes un dato, dilo.\nContexto de negocio:\n{$ctx}\n\nDatos en vivo del CRM:\n" . self::snapshot();
+            return "Eres AlexIA, consejera estratégica de ExperientIA SAS y miembro del consejo consultivo del CEO. "
+                . "Eres experta en analítica de datos aplicada a marketing, inteligencia artificial, consultoría estratégica "
+                . "de optimización de procesos de negocio y crecimiento (growth). Conoces a fondo el Tablero de Crecimiento y "
+                . "todos los servicios de ExperientIA. Tu misión es ayudar al equipo y al CEO a TOMAR DECISIONES con base en la data.\n"
+                . "FORMATO: responde SIEMPRE en HTML válido y bien estructurado (usa <p>, <h3>, <ul><li>, <strong>, y "
+                . "<table><thead><tbody> cuando compares o listes datos). Sé ejecutiva, clara y accionable, en {$locale}.\n"
+                . "GRÁFICOS: cuando la pregunta implique tendencias, distribuciones, comparaciones o rankings, incluye uno o más "
+                . "gráficos como bloque independiente con ESTA sintaxis EXACTA (JSON con comillas dobles dentro, comillas simples "
+                . "en el atributo):\n"
+                . "<div class=\"ai-chart\" data-chart='{\"type\":\"bar\",\"title\":\"Título\",\"series\":[{\"label\":\"A\",\"value\":10}]}'></div>\n"
+                . "type puede ser \"bar\", \"line\" o \"pie\". Usa SOLO datos reales del contexto; nunca inventes cifras.\n"
+                . "Contexto de negocio:\n{$ctx}\n\nDatos en vivo:\n" . self::snapshot();
         }
         return "Eres AlexIA, asesor comercial de ExperientIA SAS. Tu misión es ayudar a empresas a entender cómo "
             . "la automatización, el growth y la IA pueden hacerlas crecer, y guiar al interesado hacia un diagnóstico "
@@ -34,10 +42,18 @@ final class AlexIA
     {
         $sols = Database::pdo()->query('SELECT titulo, cambia FROM solutions WHERE active = 1 ORDER BY sort')->fetchAll();
         $prods = Database::pdo()->query('SELECT nombre, texto FROM products WHERE active = 1 ORDER BY sort')->fetchAll();
-        $out = "Soluciones:\n";
+        $out = "Soluciones/Servicios:\n";
         foreach ($sols as $s) { $out .= '- ' . tr($s['titulo'], $locale) . ': ' . tr($s['cambia'], $locale) . "\n"; }
         $out .= "Productos:\n";
         foreach ($prods as $p) { $out .= '- ' . tr($p['nombre'], $locale) . ': ' . tr($p['texto'], $locale) . "\n"; }
+        try {
+            $casos = Database::pdo()->query('SELECT titulo, sector FROM case_studies WHERE active = 1 ORDER BY sort')->fetchAll();
+            if ($casos) { $out .= "Casos de éxito:\n"; foreach ($casos as $c) { $out .= '- ' . tr($c['titulo'], $locale) . ' (' . tr($c['sector'], $locale) . ")\n"; } }
+        } catch (\Throwable $e) { /* opcional */ }
+        try {
+            $recs = Database::pdo()->query("SELECT titulo, type FROM resources WHERE active = 1 ORDER BY sort LIMIT 40")->fetchAll();
+            if ($recs) { $out .= "Recursos/Artículos:\n"; foreach ($recs as $r) { $out .= '- ' . tr($r['titulo'], $locale) . ' [' . $r['type'] . "]\n"; } }
+        } catch (\Throwable $e) { /* opcional */ }
         return $out;
     }
 
@@ -120,6 +136,11 @@ final class AlexIA
 
         $out = "- Leads totales: {$total} (sin gestionar: {$nuevos})\n";
         $out .= "- Avanzados (contactado+): {$avanzados} · Con reserva: {$reservas} · Clientes: {$clientes} · Sesiones próximas: {$prox}\n";
+
+        $out .= 'Canales de entrada: ';
+        $frag = [];
+        foreach ($pdo->query("SELECT COALESCE(NULLIF(channel,''),'web') ch, COUNT(*) c FROM leads GROUP BY ch ORDER BY c DESC")->fetchAll() as $r) { $frag[] = "{$r['ch']}:{$r['c']}"; }
+        $out .= implode(', ', $frag) . "\n";
 
         $out .= 'Fuentes: ';
         $frag = [];

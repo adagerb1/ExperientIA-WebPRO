@@ -8,9 +8,10 @@ import { Toasts } from '../lib/layout.js';
 import { Login, Dashboard, Leads, LeadDetail } from './views1.js';
 import { Reservas, Contenido, Conectores, Plantillas } from './views2.js';
 import { Recursos } from './recursos.js';
+import { AlexiaWidget } from './alexia.js';
 
 const Shell = {
-  components: { Icon, Toasts },
+  components: { Icon, Toasts, AlexiaWidget },
   template: `<div class="adm"><aside class="adm__side">
     <div class="adm__brand"><img src="/assets/img/brand/logo.png" alt="ExperientIA" style="height:28px;width:auto" draggable="false"></div>
     <nav class="adm__nav">
@@ -22,7 +23,7 @@ const Shell = {
       <button v-for="it in plat" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)"><Icon :name="it.icon" :size="17"/> {{ it.label }}</button>
     </nav>
     <div class="adm__user"><span>{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm" @click="salir"><Icon name="logout" :size="14"/> Salir</button></div>
-  </aside><main class="adm__main"><router-view/></main><Toasts/></div>`,
+  </aside><main class="adm__main"><router-view/></main><Toasts/><AlexiaWidget/></div>`,
   data(){ return { store,
     crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
     cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/recursos',icon:'doc',label:'Recursos'}],

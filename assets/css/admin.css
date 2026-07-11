@@ -169,3 +169,38 @@ tr.row{ cursor:pointer; } tr.row:hover td{ background:rgba(24,214,241,.05); colo
 /* SmartTable · flecha de orden */
 th{ position:relative; } .sort-arrow{ margin-left:.35rem; font-size:.6rem; color:var(--cyan); }
 th:hover .sort-arrow{ opacity:1; }
+
+/* ── AlexIA · widget flotante (asesora estratégica) ─────────────────── */
+.ai-fab{ position:fixed; right:26px; bottom:26px; z-index:80; width:60px; height:60px; border-radius:50%; border:1px solid rgba(122,99,255,.5); cursor:pointer; color:#041022; background:var(--grad); box-shadow:0 14px 40px -10px rgba(122,99,255,.6); display:grid; place-items:center; transition:transform var(--motion); }
+.ai-fab:hover{ transform:translateY(-3px) scale(1.04); } .ai-fab.on{ background:var(--base-02); color:var(--cyan); border-color:var(--glass-border-lit); }
+.ai-widget{ position:fixed; right:26px; bottom:100px; z-index:80; width:min(96vw,440px); height:min(78vh,680px); display:flex; flex-direction:column; overflow:hidden; padding:0; border:1px solid rgba(122,99,255,.28); }
+.ai-head{ display:flex; justify-content:space-between; align-items:center; padding:1rem 1.2rem; border-bottom:1px solid var(--line-soft); background:linear-gradient(180deg,rgba(122,99,255,.12),transparent); }
+.ai-head b{ color:var(--neutral-light); font-size:1rem; } .ai-head span{ display:block; font-size:.72rem; color:var(--text-secondary); }
+.ai-head-btns{ display:flex; gap:.4rem; } .ai-head-btns button{ width:32px; height:32px; border-radius:8px; border:1px solid var(--line-soft); background:rgba(5,17,38,.4); color:var(--text-secondary); cursor:pointer; display:grid; place-items:center; } .ai-head-btns button:hover{ color:var(--cyan); border-color:rgba(24,214,241,.4); }
+.ai-msgs{ flex:1; overflow-y:auto; padding:1.1rem; display:flex; flex-direction:column; gap:.9rem; }
+.ai-msg{ max-width:92%; padding:.75rem .95rem; border-radius:14px; font-size:.88rem; line-height:1.5; }
+.ai-msg.a{ align-self:flex-start; background:rgba(18,34,66,.6); border:1px solid var(--line-soft); color:var(--neutral-light); border-bottom-left-radius:4px; }
+.ai-msg.u{ align-self:flex-end; background:rgba(24,214,241,.14); border:1px solid rgba(24,214,241,.3); color:var(--neutral-light); border-bottom-right-radius:4px; }
+.ai-msg p{ margin:.3rem 0; } .ai-msg h3{ font-size:.95rem; color:var(--cyan); margin:.6rem 0 .3rem; } .ai-msg ul,.ai-msg ol{ margin:.3rem 0; padding-left:1.2rem; } .ai-msg li{ margin:.2rem 0; } .ai-msg strong{ color:#fff; }
+.ai-msg table{ width:100%; border-collapse:collapse; font-size:.8rem; margin:.5rem 0; }
+.ai-msg th,.ai-msg td{ border:1px solid var(--line-soft); padding:.35rem .5rem; text-align:left; }
+.ai-msg th{ background:rgba(5,17,38,.5); color:var(--text-secondary); text-transform:none; letter-spacing:0; font-size:.72rem; cursor:default; }
+.ai-typing{ display:flex; gap:.3rem; } .ai-typing span{ width:7px; height:7px; border-radius:50%; background:var(--cyan); opacity:.5; animation:aiblink 1s infinite; } .ai-typing span:nth-child(2){ animation-delay:.2s } .ai-typing span:nth-child(3){ animation-delay:.4s }
+@keyframes aiblink{ 0%,100%{opacity:.25;transform:translateY(0)} 50%{opacity:1;transform:translateY(-3px)} }
+.ai-quick{ border-top:1px solid var(--line-soft); padding:.8rem 1rem; max-height:44%; overflow-y:auto; background:rgba(5,17,38,.35); }
+.ai-quick-t{ font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--text-tertiary); margin:0 0 .5rem; }
+.ai-quick button{ width:100%; text-align:left; display:grid; gap:.1rem; padding:.6rem .7rem; border-radius:10px; border:1px solid var(--line-soft); background:rgba(18,34,66,.4); color:var(--neutral-light); cursor:pointer; margin-bottom:.4rem; }
+.ai-quick button:hover{ border-color:rgba(24,214,241,.4); } .ai-quick b{ font-size:.82rem; } .ai-quick em{ font-style:normal; font-size:.72rem; color:var(--text-secondary); }
+.ai-input{ display:flex; gap:.5rem; padding:.8rem; border-top:1px solid var(--line-soft); align-items:flex-end; }
+.ai-input textarea{ flex:1; resize:none; max-height:100px; padding:.65rem .8rem; border-radius:10px; border:1px solid var(--line-strong); background:rgba(5,17,38,.55); color:var(--neutral-light); font-family:var(--font); font-size:.9rem; }
+.ai-input .btn{ border-radius:10px; }
+/* Gráficos dentro del chat */
+.ai-chart{ margin:.6rem 0; }
+.aic-title{ font-size:.78rem; color:var(--text-secondary); margin:0 0 .4rem; font-weight:600; }
+.aic-bars{ display:grid; gap:.4rem; } .aic-row{ display:grid; grid-template-columns:90px 1fr 34px; align-items:center; gap:.5rem; font-size:.76rem; }
+.aic-lbl{ color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .aic-track{ height:9px; border-radius:5px; background:rgba(5,17,38,.6); overflow:hidden; } .aic-fill{ height:100%; border-radius:5px; } .aic-val{ text-align:right; color:var(--neutral-light); font-weight:600; }
+.aic-line{ width:100%; height:120px; } .aic-xlabels{ display:flex; justify-content:space-between; font-size:.64rem; color:var(--text-tertiary); margin-top:.2rem; }
+.aic-pie-wrap{ display:flex; gap:1rem; align-items:center; flex-wrap:wrap; } .aic-pie{ width:110px; height:110px; border-radius:50%; flex-shrink:0; }
+.aic-legend{ display:grid; gap:.3rem; } .aic-leg{ font-size:.75rem; color:var(--text-secondary); } .aic-leg i{ display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:.4rem; }
+.aic-empty{ font-size:.78rem; color:var(--text-tertiary); }
+@media(max-width:520px){ .ai-widget{ right:3vw; left:3vw; width:auto; bottom:90px; } }
