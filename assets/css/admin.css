@@ -165,3 +165,7 @@ tr.row{ cursor:pointer; } tr.row:hover td{ background:rgba(24,214,241,.05); colo
 .cover-prev{ width:200px; height:105px; border-radius:10px; border:1px solid var(--line-soft); overflow:hidden; background:rgba(5,17,38,.5); display:grid; place-items:center; flex-shrink:0; }
 .cover-prev img{ width:100%; height:100%; object-fit:cover; } .cover-prev span{ font-size:.78rem; color:var(--text-tertiary); }
 .cover-actions{ display:flex; flex-direction:column; gap:.6rem; }
+
+/* SmartTable · flecha de orden */
+th{ position:relative; } .sort-arrow{ margin-left:.35rem; font-size:.6rem; color:var(--cyan); }
+th:hover .sort-arrow{ opacity:1; }

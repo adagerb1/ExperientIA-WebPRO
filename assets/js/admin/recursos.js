@@ -1,6 +1,8 @@
 // Portal admin · Estudio de Recursos con IA (contenido trilingüe, portada, audio)
 import { api, toast } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
+import { SmartTable } from './table.js';
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
 // Categorías (deben coincidir con api/config/business.php · resource_categories)
 const CATS = {
@@ -154,7 +156,7 @@ const RecursoEditor = {
 
 // ── Vista: lista de recursos ─────────────────────────────────────────
 export const Recursos = {
-  components:{ Icon, RecursoEditor },
+  components:{ Icon, RecursoEditor, SmartTable },
   template:`<div><div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
       <div><h1>Recursos & Blog</h1><p class="adm__sub" style="margin:0">Artículos y descargables · creación con IA (contenido, portada y audio)</p></div>
       <button class="btn btn-primary btn-sm" @click="nuevo"><Icon name="doc" :size="14"/> Nuevo recurso</button></div>
@@ -162,26 +164,21 @@ export const Recursos = {
     <div class="toolbar" style="margin-top:1.2rem"><input class="inp" v-model="q" placeholder="Buscar por título…" style="max-width:280px">
       <select class="inp" v-model="filtroEstado" style="width:auto"><option value="">Todos los estados</option><option value="published">Publicado</option><option value="draft">Borrador</option></select></div>
 
-    <div class="glass panel" style="padding:0;overflow:hidden;margin-top:.4rem">
-      <table><thead><tr>
-        <th>Título</th><th>Tipo</th><th>Categorías</th><th>Estado</th><th>Destacado</th><th></th></tr></thead>
-      <tbody>
-        <tr v-for="it in visibles" :key="it.id" class="row" @click="editar(it)">
-          <td style="color:var(--neutral-light)">{{ (it.titulo&&it.titulo.es)||'(sin título)' }}</td>
-          <td>{{ it.type==='download'?'Descargable':'Artículo' }}</td>
-          <td class="small">{{ (it.categories||[]).length }} cat.</td>
-          <td><span class="badge" :class="it.status==='published'?'cliente':'descartado'">{{ it.status==='published'?'Publicado':'Borrador' }}</span></td>
-          <td>{{ Number(it.featured)?'★':'—' }}</td>
-          <td style="text-align:right"><button class="btn btn-ghost btn-sm" @click.stop="editar(it)">Editar</button>
-            <button class="btn btn-danger btn-sm" @click.stop="eliminar(it)">✕</button></td></tr>
-        <tr v-if="!visibles.length"><td colspan="6" class="empty" style="text-align:center;padding:1.8rem">No hay recursos con estos filtros.</td></tr>
-      </tbody></table></div>
+    <SmartTable :columns="cols" :rows="filtradas" :search="q" :searchKeys="searchKeys" @rowClick="editar">
+      <template #actions="{row}"><button class="btn btn-ghost btn-sm" @click="editar(row)">Editar</button>
+        <button class="btn btn-danger btn-sm" @click="eliminar(row)">✕</button></template></SmartTable>
 
     <RecursoEditor v-if="editor.open" :item="editor.item" @close="editor.open=false" @saved="onSaved"/></div>`,
-  data(){ return { items:[], q:'', filtroEstado:'', editor:{ open:false, item:null } }; },
-  computed:{ visibles(){ const q=this.q.trim().toLowerCase();
-    return this.items.filter(it=>{ const t=((it.titulo&&it.titulo.es)||'').toLowerCase();
-      return (!q||t.includes(q)) && (!this.filtroEstado||it.status===this.filtroEstado); }); } },
+  data(){ return { items:[], q:'', filtroEstado:'', editor:{ open:false, item:null },
+    searchKeys:[ (r)=>(r.titulo&&r.titulo.es)||'' ],
+    cols:[
+      { key:'titulo', label:'Título', raw:(r)=>(r.titulo&&r.titulo.es)||'', render:(r)=>'<b style="color:var(--neutral-light)">'+esc((r.titulo&&r.titulo.es)||'(sin título)')+'</b>' },
+      { key:'type', label:'Tipo', render:(r)=> r.type==='download'?'Descargable':'Artículo' },
+      { key:'categories', label:'Categorías', raw:(r)=>(r.categories||[]).length, render:(r)=>((r.categories||[]).length)+' cat.' },
+      { key:'status', label:'Estado', render:(r)=> r.status==='published'?'<span class="badge cliente">Publicado</span>':'<span class="badge descartado">Borrador</span>' },
+      { key:'featured', label:'Destacado', raw:(r)=>Number(r.featured), render:(r)=> Number(r.featured)?'★':'—' },
+    ] }; },
+  computed:{ filtradas(){ return this.filtroEstado ? this.items.filter(it=>it.status===this.filtroEstado) : this.items; } },
   methods:{
     async load(){ const r=await api.get('/admin/resources/list'); if(r.ok) this.items=r.data; },
     nuevo(){ this.editor={ open:true, item:null }; },

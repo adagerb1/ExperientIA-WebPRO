@@ -163,7 +163,7 @@ export const Leads = {
       <select class="inp" v-model="channel" @change="reload"><option value="">Todos los canales</option><option value="web">Web</option><option value="telegram">Telegram</option><option value="whatsapp">WhatsApp</option></select>
       <button class="btn btn-ghost btn-sm" style="margin-left:auto" @click="exportar"><Icon name="doc" :size="15"/> Exportar CSV</button></div>
     <div class="glass panel" style="padding:.6rem 1rem 1rem">
-      <table><thead><tr><th>Lead</th><th>Contacto</th><th>Industria</th><th>Estado</th><th>Interacc.</th><th>Actualizado</th></tr></thead>
+      <table><thead><tr><th v-for="h in headers" :key="h.k" @click="ordenar(h.k)">{{ h.l }}<span class="sort-arrow" v-if="sort===h.k">{{ dir==='asc'?'▲':'▼' }}</span></th></tr></thead>
         <tbody><tr v-for="l in items" :key="l.id" class="row" @click="$router.push('/admin/leads/'+l.id)">
           <td><b style="color:var(--neutral-light)">{{ l.name }}</b><br><span class="small">{{ l.company||'' }}</span></td>
           <td>{{ l.email||'' }}<br><a v-if="l.phone_wa" :href="'https://wa.me/'+l.phone_wa" target="_blank" @click.stop>+{{ l.phone_wa }}</a></td>
@@ -172,12 +172,14 @@ export const Leads = {
       <div class="pager"><span>Página {{ page }} de {{ pages }}</span>
         <button :disabled="page<=1" @click="go(page-1)">‹</button><button :disabled="page>=pages" @click="go(page+1)">›</button></div></div>
   </div>`,
-  data(){ return { items:[], total:0, page:1, pages:1, q:'', status:this.$route.query.status||'', channel:'',
+  data(){ return { items:[], total:0, page:1, pages:1, q:'', status:this.$route.query.status||'', channel:'', sort:'updated_at', dir:'desc',
+    headers:[{k:'name',l:'Lead'},{k:'email',l:'Contacto'},{k:'industry',l:'Industria'},{k:'status',l:'Estado'},{k:'touchpoints',l:'Interacc.'},{k:'updated_at',l:'Actualizado'}],
     estados:{nuevo:'Nuevo',contactado:'Contactado',calificado:'Calificado',propuesta:'Propuesta',cliente:'Cliente',descartado:'Descartado'}, _t:null }; },
   methods:{
-    async load(){ const p=new URLSearchParams({page:this.page,per_page:20,q:this.q,status:this.status,channel:this.channel});
+    async load(){ const p=new URLSearchParams({page:this.page,per_page:20,q:this.q,status:this.status,channel:this.channel,sort:this.sort,dir:this.dir});
       const r=await api.get('/admin/leads?'+p); if(r.ok){ this.items=r.data; this.total=r.pagination.total; this.pages=r.pagination.pages; } },
     reload(){ this.page=1; this.load(); }, go(p){ this.page=p; this.load(); },
+    ordenar(k){ if(this.sort===k){ this.dir=this.dir==='asc'?'desc':'asc'; } else { this.sort=k; this.dir='asc'; } this.reload(); },
     debounced(){ clearTimeout(this._t); this._t=setTimeout(()=>this.reload(),350); },
     industria(k){ return {tecnologia:'Tecnología',retail:'Retail',financiero:'Financiero',salud:'Salud',manufactura:'Manufactura',educacion:'Educación',logistica:'Logística',agroindustria:'Agroindustria',turismo:'Turismo',profesionales:'Servicios',construccion:'Construcción',energia:'Energía',gobierno:'Gobierno',medios:'Medios',otro:'Otra'}[k]||(k||'—'); },
     async exportar(){ const r=await api.get('/admin/leads-export?status='+this.status+'&channel='+this.channel+'&q='+encodeURIComponent(this.q));

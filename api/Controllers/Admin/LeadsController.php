@@ -19,8 +19,13 @@ final class LeadsController extends Controller
         $page = $this->req->page();
         $per = $this->req->perPage();
         $total = (int) Database::run("SELECT COUNT(*) FROM leads l {$where}", $params)->fetchColumn();
+        // Ordenamiento seguro (whitelist de columnas)
+        $cols = ['name', 'company', 'email', 'industry', 'status', 'touchpoints', 'created_at', 'updated_at'];
+        $sort = in_array($this->req->input('sort', ''), $cols, true) ? $this->req->input('sort') : 'updated_at';
+        $dir = strtolower((string) $this->req->input('dir', 'desc')) === 'asc' ? 'ASC' : 'DESC';
+        $orderCol = $sort === 'touchpoints' ? 'touchpoints' : "l.{$sort}";
         $sql = "SELECT l.*, (SELECT COUNT(*) FROM touchpoints t WHERE t.lead_id = l.id) touchpoints
-                FROM leads l {$where} ORDER BY l.updated_at DESC LIMIT {$per} OFFSET " . (($page - 1) * $per);
+                FROM leads l {$where} ORDER BY {$orderCol} {$dir} LIMIT {$per} OFFSET " . (($page - 1) * $per);
         $items = Database::run($sql, $params)->fetchAll();
         Response::paginated($items, $total, $page, $per);
     }

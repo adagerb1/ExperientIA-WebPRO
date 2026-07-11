@@ -5,15 +5,21 @@ import { PageHero, SectionCTA } from '../lib/layout.js';
 import { LeadFields } from '../lib/forms.js';
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
 function blankLead(){ return { name:'',email:'',phone_wa:'',phone_dial:'',country:'',company:'',role:'',industry:'',company_size:'',website:'' }; }
+const RCATS = { ia_negocios:'IA aplicada a negocios', automatizacion:'Automatización', growth:'Growth', estrategia:'Estrategia', marketing:'Marketing estratégico', crm:'CRM', ventas:'Ventas', experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes', datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital' };
+const catLabel = (k)=> RCATS[k]||k;
 
 export const Recursos = {
   components: { Icon, PageHero },
   template: `<div>
     <PageHero :eyebrow="t('recursos.eyebrow')" :titulo="t('recursos.titulo')" :sub="t('recursos.sub')"/>
     <section class="section"><div class="container"><div class="grid grid-3">
-      <article v-for="(r,i) in items" :key="r.id" class="glass card" v-reveal :style="{'--d':(i%3)*.08+'s',display:'grid',gap:'.9rem',alignContent:'start'}">
-        <div class="chip-row"><span class="icon-chip"><Icon :name="r.type==='download'?'doc':'eye'"/></span><span class="chip">{{ tr(r.tipo_label) }}</span></div>
-        <h2 class="h3">{{ tr(r.titulo) }}</h2><p class="small">{{ tr(r.extracto) }}</p>
+      <article v-for="(r,i) in items" :key="r.id" class="glass card rec-card" v-reveal :style="{'--d':(i%3)*.08+'s'}">
+        <router-link :to="pageUrl('recursos',{slug:r.slug})" v-if="r.cover_image" class="rec-cover"><img :src="r.cover_image" :alt="tr(r.titulo)" loading="lazy"></router-link>
+        <div class="chip-row"><span class="icon-chip"><Icon :name="r.type==='download'?'doc':'eye'"/></span><span class="chip">{{ tr(r.tipo_label) }}</span>
+          <span v-for="c in (r.categories||[]).slice(0,2)" :key="c" class="chip chip-soft">{{ catLabel(c) }}</span></div>
+        <h2 class="h3">{{ tr(r.titulo) }}</h2>
+        <p class="rec-meta">{{ r.author||'ExperientIA' }} · {{ r.read_minutes||5 }} min<span v-if="r.audio_path"> · 🔊 audio</span></p>
+        <p class="small">{{ tr(r.extracto) }}</p>
         <router-link :to="pageUrl('recursos',{slug:r.slug})" class="link-arrow">{{ r.type==='download'?t('common.descargar'):t('common.leer') }} <Icon name="arrow" :size="16"/></router-link></article></div></div></section>
     <section class="section"><div class="container"><div class="glass glass-lit card" v-reveal style="position:relative;overflow:hidden;text-align:center;padding:clamp(2.5rem,6vw,4rem)">
       <div class="bg-atmos"><div class="halo halo-cyan" style="width:400px;height:400px;top:-220px;right:-120px;opacity:.4"></div></div>
@@ -26,7 +32,7 @@ export const Recursos = {
         <p class="small">{{ t('recursos.newsletter_nota') }}</p></div></div></div></section>
   </div>`,
   data(){ return { items:[], email:'', subscrito:false, loading:false }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel },
   async mounted(){ setMeta(t('recursos.meta_title')+' · ExperientIA', t('recursos.meta_desc')); this.items=await fc('recursos'); },
   methods:{ async suscribir(){ this.loading=true; const r=await api.post('/newsletter',{email:this.email,locale:store.locale}); this.loading=false; if(r.ok){this.subscrito=true}else{toast(r.error||'Error','err')} } },
 };
@@ -35,7 +41,13 @@ export const RecursoDetalle = {
   components: { Icon, LeadFields, SectionCTA },
   template: `<div v-if="rec">
     <PageHero :eyebrow="tr(rec.tipo_label)" :titulo="tr(rec.titulo)" :sub="tr(rec.extracto)"/>
-    <section class="section" v-if="rec.type!=='download'"><div class="container articulo"><div class="articulo__body" v-reveal v-html="tr(rec.cuerpo)"></div></div></section>
+    <section class="section" v-if="rec.type!=='download'"><div class="container articulo">
+      <img v-if="rec.cover_image" :src="rec.cover_image" :alt="tr(rec.titulo)" class="articulo__cover" v-reveal>
+      <div class="articulo__meta" v-reveal>
+        <span v-for="c in (rec.categories||[])" :key="c" class="chip chip-soft">{{ catLabel(c) }}</span>
+        <span class="rec-meta">{{ rec.author||'ExperientIA' }} · {{ rec.read_minutes||5 }} min de lectura</span></div>
+      <audio v-if="rec.audio_path" :src="rec.audio_path" controls class="articulo__audio" v-reveal></audio>
+      <div class="articulo__body" v-reveal v-html="tr(rec.cuerpo)"></div></div></section>
     <section class="section" v-else><div class="container contacto__grid">
       <aside><ul class="beneficios"><li class="glass card" v-reveal><span class="icon-chip"><Icon name="doc"/></span><p>{{ tr(rec.extracto) }}</p></li>
         <li class="glass card" v-reveal :style="{'--d':'.08s'}"><span class="icon-chip"><Icon name="shield"/></span><p>{{ t('form.privacidad') }}</p></li></ul></aside>
@@ -49,7 +61,7 @@ export const RecursoDetalle = {
   </div>`,
   components: { Icon, LeadFields, SectionCTA, PageHero },
   data(){ return { rec:null, lead:blankLead(), listo:false, url:'', loading:false, error:'' }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel },
   async mounted(){ const all=await fc('recursos'); this.rec=all.find(r=>r.slug===this.$route.params.slug); if(this.rec) setMeta(tr(this.rec.titulo)+' · ExperientIA', tr(this.rec.extracto)); },
   methods:{ async descargar(){
     if(!this.$refs.lf.validate(['name','email','country'])) return;

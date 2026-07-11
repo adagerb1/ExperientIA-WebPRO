@@ -27,7 +27,7 @@ final class ContentController extends Controller
     private function fetch(string $tabla): array
     {
         if ($tabla === 'resources') {
-            $st = Database::run("SELECT id, slug, type, tipo_label, titulo, extracto, cuerpo, file_path, downloads FROM resources WHERE active = 1 AND published_at IS NOT NULL AND published_at <= ? ORDER BY sort", [now_utc()]);
+            $st = Database::run("SELECT id, slug, type, categories, tipo_label, titulo, extracto, cuerpo, author, read_minutes, cover_image, audio_path, video_url, file_path, downloads FROM resources WHERE active = 1 AND published_at IS NOT NULL AND published_at <= ? ORDER BY COALESCE(featured,0) DESC, sort", [now_utc()]);
         } else {
             $st = Database::run("SELECT * FROM {$tabla} WHERE active = 1 ORDER BY sort");
         }

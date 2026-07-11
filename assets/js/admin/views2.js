@@ -1,14 +1,23 @@
 // Portal admin · Reservas, Contenido (CRUD trilingüe), Conectores, Plantillas, AlexIA interno
 import { api, store, toast } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
+import { SmartTable } from './table.js';
+const escT = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
 export const Reservas = {
-  template: `<div><h1>Reservas</h1><p class="adm__sub">Sesiones 1:1 agendadas</p>
-    <div class="glass panel" style="padding:.6rem 1rem 1rem"><table><thead><tr><th>Fecha (UTC)</th><th>Lead</th><th>Tema</th><th>Estado</th></tr></thead><tbody>
-      <tr v-for="b in items" :key="b.id"><td>{{ b.starts_at }}</td><td><b style="color:var(--neutral-light)">{{ b.lead_name }}</b><br><span class="small">{{ b.lead_email }}</span></td>
-        <td class="small">{{ (b.tema||'').slice(0,120) }}</td><td><select class="inp" style="width:auto" :value="b.status" @change="cambiar(b,$event.target.value)"><option>confirmada</option><option>realizada</option><option>cancelada</option></select></td></tr>
-      <tr v-if="!items.length"><td colspan="4" class="small" style="text-align:center;padding:2rem">Sin reservas.</td></tr></tbody></table></div></div>`,
-  data(){ return { items:[] }; },
+  components:{ SmartTable },
+  template: `<div><h1>Reservas</h1><p class="adm__sub">Sesiones 1:1 agendadas · ordena por cualquier columna</p>
+    <div class="toolbar"><input class="inp" v-model="q" placeholder="Buscar lead, correo o tema…" style="max-width:300px"></div>
+    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="['lead_name','lead_email','tema']" :clickable="false">
+      <template #actions="{row}"><select class="inp" style="width:auto" :value="row.status" @change="cambiar(row,$event.target.value)">
+        <option>confirmada</option><option>realizada</option><option>cancelada</option></select></template></SmartTable></div>`,
+  data(){ return { items:[], q:'',
+    cols:[
+      { key:'starts_at', label:'Fecha (UTC)' },
+      { key:'lead_name', label:'Lead', render:(b)=>'<b style="color:var(--neutral-light)">'+escT(b.lead_name)+'</b><br><span class="small">'+escT(b.lead_email||'')+'</span>' },
+      { key:'tema', label:'Tema', render:(b)=>'<span class="small">'+escT((b.tema||'').slice(0,120))+'</span>' },
+      { key:'status', label:'Estado', render:(b)=>'<span class="badge '+escT(b.status)+'">'+escT(b.status)+'</span>' },
+    ] }; },
   methods:{ async load(){ const r=await api.get('/admin/reservas'); if(r.ok) this.items=r.data; },
     async cambiar(b,v){ const r=await api.patch('/admin/reservas/'+b.id,{status:v}); toast(r.ok?'Actualizado.':(r.error||'Error'),r.ok?'ok':'err'); if(r.ok) b.status=v; } },
   mounted(){ this.load(); },
@@ -31,14 +40,16 @@ const MODULOS = {
     {n:'weekday',l:'Día (1=Lun … 7=Dom)',t:'num'},{n:'start_time',l:'Desde (HH:MM)',t:'text'},{n:'end_time',l:'Hasta (HH:MM)',t:'text'},{n:'active',l:'Activa',t:'bool'}]},
 };
 
+const DOW = { 1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo' };
+const txtOf = (v) => { if (v && typeof v === 'object') { return v.es || Object.values(v)[0] || ''; } return String(v == null ? '' : v); };
+
 export const Contenido = {
-  components: { Icon },
+  components: { Icon, SmartTable },
   props: ['modulo'],
   template: `<div><h1>{{ M.titulo }}</h1><p class="adm__sub">Contenido del sitio · edición trilingüe (ES obligatorio; EN/PT vacíos muestran ES)</p>
-    <div class="toolbar"><button class="btn btn-primary btn-sm" @click="nuevo"><Icon name="plug" :size="14"/> Crear</button><span class="small">{{ items.length }} registros</span></div>
-    <div class="glass panel" style="padding:.6rem 1rem 1rem"><table><thead><tr><th v-for="c in M.list" :key="c">{{ c }}</th></tr></thead><tbody>
-      <tr v-for="it in items" :key="it.id" class="row" @click="editar(it)"><td v-for="c in M.list" :key="c">
-        <span v-if="c==='active'">{{ Number(it[c])?'✓':'—' }}</span><span v-else-if="c==='weekday'">{{ dow(it[c]) }}</span><span v-else>{{ txt(it[c]) }}</span></td></tr></tbody></table></div>
+    <div class="toolbar"><button class="btn btn-primary btn-sm" @click="nuevo"><Icon name="plug" :size="14"/> Crear</button>
+      <input class="inp" v-model="q" placeholder="Buscar…" style="max-width:240px"></div>
+    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="searchKeys" @rowClick="editar"/>
     <div class="modal-bg" v-if="editing" @click.self="editing=null"><div class="glass modal modal-lg">
       <h2>{{ form.id?'Editar':'Crear' }} · {{ M.titulo }}</h2>
       <div class="form-grid">
@@ -57,8 +68,14 @@ export const Contenido = {
         <button class="btn btn-ghost btn-sm" @click="editing=null">Cancelar</button>
         <button v-if="form.id" class="btn btn-danger btn-sm" style="margin-left:auto" @click="eliminar">Eliminar</button></div></div></div>
   </div>`,
-  data(){ return { items:[], editing:false, form:{} }; },
-  computed:{ M(){ return MODULOS[this.modulo]; } },
+  data(){ return { items:[], editing:false, form:{}, q:'' }; },
+  computed:{
+    M(){ return MODULOS[this.modulo]; },
+    cols(){ return this.M.list.map(c=>({ key:c, label:c,
+      raw:(it)=> c==='active'?Number(it[c]) : c==='weekday'?Number(it[c]) : txtOf(it[c]).toLowerCase(),
+      render:(it)=> c==='active'?(Number(it[c])?'✓':'—') : c==='weekday'?escT(DOW[it[c]]||it[c]) : escT(txtOf(it[c]).slice(0,80)) })); },
+    searchKeys(){ return this.M.list.map(c=> (it)=> txtOf(it[c])); },
+  },
   watch:{ modulo(){ this.load(); } },
   methods:{
     async load(){ const r=await api.get('/admin/'+this.modulo+'/list'); if(r.ok) this.items=r.data; },
