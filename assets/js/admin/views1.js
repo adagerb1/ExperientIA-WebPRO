@@ -1,6 +1,6 @@
 // Portal admin · Login, Dashboard (KPIs accionables + short polling), Leads (CRM)
 import { api, store, setAuth, toast, exportCSV } from '../lib/core.js';
-import { Icon } from '../lib/ui.js';
+import { Icon, CountUp } from '../lib/ui.js';
 
 export const Login = {
   components: { Icon },
@@ -34,12 +34,12 @@ const HBars = {
 };
 
 export const Dashboard = {
-  components: { Icon, HBars },
+  components: { Icon, HBars, CountUp },
   template: `<div><h1>Tablero de <span class="grad-text">Crecimiento</span></h1>
     <p class="adm__sub">Centro de comando de ExperientIA · datos en vivo (actualiza cada 20 s)</p>
     <div class="kpis">
       <button v-for="k in kpiList" :key="k.key" class="glass kpi" @click="k.action && k.action()">
-        <b class="grad-text">{{ kpis[k.key] ?? '—' }}</b><span>{{ k.label }}</span><span class="ctx" v-if="k.ctx">{{ k.ctx }}</span></button></div>
+        <b class="grad-text"><CountUp :value="kpis[k.key] ?? null" :dur="900"/></b><span>{{ k.label }}</span><span class="ctx" v-if="k.ctx">{{ k.ctx }}</span></button></div>
 
     <div class="glass panel mt"><h3>Embudo de conversión</h3>
       <div class="funnel">

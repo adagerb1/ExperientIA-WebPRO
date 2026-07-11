@@ -1,5 +1,20 @@
 // ExperientIA · Componentes UI compartidos (Vue 3, sin build).
 import { tr } from './core.js';
+import { animate, inView } from 'motion';
+
+const REDUCE = matchMedia('(prefers-reduced-motion: reduce)');
+const EASE_OUT = [0.22, 1, 0.36, 1];
+// Tween numérico propio (rAF) para contadores — fiable y sin dependencias.
+function tweenNumber(to, dur, onUpdate, onDone) {
+  const start = performance.now();
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  function frame(now) {
+    const t = Math.min(1, (now - start) / dur);
+    onUpdate(to * ease(t));
+    if (t < 1) requestAnimationFrame(frame); else onDone && onDone();
+  }
+  requestAnimationFrame(frame);
+}
 
 const ICONS = {
   target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/>',
@@ -91,13 +106,73 @@ export const DashMock = {
   computed: { L() { return this.S[(document.documentElement.lang) || 'es'] || this.S.es; } },
 };
 
-// Directiva de reveal al hacer scroll
+// Directiva de reveal al hacer scroll — impulsada por Motion (inView + animate)
+// Respeta el retardo por escalonamiento vía la variable CSS --d (o v-reveal="0.2").
 export const reveal = {
-  mounted(el) {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.classList.add('in'); return; }
-    el.classList.add('reveal');
-    const io = new IntersectionObserver((e) => { e.forEach(x => { if (x.isIntersecting) { x.target.classList.add('in'); io.unobserve(x.target); } }); }, { threshold: .12, rootMargin: '0px 0px -40px 0px' });
-    io.observe(el);
+  mounted(el, binding) {
+    if (REDUCE.matches) { el.style.opacity = ''; return; }
+    let delay = 0;
+    const dv = el.style.getPropertyValue('--d');
+    if (dv) delay = parseFloat(dv) || 0;
+    if (binding && typeof binding.value === 'number') delay = binding.value;
+    const y = binding && binding.arg === 'far' ? 34 : 22;
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(' + y + 'px)';
+    el.style.willChange = 'opacity, transform';
+    el._revealStop = inView(el, () => {
+      animate(el,
+        { opacity: [0, 1], transform: ['translateY(' + y + 'px)', 'translateY(0px)'] },
+        { duration: 0.7, delay: Math.min(delay, 1.1), easing: EASE_OUT }
+      ).finished.then(() => { el.style.willChange = ''; el.style.transform = ''; }).catch(() => {});
+    }, { amount: 0.12, margin: '0px 0px -40px 0px' });
+  },
+  unmounted(el) { el._revealStop && el._revealStop(); },
+};
+
+// Contador animado: cuenta de 0 al valor cuando entra en viewport. Robusto ante
+// valores no numéricos (los muestra tal cual). Ideal para KPIs y pruebas de landing.
+export const CountUp = {
+  props: {
+    value: { type: [Number, String], default: null },
+    suffix: { type: String, default: '' },
+    prefix: { type: String, default: '' },
+    dur: { type: Number, default: 1200 },
+  },
+  template: `<span ref="n">{{ prefix }}{{ shown }}{{ numeric ? suffix : '' }}</span>`,
+  data() { return { shown: this.raw(this.value), started: false }; },
+  computed: {
+    numeric() { return this.parse(this.value) !== null; },
+  },
+  watch: { value() { if (this.started) this.run(); else this.shown = this.raw(this.value); } },
+  mounted() {
+    if (REDUCE.matches || !this.numeric) { this.shown = this.raw(this.value); return; }
+    this.shown = this.raw(0);
+    this._stop = inView(this.$refs.n, () => { this.started = true; this.run(); }, { amount: 0.6 });
+  },
+  unmounted() { this._stop && this._stop(); },
+  methods: {
+    parse(v) {
+      if (v === null || v === undefined || v === '') return null;
+      const s = String(v).trim();
+      if (!/^\d[\d.,\s]*$/.test(s)) return null; // solo enteros/decimales "limpios"
+      const n = parseFloat(s.replace(/[\s,]/g, ''));
+      return isFinite(n) ? n : null;
+    },
+    raw(v) { const n = this.parse(v === 0 ? '0' : v); return n === null ? (v == null ? '—' : String(v)) : Math.round(n).toLocaleString('es'); },
+    run() {
+      const to = this.parse(this.value);
+      if (to === null) { this.shown = this.raw(this.value); return; }
+      tweenNumber(to, this.dur, (v) => { this.shown = Math.round(v).toLocaleString('es'); }, () => { this.shown = Math.round(to).toLocaleString('es'); });
+    },
   },
 };
-export { ICONS };
+
+// Barra de progreso de lectura/scroll (inmersión en landings). Se monta sola.
+export const ScrollProgress = {
+  template: `<div class="scroll-prog" ref="bar"><i :style="{transform:'scaleX('+p+')'}"></i></div>`,
+  data() { return { p: 0 }; },
+  mounted() { this._on = () => { const h = document.documentElement; const max = h.scrollHeight - h.clientHeight; this.p = max > 0 ? Math.min(1, h.scrollTop / max) : 0; }; addEventListener('scroll', this._on, { passive: true }); this._on(); },
+  unmounted() { removeEventListener('scroll', this._on); },
+};
+
+export { ICONS, animate, inView };

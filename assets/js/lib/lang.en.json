@@ -367,6 +367,14 @@
     "final_s": "Book a session or leave your details and we'll reach out to show you how it works for your case.",
     "form_t": "Let's talk about your case",
     "gracias_t": "Thank you!",
-    "gracias_s": "We received your details. We'll contact you very soon to show you how to apply it to your business."
+    "gracias_s": "We received your details. We'll contact you very soon to show you how to apply it to your business.",
+    "trust": "Reply in under 24 h · No commitment",
+    "antes": "Today",
+    "despues": "With ExperientIA",
+    "benes_t": "What changes for you",
+    "como_t": "How it works",
+    "como_s": "A clear method, no fluff",
+    "entregables_t": "What you get",
+    "faq_t": "Before you ask"
   }
 }
