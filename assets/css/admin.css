@@ -260,3 +260,23 @@ th:hover .sort-arrow{ opacity:1; }
 .dg-opt-x{ align-self:center; }
 .dg-save{ margin-top:1rem; display:flex; align-items:center; gap:1rem; }
 @media(max-width:720px){ .dg-opt{ grid-template-columns:1fr; } }
+
+/* ============ Pipeline (Kanban) ============ */
+.pipe{ display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem; }
+.pipe-col{ flex:0 0 300px; display:flex; flex-direction:column; gap:.7rem; border-radius:16px; padding:.4rem; transition:background var(--motion),outline var(--motion); outline:2px solid transparent; }
+.pipe-col.over{ background:rgba(24,214,241,.06); outline:2px dashed rgba(24,214,241,.4); }
+.pipe-head{ display:flex; align-items:center; gap:.5rem; font-weight:700; font-size:.9rem; padding:.5rem .3rem; }
+.pipe-head b{ margin-left:auto; font-size:.8rem; color:var(--text-secondary); background:rgba(217,226,240,.08); padding:.1rem .55rem; border-radius:999px; }
+.pipe-dot{ width:9px; height:9px; border-radius:50%; background:var(--text-tertiary); }
+.st-nuevo{ background:#7c9cff } .st-contactado{ background:#18d6f1 } .st-calificado{ background:#8b7bff } .st-propuesta{ background:#f5c451 } .st-cliente{ background:#54e6a8 } .st-descartado{ background:#8792a8 }
+.pipe-cards{ display:flex; flex-direction:column; gap:.6rem; min-height:60px; }
+.pipe-card{ padding:.85rem .9rem; display:grid; gap:.5rem; cursor:grab; border:1px solid var(--glass-border); }
+.pipe-card:active{ cursor:grabbing; }
+.pipe-card-top{ display:grid; gap:.15rem; } .pipe-card-top b{ font-size:.92rem; } .pipe-co{ font-size:.76rem; color:var(--text-secondary); }
+.pipe-tags{ display:flex; flex-wrap:wrap; gap:.35rem; } .pipe-tags .chip{ font-size:.66rem; padding:.12rem .5rem; }
+.pipe-sug{ display:flex; gap:.4rem; font-size:.76rem; color:var(--neutral-light); background:rgba(24,214,241,.08); border:1px solid rgba(24,214,241,.18); border-radius:10px; padding:.5rem .6rem; }
+.pipe-sug svg{ color:var(--cyan); flex:0 0 auto; margin-top:1px; }
+.pipe-card-act{ display:flex; align-items:center; gap:.4rem; }
+.inp-sm{ padding:.35rem .5rem; font-size:.78rem; flex:1; min-width:0; }
+.pipe-card-act .btn{ flex:0 0 auto; }
+.pipe-empty{ font-size:.8rem; color:var(--text-tertiary); text-align:center; padding:1rem; }

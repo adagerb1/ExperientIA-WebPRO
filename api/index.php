@@ -49,6 +49,8 @@ $r->get('/admin/leads/{id}', 'Admin\\LeadsController', 'show');
 $r->patch('/admin/leads/{id}', 'Admin\\LeadsController', 'update');
 $r->delete('/admin/leads/{id}', 'Admin\\LeadsController', 'destroy');
 $r->get('/admin/leads-export', 'Admin\\LeadsController', 'export');
+$r->get('/admin/pipeline', 'Admin\\LeadsController', 'pipeline');
+$r->post('/admin/leads/{id}/sugerencia', 'Admin\\LeadsController', 'sugerencia');
 $r->get('/admin/campanas', 'Admin\\CampaignsController', 'panel');
 $r->get('/admin/segmentos/preview', 'Admin\\SegmentsController', 'preview');
 $r->get('/admin/segmentos/export', 'Admin\\SegmentsController', 'export');

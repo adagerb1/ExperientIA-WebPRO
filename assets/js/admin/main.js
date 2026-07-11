@@ -8,6 +8,7 @@ import { Toasts } from '../lib/layout.js';
 import { Login, Dashboard, Leads, LeadDetail } from './views1.js';
 import { Reservas, Contenido, Conectores, Plantillas } from './views2.js';
 import { Campanas, Segmentos } from './views3.js';
+import { Pipeline } from './pipeline.js';
 import { Diagnosticos } from './diagnosticos.js';
 import { Recursos } from './recursos.js';
 import { AlexiaWidget } from './alexia.js';
@@ -27,7 +28,7 @@ const Shell = {
     <div class="adm__user"><span>{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm" @click="salir"><Icon name="logout" :size="14"/> Salir</button></div>
   </aside><main class="adm__main"><router-view/></main><Toasts/><AlexiaWidget/></div>`,
   data(){ return { store,
-    crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
+    crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
     cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/diagnosticos',icon:'target',label:'Diagnósticos'},{to:'/admin/recursos',icon:'doc',label:'Recursos'},{to:'/admin/industrias',icon:'cube',label:'Industrias'}],
     plat:[{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}],
   }; },
@@ -42,6 +43,7 @@ const routes = [
     { path: 'leads/:id', component: LeadDetail },
     { path: 'campanas', component: Campanas },
     { path: 'segmentos', component: Segmentos },
+    { path: 'pipeline', component: Pipeline },
     { path: 'reservas', component: Reservas },
     { path: 'disponibilidad', component: Contenido, props: { modulo: 'availability_rules' } },
     { path: 'soluciones', component: Contenido, props: { modulo: 'solutions' } },
