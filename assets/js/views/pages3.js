@@ -5,6 +5,7 @@ import { PageHero, SectionCTA } from '../lib/layout.js';
 import { LeadFields } from '../lib/forms.js';
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
 function blankLead(){ return { name:'',email:'',phone_wa:'',phone_dial:'',country:'',company:'',role:'',industry:'',company_size:'',website:'' }; }
+const tx = (key,fb)=>{ const v=t(key); return (v && v!==key)?v:fb; };
 const RCATS = { ia_negocios:'IA aplicada a negocios', automatizacion:'Automatización', growth:'Growth', estrategia:'Estrategia', marketing:'Marketing estratégico', crm:'CRM', ventas:'Ventas', experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes', datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital' };
 const catLabel = (k)=> RCATS[k]||k;
 
@@ -44,7 +45,7 @@ export const Recursos = {
         <h2 class="h3">{{ tr(r.titulo) }}</h2>
         <p class="rec-meta">{{ r.author||'ExperientIA' }} · {{ r.read_minutes||5 }} min<span v-if="r.audio_path"> · 🔊 audio</span></p>
         <p class="small">{{ tr(r.extracto) }}</p>
-        <router-link :to="pageUrl('recursos',{slug:r.slug})" class="link-arrow">{{ r.type==='download'?t('common.descargar'):t('common.leer') }} <Icon name="arrow" :size="16"/></router-link></article></div></div></section>
+        <router-link :to="pageUrl('recursos',{slug:r.slug})" class="link-arrow">{{ r.type==='download'?tx('recursos.list_descarga','Descargar gratis'):t('common.leer') }} <Icon name="arrow" :size="16"/></router-link></article></div></div></section>
     <section class="section"><div class="container"><div class="glass glass-lit card" v-reveal style="position:relative;overflow:hidden;text-align:center;padding:clamp(2.5rem,6vw,4rem)">
       <div class="bg-atmos"><div class="halo halo-cyan" style="width:400px;height:400px;top:-220px;right:-120px;opacity:.4"></div></div>
       <div style="position:relative;z-index:1;display:grid;gap:1.2rem;justify-items:center;max-width:38rem;margin-inline:auto">
@@ -56,7 +57,7 @@ export const Recursos = {
         <p class="small">{{ t('recursos.newsletter_nota') }}</p></div></div></div></section>
   </div>`,
   data(){ return { items:[], email:'', subscrito:false, loading:false }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel, tx:()=>tx },
   async mounted(){ setMeta(t('recursos.meta_title')+' · ExperientIA', t('recursos.meta_desc')); this.items=await fc('recursos'); },
   methods:{ async suscribir(){ this.loading=true; const r=await api.post('/newsletter',{email:this.email,locale:store.locale}); this.loading=false; if(r.ok){this.subscrito=true}else{toast(r.error||'Error','err')} } },
 };
@@ -72,23 +73,36 @@ export const RecursoDetalle = {
         <span class="rec-meta">{{ rec.author||'ExperientIA' }} · {{ rec.read_minutes||5 }} min de lectura</span></div>
       <AlexiaAudio v-if="rec.audio_path" :src="rec.audio_path" v-reveal/>
       <div class="articulo__body" v-reveal v-html="tr(rec.cuerpo)"></div></div></section>
-    <section class="section" v-else><div class="container contacto__grid">
-      <aside><ul class="beneficios"><li class="glass card" v-reveal><span class="icon-chip"><Icon name="doc"/></span><p>{{ tr(rec.extracto) }}</p></li>
-        <li class="glass card" v-reveal :style="{'--d':'.08s'}"><span class="icon-chip"><Icon name="shield"/></span><p>{{ t('form.privacidad') }}</p></li></ul></aside>
-      <div v-if="listo" class="glass glass-lit form-panel" v-reveal><h2 class="h3">{{ t('recursos.descarga_lista') }}</h2><a :href="url" class="btn btn-primary">{{ t('common.descargar') }}</a><p class="small">{{ t('recursos.gated_sub') }}</p></div>
-      <form v-else class="glass glass-lit form-panel" v-reveal @submit.prevent="descargar">
-        <h2 class="h3">{{ t('recursos.gated_titulo') }}</h2><p class="small">{{ t('recursos.gated_sub') }}</p>
-        <LeadFields ref="lf" v-model="lead" :full="false"/>
-        <button class="btn btn-grad" style="justify-self:start" :disabled="loading">{{ loading?t('form.enviando'):t('common.descargar') }}</button>
-        <p class="err" v-if="error">{{ error }}</p><p class="small">{{ t('form.privacidad') }}</p></form></div></section>
-    <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('recursos')" :secondaryLabel="t('nav.recursos')"/>
+    <section class="section" v-else><div class="container magnet-grid">
+      <div class="magnet-sell" v-reveal>
+        <span class="chip chip--cyan">{{ tx('recursos.magnet_badge','Descarga gratuita') }}</span>
+        <img v-if="rec.cover_image" :src="rec.cover_image" :alt="tr(rec.titulo)" class="magnet-cover" loading="lazy">
+        <h2 class="lbl" style="margin-top:.3rem">{{ tx('recursos.magnet_qt','Qué te llevas') }}</h2>
+        <ul class="check-list check-list--lg">
+          <li><span class="check-chip"><Icon name="check" :size="13"/></span>{{ tr(rec.extracto) }}</li>
+          <li><span class="check-chip"><Icon name="check" :size="13"/></span>{{ tx('recursos.magnet_b1','Aplicable a tu empresa desde hoy, sin relleno teórico.') }}</li>
+          <li><span class="check-chip"><Icon name="check" :size="13"/></span>{{ tx('recursos.magnet_b2','Lo recibes al instante, sin costo.') }}</li></ul></div>
+      <div>
+        <div v-if="listo" class="glass glass-lit form-panel magnet-ok" v-reveal>
+          <span class="icon-chip"><Icon name="check"/></span>
+          <h2 class="h3">{{ tx('recursos.post_t','Tu descarga está lista') }}</h2>
+          <a :href="url" class="btn btn-primary" download>{{ t('common.descargar') }}</a>
+          <p>{{ tx('recursos.post_s','¿Quieres que lo llevemos a tu caso? Empieza con un diagnóstico ejecutivo gratuito.') }}</p>
+          <router-link :to="pageUrl('diagnostico')" class="btn btn-grad">{{ tx('recursos.post_cta','Quiero mi diagnóstico gratis') }}</router-link>
+          <p class="small">{{ tx('recursos.post_nota','Te sumamos a nuestros insights ejecutivos. Puedes salir cuando quieras.') }}</p></div>
+        <form v-else class="glass glass-lit form-panel" v-reveal @submit.prevent="descargar">
+          <h2 class="h3">{{ tx('recursos.magnet_form_t','Descárgalo gratis') }}</h2><p class="small">{{ tx('recursos.magnet_form_s','Déjanos tu nombre y correo y te lo enviamos al instante.') }}</p>
+          <div style="margin-top:1rem"><LeadFields ref="lf" v-model="lead" :minimal="true"/></div>
+          <button class="btn btn-grad" style="justify-self:start;margin-top:.4rem" :disabled="loading">{{ loading?t('form.enviando'):tx('recursos.magnet_cta','Descargar gratis') }}</button>
+          <p class="err" v-if="error">{{ error }}</p><p class="small garantia"><Icon name="shield" :size="12"/> {{ t('form.privacidad') }}</p></form></div></div></section>
+    <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('diagnostico')" :primaryLabel="tx('landing.oferta_cta','Quiero mi diagnóstico gratis')" :secondary="pageUrl('recursos')" :secondaryLabel="t('nav.recursos')"/>
   </div>`,
   components: { Icon, LeadFields, SectionCTA, PageHero, AlexiaAudio },
   data(){ return { rec:null, lead:blankLead(), listo:false, url:'', loading:false, error:'' }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, catLabel:()=>catLabel, tx:()=>tx },
   async mounted(){ const all=await fc('recursos'); this.rec=all.find(r=>r.slug===this.$route.params.slug); if(this.rec) setMeta(tr(this.rec.titulo)+' · ExperientIA', tr(this.rec.extracto)); },
   methods:{ async descargar(){
-    if(!this.$refs.lf.validate(['name','email','country'])) return;
+    if(!this.$refs.lf.validate(['name','email'])) return;
     this.loading=true; this.error='';
     const r=await api.post('/descarga',{...this.lead,slug:this.rec.slug,locale:store.locale});
     this.loading=false;

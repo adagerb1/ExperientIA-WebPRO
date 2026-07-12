@@ -102,7 +102,7 @@ export const PhoneInput = {
 // Campos de captura de lead compartidos
 export const LeadFields = {
   components: { Combo, PhoneInput },
-  props: { modelValue: Object, full: Boolean, company: { type: Boolean, default: true } },
+  props: { modelValue: Object, full: Boolean, company: { type: Boolean, default: true }, minimal: Boolean },
   emits: ['update:modelValue'],
   template: `<div style="display:grid;gap:1.2rem">
     <div class="honeypot"><input type="text" v-model="d.website" tabindex="-1" autocomplete="off"></div>
@@ -111,12 +111,12 @@ export const LeadFields = {
       <div class="field"><label>{{ t('form.email') }} *</label><input class="field-el" style="width:100%;padding:.85rem 1rem;border-radius:var(--r-sm);border:1px solid var(--line-strong);background:rgba(5,17,38,.5);color:var(--neutral-light);font-family:var(--font);font-size:.95rem" type="email" v-model="d.email" autocomplete="email"><p class="err" v-if="errors.email">{{ t('form.error_validacion') }}</p></div>
     </div>
     <div class="field"><label>{{ t('form.telefono') }}</label><PhoneInput ref="phone" v-model="d.phone_wa" @dial="d.phone_dial=$event" /><p class="hint">{{ t('form.telefono_hint') }}</p><p class="err" v-if="phoneError">{{ t('form.error_telefono') }}</p></div>
-    <div class="field"><label>{{ t('form.pais') }} *</label><Combo v-model="d.country" :options="opcPais" :placeholder="t('form.pais_placeholder')" /><p class="err" v-if="errors.country">{{ t('form.error_validacion') }}</p></div>
-    <div class="form-row" v-if="company">
+    <div class="field" v-if="!minimal"><label>{{ t('form.pais') }} *</label><Combo v-model="d.country" :options="opcPais" :placeholder="t('form.pais_placeholder')" /><p class="err" v-if="errors.country">{{ t('form.error_validacion') }}</p></div>
+    <div class="form-row" v-if="company && !minimal">
       <div class="field"><label>{{ t('form.empresa') }} <span v-if="full">*</span></label><input class="field-el" style="width:100%;padding:.85rem 1rem;border-radius:var(--r-sm);border:1px solid var(--line-strong);background:rgba(5,17,38,.5);color:var(--neutral-light);font-family:var(--font);font-size:.95rem" v-model="d.company" autocomplete="organization"></div>
       <div class="field" v-if="full"><label>{{ t('form.rol') }}</label><input class="field-el" style="width:100%;padding:.85rem 1rem;border-radius:var(--r-sm);border:1px solid var(--line-strong);background:rgba(5,17,38,.5);color:var(--neutral-light);font-family:var(--font);font-size:.95rem" v-model="d.role"></div>
     </div>
-    <div class="form-row" v-if="company">
+    <div class="form-row" v-if="company && !minimal">
       <div class="field"><label>{{ t('form.industria') }} <span v-if="full">*</span></label><Combo v-model="d.industry" :options="opcInd" :placeholder="t('form.industria_placeholder')" /></div>
       <div class="field"><label>{{ t('form.empleados') }} <span v-if="full">*</span></label><Combo v-model="d.company_size" :options="opcTam" :placeholder="t('form.empleados')" /></div>
     </div>

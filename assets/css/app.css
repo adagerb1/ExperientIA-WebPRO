@@ -557,3 +557,12 @@ p { margin: 0; color: var(--text-secondary); }
 .caso-list-card{ text-decoration:none; color:inherit; transition:transform var(--motion),border-color var(--motion); }
 .caso-list-card:hover{ transform:translateY(-3px); border-color:rgba(24,214,241,.3); }
 .caso-list-card .link-arrow{ margin-top:.2rem; }
+
+/* ============ Recurso como lead magnet ============ */
+.magnet-grid{ display:grid; gap:2rem; align-items:start; }
+@media(min-width:860px){ .magnet-grid{ grid-template-columns:1fr 1fr; } }
+.magnet-sell{ display:grid; gap:.7rem; align-content:start; }
+.magnet-cover{ width:100%; max-width:340px; border-radius:14px; border:1px solid var(--line-soft); }
+.magnet-ok{ display:grid; gap:.9rem; justify-items:start; }
+.magnet-ok .icon-chip{ margin-bottom:.2rem; }
+.magnet-ok .btn{ justify-self:stretch; text-align:center; justify-content:center; }

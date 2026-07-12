@@ -160,7 +160,19 @@
   "newsletter_placeholder": "Your corporate email",
   "newsletter_cta": "Subscribe",
   "newsletter_nota": "Unsubscribe anytime.",
-  "newsletter_gracias": "Done. Our next edition is on its way."
+  "newsletter_gracias": "Done. Our next edition is on its way.",
+  "magnet_badge": "Free download",
+  "magnet_qt": "What you get",
+  "magnet_b1": "Applicable to your company today, no theoretical filler.",
+  "magnet_b2": "You get it instantly, at no cost.",
+  "magnet_form_t": "Download it free",
+  "magnet_form_s": "Leave your name and email and we'll send it instantly.",
+  "magnet_cta": "Download free",
+  "list_descarga": "Download free",
+  "post_t": "Your download is ready",
+  "post_s": "Want us to bring it to your case? Start with a free executive diagnostic.",
+  "post_cta": "I want my free diagnostic",
+  "post_nota": "We'll add you to our executive insights. You can opt out anytime."
  },
  "nosotros": {
   "meta_title": "About",

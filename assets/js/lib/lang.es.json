@@ -160,7 +160,19 @@
   "newsletter_placeholder": "Su correo corporativo",
   "newsletter_cta": "Suscribirme",
   "newsletter_nota": "Puede darse de baja cuando quiera.",
-  "newsletter_gracias": "Listo. Le llegará nuestra próxima edición."
+  "newsletter_gracias": "Listo. Le llegará nuestra próxima edición.",
+  "magnet_badge": "Descarga gratuita",
+  "magnet_qt": "Qué te llevas",
+  "magnet_b1": "Aplicable a tu empresa desde hoy, sin relleno teórico.",
+  "magnet_b2": "Lo recibes al instante, sin costo.",
+  "magnet_form_t": "Descárgalo gratis",
+  "magnet_form_s": "Déjanos tu nombre y correo y te lo enviamos al instante.",
+  "magnet_cta": "Descargar gratis",
+  "list_descarga": "Descargar gratis",
+  "post_t": "Tu descarga está lista",
+  "post_s": "¿Quieres que lo llevemos a tu caso? Empieza con un diagnóstico ejecutivo gratuito.",
+  "post_cta": "Quiero mi diagnóstico gratis",
+  "post_nota": "Te sumamos a nuestros insights ejecutivos. Puedes salir cuando quieras."
  },
  "nosotros": {
   "meta_title": "Nosotros",
