@@ -376,6 +376,27 @@
   "como_t": "How it works",
   "como_s": "A clear method, no fluff",
   "entregables_t": "What you get",
-  "faq_t": "Before you ask"
+  "faq_t": "Before you ask",
+  "oferta_badge": "Free",
+  "oferta_t": "Free executive diagnostic",
+  "oferta_s": "In 30 minutes we hand you a map of the 3 highest-return opportunities for your company. No cost, no commitment.",
+  "oferta_cta": "I want my free diagnostic",
+  "garantia": "If we don't see a clear case, we tell you. No fine print.",
+  "garantia_corta": "No cost · no commitment",
+  "proof_e": "Real results",
+  "proof_t": "What our clients achieve",
+  "ver_caso": "View the case"
+ },
+ "caso": {
+  "cta": "I want results like this",
+  "cta_corto": "I want this",
+  "ver_completo": "View the full case",
+  "contexto": "The context",
+  "intervencion": "What we did",
+  "aside_t": "Does your company face something similar?",
+  "aside_s": "We'll show you how to apply it to your case in a free diagnostic.",
+  "final_t": "Results aren't luck: they're method",
+  "final_s": "Let's apply it to your company. Start with a free executive diagnostic.",
+  "ver_mas": "See more cases"
  }
 }

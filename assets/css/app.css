@@ -528,3 +528,32 @@ p { margin: 0; color: var(--text-secondary); }
 .diag-pick .link-arrow{ margin-top:.2rem; }
 .diag-back{ margin-bottom:1rem; }
 .diag-back .link-arrow{ background:none; border:none; cursor:pointer; padding:0; font:inherit; }
+
+/* ============ Landing v3 · oferta, prueba social, garantía, casos ============ */
+.land-oferta{ display:grid; gap:1.2rem; align-items:center; padding:clamp(1.4rem,3.5vw,2rem); }
+@media(min-width:820px){ .land-oferta{ grid-template-columns:1.6fr 1fr; } }
+.land-oferta-body{ display:grid; gap:.5rem; justify-items:start; }
+.land-oferta-body .chip{ margin-bottom:.2rem; }
+.land-oferta-body h2{ font-size:clamp(1.2rem,2.4vw,1.5rem); }
+.land-oferta-body p{ color:var(--text-secondary); }
+.land-oferta-cta{ display:grid; gap:.6rem; justify-items:stretch; }
+.land-oferta-cta .btn{ justify-content:center; }
+.garantia{ display:inline-flex; align-items:center; gap:.4rem; color:var(--text-tertiary); }
+.garantia svg{ color:var(--cyan); flex:0 0 auto; }
+
+/* Prueba social embebida (casos) */
+.land-proof-sec{ position:relative; }
+.land-proof .proof-card{ display:grid; gap:.7rem; align-content:start; padding:1.7rem; text-decoration:none; color:inherit; transition:transform var(--motion),border-color var(--motion); }
+.land-proof .proof-card:hover{ transform:translateY(-4px); border-color:rgba(24,214,241,.35); }
+.proof-sector{ font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--cyan); }
+.proof-card h3{ font-size:1.05rem; }
+.proof-metric{ display:grid; gap:.15rem; margin-top:.2rem; }
+.proof-val{ font-size:clamp(1.7rem,4vw,2.3rem); font-weight:800; line-height:1; }
+.proof-lbl{ font-size:.82rem; color:var(--text-secondary); }
+.proof-card .link-arrow{ margin-top:auto; }
+
+/* Caso como landing */
+.caso-metrics{ grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); }
+.caso-list-card{ text-decoration:none; color:inherit; transition:transform var(--motion),border-color var(--motion); }
+.caso-list-card:hover{ transform:translateY(-3px); border-color:rgba(24,214,241,.3); }
+.caso-list-card .link-arrow{ margin-top:.2rem; }

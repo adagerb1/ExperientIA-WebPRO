@@ -201,6 +201,15 @@ const Landing = {
       <p class="hero-trust small" v-reveal :style="{'--d':'.3s'}"><Icon name="check" :size="14"/> {{ tx('landing.trust','Respuesta en menos de 24 h · Sin compromiso') }}</p>
     </PageHero>
 
+    <section class="section land-oferta-sec" style="padding-top:0"><div class="container"><div class="glass glass-lit card land-oferta" v-reveal>
+      <div class="land-oferta-body"><span class="chip chip--cyan">{{ tx('landing.oferta_badge','Sin costo') }}</span>
+        <h2 class="h3">{{ tx('landing.oferta_t','Diagnóstico ejecutivo gratuito') }}</h2>
+        <p>{{ tx('landing.oferta_s','En 30 minutos te entregamos un mapa de las 3 oportunidades de mayor retorno para tu empresa. Sin costo y sin compromiso.') }}</p></div>
+      <div class="land-oferta-cta">
+        <router-link :to="pageUrl('diagnostico')" class="btn btn-grad">{{ tx('landing.oferta_cta','Quiero mi diagnóstico gratis') }}</router-link>
+        <p class="small garantia"><Icon name="shield" :size="13"/> {{ tx('landing.garantia','Si no vemos un caso claro, te lo decimos. Sin letra pequeña.') }}</p></div>
+    </div></div></section>
+
     <section class="section land-contrast-sec"><div class="container land-contrast">
       <div class="glass card contrast-col contrast-antes" v-reveal><span class="contrast-tag">{{ tx('landing.antes','Hoy') }}</span><p>{{ m.antes }}</p></div>
       <div class="contrast-arrow" v-reveal :style="{'--d':'.1s'}"><Icon name="arrow" :size="26"/></div>
@@ -231,7 +240,16 @@ const Landing = {
         <h3 class="h3">{{ tx('landing.aside_t','Da el primer paso') }}</h3><p>{{ tx('landing.aside_s','Cuéntanos tu caso y te mostramos cómo aplicarlo a tu negocio.') }}</p>
         <button class="btn btn-grad" style="width:100%" @click="modal=true">{{ m.cta }}</button>
         <router-link :to="pageUrl('agenda')" class="btn btn-ghost" style="width:100%">{{ tx('landing.agendar','Agendar 1:1') }}</router-link>
+        <p class="small garantia" style="justify-content:center"><Icon name="shield" :size="12"/> {{ tx('landing.garantia_corta','Sin costo · sin compromiso') }}</p>
         <p class="small" style="text-align:center">{{ t('form.privacidad') }}</p></div></aside></div></section>
+
+    <section class="section land-proof-sec" v-if="m.casos && m.casos.length"><div class="bg-atmos"><div class="halo halo-cyan" style="width:440px;height:440px;top:-120px;right:-200px;opacity:.22"></div></div>
+      <div class="container"><div class="section-head"><p class="eyebrow" v-reveal>{{ tx('landing.proof_e','Resultados reales') }}</p><h2 class="h2" v-reveal :style="{'--d':'.06s'}">{{ tx('landing.proof_t','Lo que logran nuestros clientes') }}</h2></div>
+      <div class="grid grid-3 land-proof">
+        <router-link v-for="(c,i) in m.casos" :key="i" :to="c.url" class="glass glass-lit card proof-card" v-reveal :style="{'--d':i*.08+'s'}">
+          <span class="proof-sector">{{ c.sector }}</span><h3 class="h3">{{ c.titulo }}</h3>
+          <div class="proof-metric"><span class="grad-text proof-val">{{ c.valor }}</span><span class="proof-lbl">{{ c.label }}</span></div>
+          <span class="link-arrow">{{ tx('landing.ver_caso','Ver el caso') }} <Icon name="arrow" :size="15"/></span></router-link></div></div></section>
 
     <section class="section" v-if="m.faqs && m.faqs.length"><div class="container land-faqs">
       <div class="section-head"><h2 class="h2" v-reveal>{{ tx('landing.faq_t','Antes de que preguntes') }}</h2></div>
@@ -241,7 +259,8 @@ const Landing = {
       <h2 class="h2">{{ tx('landing.final_t','¿Listo para aplicarlo en tu empresa?') }}</h2>
       <p class="lead">{{ tx('landing.final_s','Agenda una sesión o déjanos tus datos y te contactamos para mostrarte cómo funciona en tu caso.') }}</p>
       <div class="land-cta-row"><button class="btn btn-grad" @click="modal=true">{{ m.cta }}</button>
-        <router-link :to="pageUrl('agenda')" class="btn btn-ghost">{{ tx('landing.agendar','Agendar 1:1') }}</router-link></div></div></div></section>
+        <router-link :to="pageUrl('diagnostico')" class="btn btn-ghost">{{ tx('landing.oferta_cta','Quiero mi diagnóstico gratis') }}</router-link></div>
+      <p class="small garantia" style="justify-content:center"><Icon name="shield" :size="13"/> {{ tx('landing.garantia','Si no vemos un caso claro, te lo decimos. Sin letra pequeña.') }}</p></div></div></section>
 
     <div class="land-sticky"><span>{{ m.titulo }}</span><button class="btn btn-grad btn-sm" @click="modal=true">{{ tx('landing.cta_corto','Me interesa') }}</button></div>
     <LeadModal v-if="modal" :titulo="m.titulo" :origen="m.origen" @close="modal=false"/>
@@ -254,13 +273,23 @@ const NoEncontrado = {
   props:{ volver:String }, computed:{ pageUrl:()=>pageUrl }, methods:{ tx },
 };
 
+// Prueba social embebida: toma los casos y arma tarjetas con su métrica estelar.
+async function proofCasos(){
+  const casos = await fc('casos');
+  return casos.slice(0,3).map(c=>{
+    const res = (c.resultados||[])[0] || {};
+    return { sector: tr(c.sector), titulo: tr(c.titulo), valor: res.valor || '', label: res.label ? tr(res.label) : '',
+      url: pageUrl('casos', { slug: slugify(tr(c.titulo,'es')) }) };
+  }).filter(c=>c.valor);
+}
+
 export const SolucionLanding = {
   components:{ Landing, NoEncontrado },
   template:`<Landing v-if="m" :m="m"/><NoEncontrado v-else-if="cargado" volver="soluciones"/>`,
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const items=await fc('soluciones'); const s=items.find(x=>x.skey===this.$route.params.slug);
-    if(s){ const c=SOL[s.skey]||{}; this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia)); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
+    if(s){ const c=SOL[s.skey]||{}; const casos=await proofCasos(); this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia), casos); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
     this.cargado=true;
   },
 };
@@ -271,13 +300,13 @@ export const ProductoLanding = {
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const slug=this.$route.params.slug; const items=await fc('productos'); const p=items.find(x=>slugify(tr(x.nombre,'es'))===slug);
-    if(p){ const c=PROD[slug]||{}; this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol)); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
+    if(p){ const c=PROD[slug]||{}; const casos=await proofCasos(); this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol), casos); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
     this.cargado=true;
   },
 };
 
 // Normaliza entidad CMS + copy curado en el modelo que consume <Landing>.
-function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb, despuesFb){
+function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb, despuesFb, casos){
   const beneficios = (c.beneficios||[]).map(b=>({ icon:b.icon, t:L(b.t), x:L(b.x) }));
   const pasos = (c.pasos||[]).map(p=>({ t:L(p.t), x:L(p.x) }));
   const metricas = (c.metricas||[]).map(mt=>({ valor:mt.valor, suf:mt.suf||'', label:L(mt.label) }));
@@ -290,6 +319,45 @@ function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb
     antes: L(c.antes) || antesFb || '',
     despues: L(c.despues) || despuesFb || '',
     cta: L(c.cta) || tx('landing.cta','Quiero más información'),
-    beneficios, pasos, entregables, metricas, faqs,
+    beneficios, pasos, entregables, metricas, faqs, casos: casos||[],
   };
 }
+
+// ————————————————————— Caso como landing de prueba —————————————————————
+export const CasoDetalle = {
+  components:{ Icon, CountUp, ScrollProgress, PageHero, LeadModal, NoEncontrado },
+  template:`<div v-if="c">
+    <ScrollProgress/>
+    <PageHero :eyebrow="tr(c.sector)" :titulo="tr(c.titulo)" :sub="sub">
+      <div class="land-cta-row" v-reveal :style="{'--d':'.2s'}"><button class="btn btn-grad" @click="modal=true">{{ tx('caso.cta','Quiero resultados así') }}</button>
+        <router-link :to="pageUrl('diagnostico')" class="btn btn-ghost">{{ tx('landing.oferta_cta','Quiero mi diagnóstico gratis') }}</router-link></div></PageHero>
+
+    <section class="section" style="padding-top:0"><div class="container"><div class="glass glass-lit card land-metrics caso-metrics" v-reveal>
+      <div v-for="(r,i) in c.resultados" :key="i" class="metric"><span class="metric-val grad-text"><CountUp :value="r.valor"/></span><span class="metric-lbl">{{ tr(r.label) }}</span></div></div></div></section>
+
+    <section class="section"><div class="container land-grid">
+      <div class="land-body">
+        <div class="glass card" v-reveal><h2 class="lbl" style="margin-bottom:.8rem">{{ tx('caso.contexto','El contexto') }}</h2><p class="lead">{{ tr(c.contexto) }}</p></div>
+        <div class="glass glass-lit card" v-reveal><h2 class="lbl" style="color:var(--cyan);margin-bottom:.8rem">{{ tx('caso.intervencion','Qué hicimos') }}</h2><p class="lead">{{ tr(c.intervencion) }}</p></div></div>
+      <aside class="land-aside"><div class="glass glass-lit card land-cta" v-reveal>
+        <h3 class="h3">{{ tx('caso.aside_t','¿Tu empresa vive algo similar?') }}</h3><p>{{ tx('caso.aside_s','Te mostramos cómo llevarlo a tu caso en un diagnóstico sin costo.') }}</p>
+        <button class="btn btn-grad" style="width:100%" @click="modal=true">{{ tx('caso.cta','Quiero resultados así') }}</button>
+        <router-link :to="pageUrl('agenda')" class="btn btn-ghost" style="width:100%">{{ tx('landing.agendar','Agendar 1:1') }}</router-link>
+        <p class="small garantia" style="justify-content:center"><Icon name="shield" :size="12"/> {{ tx('landing.garantia_corta','Sin costo · sin compromiso') }}</p></div></aside></div></section>
+
+    <section class="section"><div class="container"><div class="glass glass-lit card land-final" v-reveal>
+      <h2 class="h2">{{ tx('caso.final_t','Los resultados no son suerte: son método') }}</h2>
+      <p class="lead">{{ tx('caso.final_s','Apliquémoslo a tu empresa. Empieza con un diagnóstico ejecutivo gratuito.') }}</p>
+      <div class="land-cta-row"><button class="btn btn-grad" @click="modal=true">{{ tx('caso.cta','Quiero resultados así') }}</button>
+        <router-link :to="pageUrl('casos')" class="btn btn-ghost">{{ tx('caso.ver_mas','Ver más casos') }}</router-link></div></div></div></section>
+
+    <div class="land-sticky"><span>{{ tr(c.titulo) }}</span><button class="btn btn-grad btn-sm" @click="modal=true">{{ tx('caso.cta_corto','Quiero esto') }}</button></div>
+    <LeadModal v-if="modal" :titulo="tr(c.titulo)" :origen="'caso:'+slug" @close="modal=false"/>
+  </div><NoEncontrado v-else-if="cargado" volver="casos"/>`,
+  data(){ return { c:null, cargado:false, modal:false, slug:'' }; },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, sub(){ return this.c ? tr(this.c.contexto).split('.')[0]+'.' : ''; } },
+  methods:{ tx },
+  async mounted(){ this.slug=this.$route.params.slug; const items=await fc('casos');
+    this.c=items.find(x=>slugify(tr(x.titulo,'es'))===this.slug)||null; this.cargado=true;
+    if(this.c) setMeta(tr(this.c.titulo)+' · ExperientIA', tr(this.c.contexto).slice(0,150)); },
+};

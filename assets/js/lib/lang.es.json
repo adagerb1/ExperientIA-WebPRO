@@ -376,6 +376,27 @@
   "como_t": "Cómo funciona",
   "como_s": "Un método claro, sin humo",
   "entregables_t": "Qué recibes",
-  "faq_t": "Antes de que preguntes"
+  "faq_t": "Antes de que preguntes",
+  "oferta_badge": "Sin costo",
+  "oferta_t": "Diagnóstico ejecutivo gratuito",
+  "oferta_s": "En 30 minutos te entregamos un mapa de las 3 oportunidades de mayor retorno para tu empresa. Sin costo y sin compromiso.",
+  "oferta_cta": "Quiero mi diagnóstico gratis",
+  "garantia": "Si no vemos un caso claro, te lo decimos. Sin letra pequeña.",
+  "garantia_corta": "Sin costo · sin compromiso",
+  "proof_e": "Resultados reales",
+  "proof_t": "Lo que logran nuestros clientes",
+  "ver_caso": "Ver el caso"
+ },
+ "caso": {
+  "cta": "Quiero resultados así",
+  "cta_corto": "Quiero esto",
+  "ver_completo": "Ver el caso completo",
+  "contexto": "El contexto",
+  "intervencion": "Qué hicimos",
+  "aside_t": "¿Tu empresa vive algo similar?",
+  "aside_s": "Te mostramos cómo llevarlo a tu caso en un diagnóstico sin costo.",
+  "final_t": "Los resultados no son suerte: son método",
+  "final_s": "Apliquémoslo a tu empresa. Empieza con un diagnóstico ejecutivo gratuito.",
+  "ver_mas": "Ver más casos"
  }
 }

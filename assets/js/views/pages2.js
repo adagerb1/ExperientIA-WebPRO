@@ -54,23 +54,25 @@ export const Productos = {
 };
 
 export const Casos = {
-  components: { PageHero, SectionCTA },
+  components: { PageHero, SectionCTA, Icon },
   template: `<div>
     <PageHero :eyebrow="t('casos.eyebrow')" :titulo="t('casos.titulo')" :sub="t('casos.sub')"/>
     <section class="section"><div class="container" style="display:grid;gap:1.75rem">
-      <article v-for="(c,i) in items" :key="c.id" class="glass glass-lit card" v-reveal :style="{'--d':i*.06+'s',display:'grid',gap:'1.75rem',padding:'clamp(1.75rem,4vw,2.75rem)'}">
+      <router-link v-for="(c,i) in items" :key="c.id" :to="dest(c)" class="glass glass-lit card caso-list-card" v-reveal :style="{'--d':i*.06+'s',display:'grid',gap:'1.75rem',padding:'clamp(1.75rem,4vw,2.75rem)'}">
         <header><p class="sector-label" style="color:var(--cyan);margin-bottom:.6rem">{{ tr(c.sector) }}</p><h2 class="h2" style="font-size:clamp(1.4rem,2.6vw,1.9rem)">{{ tr(c.titulo) }}</h2></header>
         <div style="display:grid;gap:1.75rem" :style="tresCol">
           <div><h3 class="lbl">{{ t('common.contexto') }}</h3><p style="font-size:.95rem">{{ tr(c.contexto) }}</p></div>
           <div><h3 class="lbl">{{ t('common.intervencion') }}</h3><p style="font-size:.95rem">{{ tr(c.intervencion) }}</p></div>
           <div :style="resBorder"><h3 class="lbl" style="color:var(--cyan)">{{ t('common.resultados') }}</h3>
             <ul style="list-style:none;margin:0;padding:0;display:grid;gap:.9rem">
-              <li v-for="(r,j) in c.resultados" :key="j" style="display:grid;gap:.15rem"><span class="grad-text" style="font-size:1.6rem;font-weight:700;line-height:1">{{ r.valor }}</span><span style="font-size:.85rem;color:var(--text-secondary)">{{ tr(r.label) }}</span></li></ul></div></div></article>
+              <li v-for="(r,j) in c.resultados" :key="j" style="display:grid;gap:.15rem"><span class="grad-text" style="font-size:1.6rem;font-weight:700;line-height:1">{{ r.valor }}</span><span style="font-size:.85rem;color:var(--text-secondary)">{{ tr(r.label) }}</span></li></ul></div></div>
+        <span class="link-arrow" style="justify-self:start">{{ tx('caso.ver_completo','Ver el caso completo') }} <Icon name="arrow" :size="16"/></span></router-link>
       <p class="small" style="text-align:center" v-reveal>{{ t('casos.nota') }}</p></div></section>
     <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('soluciones')" :secondaryLabel="t('common.ver_soluciones')"/>
   </div>`,
   data(){ const w=window.innerWidth>=900; return { items:[], tresCol:w?{gridTemplateColumns:'1fr 1fr 1fr'}:{}, resBorder:w?{borderLeft:'1px solid var(--line-soft)',paddingLeft:'1.75rem'}:{} }; },
   computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl },
+  methods:{ tx, dest(c){ return pageUrl('casos',{slug:slugify(tr(c.titulo,'es'))}); } },
   async mounted(){ setMeta(t('casos.meta_title')+' · ExperientIA', t('casos.meta_desc')); this.items=await fc('casos'); },
 };
 
