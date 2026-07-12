@@ -13,35 +13,61 @@ const QUICK = [
 const PAL = ['#18d6f1', '#7a63ff', '#4be3a0', '#ffc247', '#ff7d9d', '#5aa9ff', '#c8bcff', '#39f9b0'];
 const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
 
-function chartHTML(spec) {
+const AX_TXT = '#cdd7ea', AX_SUB = '#8792a8', AX_BG = '#0a1b3a';
+
+// Gráfico como SVG autocontenido (colores en línea) → se puede descargar como PNG.
+function svgChart(spec) {
   const series = (spec.series || []).filter((s) => s && s.label != null);
-  const title = spec.title ? `<p class="aic-title">${esc(spec.title)}</p>` : '';
-  if (!series.length) { return title + '<p class="aic-empty">Sin datos para graficar.</p>'; }
+  if (!series.length) { return '<p class="aic-empty">Sin datos para graficar.</p>'; }
   const max = Math.max(...series.map((s) => +s.value || 0), 1);
+  const title = spec.title || '';
+  const W = 340; const tH = title ? 24 : 6;
+  let inner = ''; let H;
 
   if (spec.type === 'pie') {
     const tot = series.reduce((a, s) => a + (+s.value || 0), 0) || 1;
-    let acc = 0; const stops = [];
-    const legend = series.map((s, i) => {
-      const pct = (+s.value || 0) / tot * 100; const from = acc; acc += pct;
-      stops.push(`${PAL[i % PAL.length]} ${from}% ${acc}%`);
-      return `<span class="aic-leg"><i style="background:${PAL[i % PAL.length]}"></i>${esc(s.label)} · ${Math.round(pct)}%</span>`;
-    }).join('');
-    return `${title}<div class="aic-pie-wrap"><div class="aic-pie" style="background:conic-gradient(${stops.join(',')})"></div><div class="aic-legend">${legend}</div></div>`;
+    const cx = 72, cy = tH + 74, r = 62; let a0 = -Math.PI / 2;
+    H = Math.max(tH + 156, tH + 16 + series.length * 20);
+    series.forEach((s, i) => {
+      const frac = (+s.value || 0) / tot; const a1 = a0 + frac * 2 * Math.PI;
+      const x0 = cx + r * Math.cos(a0), y0 = cy + r * Math.sin(a0), x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
+      const large = frac > 0.5 ? 1 : 0;
+      inner += `<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${r},${r} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${PAL[i % PAL.length]}"/>`;
+      a0 = a1;
+    });
+    series.forEach((s, i) => { const y = tH + 20 + i * 20; const pct = Math.round((+s.value || 0) / tot * 100);
+      inner += `<rect x="156" y="${y - 9}" width="11" height="11" rx="2" fill="${PAL[i % PAL.length]}"/><text x="173" y="${y}" font-size="11" fill="${AX_TXT}">${esc(String(s.label).slice(0, 20))} · ${pct}%</text>`; });
+  } else if (spec.type === 'line') {
+    const n = series.length; H = tH + 150; const padL = 10, padR = 10, padT = tH + 6, padB = 24;
+    const px = (i) => n > 1 ? padL + i / (n - 1) * (W - padL - padR) : W / 2;
+    const py = (v) => H - padB - (+v || 0) / max * (H - padT - padB);
+    inner += `<polyline points="${series.map((s, i) => px(i).toFixed(1) + ',' + py(s.value).toFixed(1)).join(' ')}" fill="none" stroke="#18d6f1" stroke-width="2.5"/>`;
+    series.forEach((s, i) => { inner += `<circle cx="${px(i).toFixed(1)}" cy="${py(s.value).toFixed(1)}" r="3" fill="#18d6f1"/>`; });
+    const step = Math.ceil(n / 8);
+    series.forEach((s, i) => { if (n <= 8 || i % step === 0) { inner += `<text x="${px(i).toFixed(1)}" y="${H - 8}" font-size="9" fill="${AX_SUB}" text-anchor="middle">${esc(String(s.label).slice(0, 7))}</text>`; } });
+  } else {
+    const rowH = 26, barX = 116, valW = 34; H = tH + series.length * rowH + 6;
+    series.forEach((s, i) => { const y = tH + i * rowH; const bw = Math.max(3, (+s.value || 0) / max * (W - barX - valW));
+      inner += `<text x="0" y="${y + 16}" font-size="11" fill="${AX_TXT}">${esc(String(s.label).slice(0, 17))}</text>`;
+      inner += `<rect x="${barX}" y="${y + 6}" width="${bw.toFixed(1)}" height="12" rx="4" fill="${PAL[i % PAL.length]}"/>`;
+      inner += `<text x="${W}" y="${y + 16}" font-size="11" fill="${AX_TXT}" text-anchor="end">${esc(String(s.value))}</text>`; });
   }
-  if (spec.type === 'line') {
-    const n = series.length; const w = 280; const h = 120; const pad = 8;
-    const pts = series.map((s, i) => {
-      const x = n > 1 ? pad + i / (n - 1) * (w - 2 * pad) : w / 2;
-      const y = h - pad - (+s.value || 0) / max * (h - 2 * pad);
-      return x.toFixed(1) + ',' + y.toFixed(1);
-    }).join(' ');
-    const labels = series.map((s) => `<span>${esc(s.label)}</span>`).join('');
-    return `${title}<svg class="aic-line" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#18d6f1" stroke-width="2.5"/></svg><div class="aic-xlabels">${labels}</div>`;
-  }
-  // barras horizontales (default)
-  const rows = series.map((s, i) => `<div class="aic-row"><span class="aic-lbl" title="${esc(s.label)}">${esc(s.label)}</span><div class="aic-track"><div class="aic-fill" style="width:${Math.max(3, (+s.value || 0) / max * 100)}%;background:${PAL[i % PAL.length]}"></div></div><span class="aic-val">${esc(String(s.value))}</span></div>`).join('');
-  return `${title}<div class="aic-bars">${rows}</div>`;
+  const t = title ? `<text x="0" y="14" font-size="12" font-weight="700" fill="${AX_TXT}">${esc(title)}</text>` : '';
+  return `<svg class="aic-svg" viewBox="0 0 ${W} ${H}" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="system-ui,-apple-system,sans-serif">${t}${inner}</svg>`;
+}
+
+function downloadChart(svg) {
+  const vb = (svg.getAttribute('viewBox') || '0 0 340 200').split(' ').map(Number);
+  const W = vb[2] || 340, H = vb[3] || 200, scale = 2;
+  const clone = svg.cloneNode(true); clone.setAttribute('width', W); clone.setAttribute('height', H);
+  const xml = new XMLSerializer().serializeToString(clone);
+  const img = new Image();
+  img.onload = () => {
+    const cv = document.createElement('canvas'); cv.width = W * scale; cv.height = H * scale;
+    const ctx = cv.getContext('2d'); ctx.fillStyle = AX_BG; ctx.fillRect(0, 0, cv.width, cv.height); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0);
+    cv.toBlob((b) => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'alexia-grafica.png'; a.click(); URL.revokeObjectURL(a.href); }, 'image/png');
+  };
+  img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
 }
 
 function renderCharts(root) {
@@ -49,7 +75,9 @@ function renderCharts(root) {
   root.querySelectorAll('.ai-chart[data-chart]:not([data-done])').forEach((el) => {
     el.setAttribute('data-done', '1');
     let spec; try { spec = JSON.parse(el.getAttribute('data-chart')); } catch (e) { return; }
-    el.innerHTML = chartHTML(spec);
+    el.innerHTML = `<div class="aic-box">${svgChart(spec)}<button class="aic-dl" title="Descargar PNG">⬇ PNG</button></div>`;
+    const svg = el.querySelector('svg'); const btn = el.querySelector('.aic-dl');
+    if (svg && btn) { btn.onclick = () => downloadChart(svg); }
   });
 }
 
@@ -61,7 +89,7 @@ export const AlexiaWidget = {
       <div class="ai-head"><div><b>AlexIA</b><span>Consejera estratégica · consejo consultivo</span></div>
         <div class="ai-head-btns"><button @click="quickOpen=!quickOpen" title="Solicitudes rápidas"><Icon name="sparkle" :size="16"/></button><button @click="open=false" title="Cerrar">✕</button></div></div>
       <div class="ai-msgs" ref="msgs">
-        <div class="ai-msg a"><p>Hola {{ store.admin?store.admin.name.split(' ')[0]:'' }}, soy <b>AlexIA</b>. Pregúntame por tus leads, el crecimiento, los recursos o pídeme una gráfica y la genero.</p></div>
+        <div class="ai-msg a"><p>Hola {{ store.admin?store.admin.name.split(' ')[0]:'' }}, soy <b>AlexIA</b>, tu analista de datos. Consulto toda tu base de datos y respondo con tablas y gráficas (descargables). Pregúntame por leads, embudo, campañas, cohortes, correlaciones… o pídeme una regresión.</p></div>
         <div v-for="(m,i) in msgs" :key="i" class="ai-msg" :class="m.role==='user'?'u':'a'" v-html="m.html"></div>
         <div v-if="loading" class="ai-msg a ai-typing"><span></span><span></span><span></span></div></div>
       <div class="ai-quick" v-if="quickOpen">
@@ -79,7 +107,7 @@ export const AlexiaWidget = {
       if (!tt || this.loading) { return; }
       this.msgs.push({ role: 'user', html: '<p>' + esc(tt) + '</p>' });
       this.text = ''; this.loading = true; this.scroll();
-      const r = await api.post('/admin/alexia', { mensaje: tt, conversation_id: this.convId });
+      const r = await api.post('/admin/alexia/analista', { mensaje: tt, conversation_id: this.convId });
       this.loading = false;
       if (r.ok) { this.convId = r.data.conversation_id; this.msgs.push({ role: 'assistant', html: this.clean(r.data.reply) }); }
       else { this.msgs.push({ role: 'assistant', html: '<p>' + esc(r.error || 'AlexIA no está disponible. Configura y activa OpenAI o Claude en Conectores.') + '</p>' }); }

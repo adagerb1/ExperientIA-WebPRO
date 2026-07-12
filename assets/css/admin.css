@@ -348,3 +348,10 @@ th:hover .sort-arrow{ opacity:1; }
 .cms-ai-row{ display:flex; gap:.6rem; align-items:flex-end; }
 .cms-ai-row textarea{ flex:1; resize:vertical; }
 .cms-ai-row .btn{ flex:0 0 auto; white-space:nowrap; }
+
+/* AlexIA analista · gráficos SVG descargables */
+.aic-box{ position:relative; margin:.4rem 0; }
+.aic-svg{ display:block; max-width:100%; }
+.aic-dl{ position:absolute; top:2px; right:2px; font-size:.64rem; padding:.2rem .5rem; border-radius:7px; border:1px solid var(--line-soft); background:rgba(8,20,44,.8); color:var(--text-secondary); cursor:pointer; opacity:0; transition:opacity var(--motion); }
+.aic-box:hover .aic-dl{ opacity:1; }
+.aic-dl:hover{ color:var(--cyan); border-color:rgba(24,214,241,.4); }
