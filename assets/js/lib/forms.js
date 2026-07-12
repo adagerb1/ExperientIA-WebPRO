@@ -1,5 +1,5 @@
 // ExperientIA · Componentes de formulario (combobox buscable, teléfono WhatsApp, campos de lead)
-import { t, tr, store, api, pageUrl, loadMeta } from './core.js';
+import { t, tr, store, api, pageUrl, loadMeta, detectCountry } from './core.js';
 import { Icon } from './ui.js';
 
 let PAISES = null;
@@ -131,6 +131,11 @@ export const LeadFields = {
     const meta = await loadMeta();
     this.metaInd = meta.industries || [];
     this.opcPais = (meta.countries || []).map(c => ({ value: c.iso, label: tr(c.nombre) })).sort((a, b) => a.label.localeCompare(b.label));
+    // País por defecto según el visitante (editable). Solo si aún no eligió uno.
+    if (!this.d.country) {
+      const iso = detectCountry();
+      if (this.opcPais.some(o => o.value === iso)) { this.d.country = iso; }
+    }
   },
   watch: { d: { deep: true, handler(v) { this.$emit('update:modelValue', v); } } },
   methods: {

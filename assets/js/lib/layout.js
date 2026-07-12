@@ -28,7 +28,28 @@ export const SiteHeader = {
   computed: { t: () => t, pageUrl: () => pageUrl },
   methods: {
     isActive(k) { return this.$route.path.includes('/' + ((store.dict.slugs && store.dict.slugs[k]) || k)); },
-    switchLocale(l) { const rest = this.$route.path.replace(/^\/(es|en|pt)/, ''); store.locale = l; document.documentElement.lang = l; import('./core.js').then(m => m.loadDict(l).then(() => this.$router.push('/' + l + rest))); this.open = false; },
+    async switchLocale(l) {
+      this.open = false;
+      if (l === store.locale) { return; }
+      // Resuelve la página actual en el idioma destino (traduciendo el slug), en vez
+      // de reusar el slug actual (que produciría un 404 en otro idioma).
+      const parts = this.$route.path.split('/').filter(Boolean); // [loc, slug, sub?]
+      const slug = parts[1] || '';
+      const sub = parts.slice(2).join('/');
+      const curSlugs = (store.dict && store.dict.slugs) || {};
+      let key = null;
+      for (const k in curSlugs) { if (curSlugs[k] === slug) { key = k; break; } }
+      const m = await import('./core.js');
+      await m.loadDict(l);
+      store.locale = l; document.documentElement.lang = l;
+      try { localStorage.setItem('exp_locale', l); } catch (e) {}
+      const tgt = (store.dict && store.dict.slugs) || {};
+      let path;
+      if (!slug) { path = '/' + l + '/'; }
+      else if (key && tgt[key]) { path = '/' + l + '/' + tgt[key] + (sub ? '/' + sub : ''); }
+      else { path = '/' + l + '/'; } // página desconocida → inicio en el idioma destino
+      this.$router.push(path);
+    },
   },
   mounted() { this._s = () => { this.scrolled = scrollY > 24; }; this._s(); addEventListener('scroll', this._s, { passive: true }); },
   beforeUnmount() { removeEventListener('scroll', this._s); },

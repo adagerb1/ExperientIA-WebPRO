@@ -16,24 +16,41 @@ import { AlexiaWidget } from './alexia.js';
 
 const Shell = {
   components: { Icon, Toasts, AlexiaWidget },
-  template: `<div class="adm"><aside class="adm__side">
-    <div class="adm__brand"><img src="/assets/img/brand/logo.png" alt="ExperientIA" style="height:28px;width:auto" draggable="false"></div>
+  template: `<div class="adm" :class="{'adm--collapsed':collapsed}"><aside class="adm__side">
+    <div class="adm__brand">
+      <img src="/assets/img/brand/logo.png" alt="ExperientIA" class="adm__logo" draggable="false">
+      <img src="/assets/img/brand/symbol.png" alt="" aria-hidden="true" class="adm__logo-mini" draggable="false">
+      <button class="adm__toggle" @click="toggleCollapse" :aria-label="collapsed?'Ampliar menú':'Colapsar menú'" :title="collapsed?'Ampliar':'Colapsar'"><Icon name="arrow" :size="16"/></button>
+    </div>
     <nav class="adm__nav">
-      <p class="adm__grp">CRM</p>
-      <button v-for="it in crm" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)"><Icon :name="it.icon" :size="17"/> {{ it.label }}</button>
-      <p class="adm__grp">Contenido</p>
-      <button v-for="it in cms" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)"><Icon :name="it.icon" :size="17"/> {{ it.label }}</button>
-      <p class="adm__grp">Plataforma</p>
-      <button v-for="it in plat" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)"><Icon :name="it.icon" :size="17"/> {{ it.label }}</button>
+      <div v-for="g in groups" :key="g.key" class="adm__group" :class="{open:openGroup===g.key, 'has-active':activeGroup===g.key}">
+        <button class="adm__grp-btn" @click="toggleGroup(g.key)" :title="g.label">
+          <Icon :name="g.icon" :size="17"/><span class="adm__grp-label">{{ g.label }}</span><Icon name="arrow" :size="14" class="adm__chev"/></button>
+        <div class="adm__group-items">
+          <button v-for="it in g.items" :key="it.to" class="adm__link" :class="{active:active(it.to)}" @click="go(it.to)" :title="it.label"><Icon :name="it.icon" :size="17"/><span class="adm__link-label">{{ it.label }}</span></button>
+        </div>
+      </div>
     </nav>
-    <div class="adm__user"><span>{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm" @click="salir"><Icon name="logout" :size="14"/> Salir</button></div>
+    <div class="adm__user"><span class="adm__user-name">{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm adm__logout" @click="salir" title="Salir"><Icon name="logout" :size="14"/><span class="adm__link-label"> Salir</span></button></div>
   </aside><main class="adm__main"><router-view/></main><Toasts/><AlexiaWidget/></div>`,
-  data(){ return { store,
-    crm:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}],
-    cms:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/diagnosticos',icon:'target',label:'Diagnósticos'},{to:'/admin/recursos',icon:'doc',label:'Recursos'},{to:'/admin/industrias',icon:'cube',label:'Industrias'}],
-    plat:[{to:'/admin/secuencias',icon:'gear',label:'Automatizaciones'},{to:'/admin/plantillas-campana',icon:'send',label:'Plantillas campaña'},{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}],
-  }; },
-  methods:{ go(to){ this.$router.push(to); }, active(to){ return this.$route.path===to || (to!=='/admin'&&this.$route.path.startsWith(to)); }, salir(){ logout(); } },
+  data(){ return { store, openGroup: 'crm', collapsed: false, groups: [
+    { key:'crm', label:'CRM', icon:'analitica', items:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}] },
+    { key:'cms', label:'Contenido', icon:'doc', items:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/diagnosticos',icon:'target',label:'Diagnósticos'},{to:'/admin/recursos',icon:'doc',label:'Recursos'},{to:'/admin/industrias',icon:'cube',label:'Industrias'}] },
+    { key:'plat', label:'Plataforma', icon:'plug', items:[{to:'/admin/secuencias',icon:'gear',label:'Automatizaciones'},{to:'/admin/plantillas-campana',icon:'send',label:'Plantillas campaña'},{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'}] },
+  ] }; },
+  computed: {
+    activeGroup(){ for(const g of this.groups){ if(g.items.some(it=>this.active(it.to))) return g.key; } return null; },
+  },
+  watch: { activeGroup(k){ if(k) this.openGroup=k; } },
+  mounted(){ if(this.activeGroup) this.openGroup=this.activeGroup; try{ this.collapsed = localStorage.getItem('adm_collapsed')==='1'; }catch(e){} },
+  methods:{
+    go(to){ this.$router.push(to); },
+    active(to){ return this.$route.path===to || (to!=='/admin'&&this.$route.path.startsWith(to)); },
+    toggleGroup(k){ if(this.collapsed){ this.collapsed=false; this.persist(); } this.openGroup = this.openGroup===k ? null : k; },
+    toggleCollapse(){ this.collapsed=!this.collapsed; this.persist(); },
+    persist(){ try{ localStorage.setItem('adm_collapsed', this.collapsed?'1':'0'); }catch(e){} },
+    salir(){ logout(); },
+  },
 };
 
 const routes = [

@@ -50,12 +50,13 @@ const router = createRouter({ history: createWebHistory(), routes, scrollBehavio
 
 const App = {
   components: { SiteBackdrop, SiteHeader, SiteFooter, Toasts, AlexIA },
-  template: `<div><SiteBackdrop/><SiteHeader/><main id="main"><router-view v-slot="{Component}"><component :is="Component"/></router-view></main><SiteFooter/><Toasts/><AlexIA/></div>`,
+  template: `<div><SiteBackdrop/><SiteHeader/><main id="main"><router-view v-slot="{Component}"><component :is="Component" :key="$route.path"/></router-view></main><SiteFooter/><Toasts/><AlexIA/></div>`,
 };
 
 (async () => {
   const loc = location.pathname.split('/').filter(Boolean)[0];
-  store.locale = ['es','en','pt'].includes(loc) ? loc : 'es';
+  // Si la URL trae idioma, manda; si no, conserva el detectado (guardado/navegador).
+  if (['es','en','pt'].includes(loc)) { store.locale = loc; }
   document.documentElement.lang = store.locale;
   await loadDict(store.locale);
   const app = createApp(App);

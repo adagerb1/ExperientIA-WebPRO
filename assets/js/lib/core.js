@@ -3,10 +3,24 @@ import { reactive } from 'vue';
 
 const LOCALES = ['es', 'en', 'pt'];
 function detectLocale() {
+  // 1) el idioma explícito de la URL manda
   const seg = location.pathname.split('/').filter(Boolean)[0];
   if (LOCALES.includes(seg)) return seg;
-  const nav = (navigator.language || 'es').slice(0, 2);
-  return LOCALES.includes(nav) ? nav : 'es';
+  // 2) elección previa del visitante
+  try { const s = localStorage.getItem('exp_locale'); if (LOCALES.includes(s)) return s; } catch (e) {}
+  // 3) idioma(s) del navegador
+  const langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || 'es'];
+  for (const l of langs) { const base = (l || '').slice(0, 2).toLowerCase(); if (LOCALES.includes(base)) return base; }
+  return 'es';
+}
+
+// País probable del visitante a partir de la región del idioma del navegador
+// (es-CO → CO). Sin llamadas externas. Fallback por idioma (LATAM/Brasil/US).
+export function detectCountry() {
+  const langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+  for (const l of langs) { const m = /[-_]([A-Za-z]{2})$/.exec(l || ''); if (m) return m[1].toUpperCase(); }
+  const base = (navigator.language || 'es').slice(0, 2).toLowerCase();
+  return ({ es: 'CO', pt: 'BR', en: 'US' })[base] || 'CO';
 }
 
 export const store = reactive({
