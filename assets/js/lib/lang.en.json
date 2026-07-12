@@ -86,7 +86,8 @@
   "cta_titulo": "Ready to turn AI into growth?",
   "cta_sub": "Start with an executive diagnostic: clear, actionable and frictionless. Within 48 hours you will have an honest reading of your starting point.",
   "cta_cta1": "Request a diagnostic",
-  "cta_cta2": "Take the online diagnostic"
+  "cta_cta2": "Take the online diagnostic",
+  "productos_lead": "And to support your growth:"
  },
  "soluciones": {
   "meta_title": "Solutions",
@@ -360,7 +361,14 @@
   "st_agenda": "Preparing the calendar…",
   "st_casos": "Looking for relevant cases…",
   "st_diag": "Getting your diagnostic ready…",
-  "st_serv": "Reviewing our services…"
+  "st_serv": "Reviewing our services…",
+  "gate": "To help you better, what's your name and email?",
+  "gate_name": "Your name",
+  "gate_email": "Your email",
+  "gate_cta": "Start chatting",
+  "gate_nota": "No spam. Just to help you and send a summary if you want it.",
+  "gate_err": "Enter your name and a valid email.",
+  "quick_title": "Quick questions"
  },
  "landing": {
   "ver_sol": "View solution",

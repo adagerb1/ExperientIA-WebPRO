@@ -41,6 +41,9 @@ final class AlexIA
             . "2) NUNCA inventes datos, precios, cifras ni promesas. Si no está en el contexto, invita a agendar para resolverlo.\n"
             . "3) Sé BREVE y concreta: máximo 3-4 frases. Nada de textos largos.\n"
             . "4) Cierra SIEMPRE invitando al siguiente paso: el diagnóstico gratuito o agendar una sesión 1:1.\n"
+            . "5) Cuando sea útil, sugiere UNA página del sitio al final con este formato EXACTO (el sitio lo convierte "
+            . "en botón): [[ir:CLAVE|Texto del botón]]. CLAVE válida: diagnostico, agenda, contacto, soluciones, productos, "
+            . "casos, recursos, tablero; o una subruta de solución/producto/caso/recurso, p. ej. soluciones/datos. Un solo marcador.\n"
             . "Tono premium, cercano y claro, en {$locale}.\nContexto de ExperientIA:\n{$ctx}";
     }
 
@@ -100,11 +103,15 @@ final class AlexIA
 
         // Respuestas comerciales cortas (ahorro de tokens en tráfico público).
         $maxTokens = $scope === 'comercial' ? 450 : 1000;
+        $instr = self::instructions($scope, $locale);
+        if (! empty($ctx['nombre'])) {
+            $instr .= "\nEl visitante se llama {$ctx['nombre']}. Salúdalo o menciónalo por su nombre con naturalidad (sin exagerar ni repetirlo en cada frase).";
+        }
         if ($brain === 'anthropic') {
-            $respuesta = AnthropicConnector::respond(self::instructions($scope, $locale), self::history($pdo, $convId), $maxTokens);
+            $respuesta = AnthropicConnector::respond($instr, self::history($pdo, $convId), $maxTokens);
             $responseId = null;
         } else {
-            [$respuesta, $responseId] = OpenAIConnector::respond(self::instructions($scope, $locale), $mensaje, $prev, $maxTokens);
+            [$respuesta, $responseId] = OpenAIConnector::respond($instr, $mensaje, $prev, $maxTokens);
         }
 
         $pdo->prepare('INSERT INTO ai_messages (conversation_id, role, content, created_at) VALUES (?,?,?,?)')

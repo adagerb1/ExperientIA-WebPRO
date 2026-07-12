@@ -2,6 +2,8 @@
 import { t, tr, trLines, pageUrl, api, store, setMeta } from '../lib/core.js';
 import { Icon, DashMock } from '../lib/ui.js';
 import { PageHero, SectionCTA } from '../lib/layout.js';
+import { slugify } from './pages5.js';
+const tx = (k, fb) => { const v = t(k); return (v && v !== k) ? v : fb; };
 
 const META = {
   Home: () => setMeta(t('meta.title_base'), t('meta.description')),
@@ -45,27 +47,37 @@ export const Home = {
         <router-link :to="pageUrl('tablero')" class="link-arrow" v-reveal :style="{'--d':'.3s'}">{{ t('home.tablero_cta') }} <Icon name="arrow" :size="16"/></router-link></div>
       <div v-reveal :style="{'--d':'.15s'}"><DashMock/></div></div></section>
 
+    <section class="section" style="padding-top:0" v-if="otrosProductos.length"><div class="container">
+      <p class="home-prod-lead" v-reveal>{{ tx('home.productos_lead','Y para acompañar tu crecimiento:') }}</p>
+      <div class="home-prod-strip">
+        <router-link v-for="(p,i) in otrosProductos" :key="p.id" :to="pageUrl('productos',{slug:slugify(tr(p.nombre,'es'))})" class="glass card home-prod-card" v-reveal :style="{'--d':i*.08+'s'}">
+          <span class="icon-chip"><Icon :name="p.icon"/></span>
+          <div class="home-prod-txt"><h3 class="h3" style="font-size:1.02rem">{{ tr(p.nombre) }}</h3><p class="small">{{ tr(p.rol) }}</p></div>
+          <Icon name="arrow" :size="16" class="home-prod-arrow"/></router-link></div></div></section>
+
     <section class="section"><div class="container">
       <div class="section-head"><p class="eyebrow" v-reveal>{{ t('home.soluciones_eyebrow') }}</p><h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ t('home.soluciones_titulo') }}</h2><p class="lead" v-reveal :style="{'--d':'.16s'}">{{ t('home.soluciones_sub') }}</p></div>
       <div class="grid grid-2">
-        <article v-for="(s,i) in soluciones" :key="s.id" class="glass glass-lit card" v-reveal :style="{'--d':i*.08+'s',display:'grid',gap:'.9rem',alignContent:'start'}">
+        <router-link v-for="(s,i) in soluciones" :key="s.id" :to="pageUrl('soluciones',{slug:s.skey})" class="glass glass-lit card sol-card" v-reveal :style="{'--d':i*.08+'s',display:'grid',gap:'.9rem',alignContent:'start'}">
           <div class="chip-row"><span class="icon-chip"><Icon :name="s.icon"/></span><span class="chip">{{ tr(s.pilar) }}</span></div>
-          <h3 class="h3">{{ tr(s.titulo) }}</h3><p>{{ tr(s.cambia) }}</p></article></div>
+          <h3 class="h3">{{ tr(s.titulo) }}</h3><p>{{ tr(s.cambia) }}</p>
+          <span class="link-arrow">{{ tx('landing.ver_sol','Ver solución') }} <Icon name="arrow" :size="16"/></span></router-link></div>
       <div class="section-foot" v-reveal><router-link :to="pageUrl('soluciones')" class="btn btn-ghost">{{ t('home.soluciones_cta') }}</router-link></div></div></section>
 
     <section class="section"><div class="bg-atmos"><div class="halo halo-cyan" style="width:460px;height:460px;bottom:-200px;left:-220px;opacity:.28"></div></div>
       <div class="container"><div class="section-head"><p class="eyebrow" v-reveal>{{ t('home.casos_eyebrow') }}</p><h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ t('home.casos_titulo') }}</h2><p class="lead" v-reveal :style="{'--d':'.16s'}">{{ t('home.casos_sub') }}</p></div>
       <div class="grid grid-3">
-        <article v-for="(c,i) in casos" :key="c.id" class="glass card" v-reveal :style="{'--d':i*.1+'s',display:'grid',gap:'.6rem',alignContent:'start'}">
+        <router-link v-for="(c,i) in casos" :key="c.id" :to="pageUrl('casos',{slug:slugify(tr(c.titulo,'es'))})" class="glass card caso-list-card" v-reveal :style="{'--d':i*.1+'s',display:'grid',gap:'.6rem',alignContent:'start'}">
           <p class="sector-label">{{ tr(c.sector) }}</p><h3 class="h3">{{ tr(c.titulo) }}</h3>
           <p class="metric-big grad-text" v-if="c.resultados&&c.resultados[0]">{{ c.resultados[0].valor }}</p>
-          <p class="small" v-if="c.resultados&&c.resultados[0]">{{ tr(c.resultados[0].label) }}</p></article></div>
+          <p class="small" v-if="c.resultados&&c.resultados[0]">{{ tr(c.resultados[0].label) }}</p>
+          <span class="link-arrow">{{ tx('caso.ver_completo','Ver el caso completo') }} <Icon name="arrow" :size="15"/></span></router-link></div>
       <div class="section-foot" v-reveal><router-link :to="pageUrl('casos')" class="link-arrow">{{ t('home.casos_cta') }} <Icon name="arrow" :size="16"/></router-link></div></div></section>
 
     <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('diagnostico')" :secondaryLabel="t('home.cta_cta2')"/>
   </div>`,
   data() { return {
-    soluciones: [], casos: [],
+    soluciones: [], casos: [], productos: [],
     lg: window.innerWidth >= 1020 ? { gridTemplateColumns: '.95fr 1.05fr' } : {},
     metrics: [
       { v:'+42%', l:{es:'Crecimiento sostenible',en:'Sustainable growth',pt:'Crescimento sustentável'}, d:{es:'promedio en programas de 12 meses',en:'average across 12-month programs',pt:'média em programas de 12 meses'} },
@@ -79,8 +91,10 @@ export const Home = {
       { i:'cube', t:{es:'Herramientas sin estrategia',en:'Tools without strategy',pt:'Ferramentas sem estratégia'}, x:{es:'Licencias y pilotos de IA que se acumulan sin dueño ni métrica. Inversión que no aparece en el estado de resultados.',en:'Licenses and AI pilots pile up with no owner and no metric.',pt:'Licenças e pilotos de IA que se acumulam sem dono nem métrica.'} },
     ],
   }; },
-  computed: { t: () => t, tr: () => tr, pageUrl: () => pageUrl },
-  async mounted() { setMeta(t('meta.title_base'), t('meta.description')); this.soluciones = await fetchContent('soluciones'); this.casos = await fetchContent('casos'); },
+  computed: { t: () => t, tr: () => tr, tx: () => tx, pageUrl: () => pageUrl, slugify: () => slugify,
+    otrosProductos() { return this.productos.filter(p => !Number(p.destacado)); } },
+  async mounted() { setMeta(t('meta.title_base'), t('meta.description'));
+    this.soluciones = await fetchContent('soluciones'); this.casos = await fetchContent('casos'); this.productos = await fetchContent('productos'); },
 };
 
 export const Soluciones = {

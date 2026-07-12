@@ -94,13 +94,33 @@ export const AlexIA = {
     <div class="ax-panel glass" v-if="open">
       <div class="ax-head"><div class="ax-ava"><Icon name="sparkle" :size="18"/></div>
         <div class="ax-head-t"><b>AlexIA</b><span>{{ tx('alexia.sub','Asesora comercial') }}</span></div>
+        <button v-if="started" class="ax-quick-toggle" :class="{on:quickOpen, hint:quickHint}" @click="toggleQuick" :title="tx('alexia.quick_title','Preguntas rápidas')"><Icon name="bulb" :size="15"/></button>
         <button class="ax-close" @click="open=false" aria-label="Cerrar">✕</button></div>
+
+      <transition name="ax-quick-pop">
+      <div v-if="quickOpen && started" class="ax-quick-pop-menu">
+        <p class="ax-quick-h"><Icon name="bulb" :size="13"/> {{ tx('alexia.quick_title','Preguntas rápidas') }}</p>
+        <button v-for="q in quick" :key="q" @click="ask(q)">{{ q }}</button></div></transition>
+
+      <div v-if="!started" class="ax-gate">
+        <div class="ax-msg a ax-in"><p v-html="saludo"></p></div>
+        <p class="ax-gate-lead ax-in">{{ tx('alexia.gate','Para atenderte mejor, ¿cómo te llamas y a qué correo te escribo?') }}</p>
+        <form class="ax-gate-form ax-in" @submit.prevent="startChat">
+          <div class="honeypot"><input type="text" v-model="hp" tabindex="-1" autocomplete="off"></div>
+          <input v-model="lead.name" :placeholder="tx('alexia.gate_name','Tu nombre')" autocomplete="name" required>
+          <input v-model="lead.email" type="email" :placeholder="tx('alexia.gate_email','Tu correo')" autocomplete="email" required>
+          <button class="btn btn-grad" :disabled="gating">{{ gating?'…':tx('alexia.gate_cta','Empezar a chatear') }}</button>
+          <p class="err" v-if="gateErr">{{ gateErr }}</p>
+          <p class="ax-gate-nota">{{ tx('alexia.gate_nota','Sin spam. Solo para ayudarte y enviarte el resumen si lo quieres.') }}</p></form>
+      </div>
+
+      <template v-else>
       <div class="ax-msgs" ref="msgs">
         <div class="ax-msg a ax-in"><p v-html="saludo"></p></div>
-        <div v-if="!msgs.length" class="ax-chips ax-in">
-          <button v-for="q in quick" :key="q" @click="ask(q)">{{ q }}</button></div>
         <template v-for="(m,i) in msgs" :key="i">
           <div class="ax-msg ax-in" :class="m.role==='user'?'u':'a'"><p v-html="m.html"></p></div>
+          <div v-if="m.role==='assistant' && m.links && m.links.length" class="ax-links ax-in">
+            <router-link v-for="(l,j) in m.links" :key="j" :to="l.to" class="ax-link-btn" @click="open=false">{{ l.label }} <Icon name="arrow" :size="14"/></router-link></div>
           <div v-if="m.role==='assistant' && i===msgs.length-1 && !loading" class="ax-cta ax-in">
             <span>{{ tx('alexia.cta_titulo','¿Damos el siguiente paso?') }}</span>
             <div class="ax-cta-btns"><router-link :to="pageUrl('diagnostico')" class="ax-cta-btn" @click="open=false">{{ tx('alexia.cta_diag','Diagnóstico gratis') }}</router-link>
@@ -109,19 +129,43 @@ export const AlexIA = {
         <div v-if="loading" class="ax-msg a ax-thinking ax-in"><span class="ax-ava sm"><Icon name="sparkle" :size="12"/></span>
           <span class="ax-status">{{ statusText }}</span><span class="ax-wave"><i></i><i></i><i></i></span></div>
       </div>
-      <div class="ax-quickbar" v-if="msgs.length && !loading"><button v-for="q in quick.slice(0,3)" :key="q" @click="ask(q)">{{ q }}</button></div>
       <div class="ax-inbox"><textarea v-model="text" :placeholder="tx('alexia.placeholder','Escribe tu consulta…')" rows="1" @keydown.enter.exact.prevent="send"></textarea>
         <button class="ax-send" @click="send" :disabled="loading"><Icon name="send" :size="18"/></button></div>
+      </template>
     </div></transition></div>`,
-  data() { return { open: false, text: '', msgs: [], loading: false, convId: null, statusText: '' }; },
+  data() { return { open: false, text: '', msgs: [], loading: false, convId: null, statusText: '',
+    started: false, gating: false, gateErr: '', quickOpen: false, quickHint: true, hp: '',
+    lead: { name: '', email: '' }, leadId: null, resumenSent: false }; },
   computed: {
     t: () => t, pageUrl: () => pageUrl,
-    saludo() { return '<p>' + axEsc(this.tx('alexia.saludo', 'Hola 👋 Soy AlexIA, de ExperientIA. Cuéntame tu reto de crecimiento y te muestro cómo la automatización y la IA pueden ayudarte.')) + '</p>'; },
+    saludo() { const n = this.lead.name ? (', ' + this.lead.name.split(' ')[0]) : ''; return '<p>' + axEsc(this.tx('alexia.saludo', 'Hola 👋 Soy AlexIA, de ExperientIA. Cuéntame tu reto de crecimiento y te muestro cómo la automatización y la IA pueden ayudarte.')).replace('👋', n + ' 👋') + '</p>'; },
     quick() { const q = t('alexia.quick'); return Array.isArray(q) ? q : ['¿Qué hace ExperientIA?', '¿Cómo es el diagnóstico?', '¿Qué resultados logran?', 'Quiero agendar una sesión']; },
   },
+  mounted() { try { const s = JSON.parse(localStorage.getItem('exp_chatlead') || 'null'); if (s && s.email) { this.lead = { name: s.name || '', email: s.email }; this.leadId = s.leadId || null; this.started = true; } } catch (e) {} },
   methods: {
     tx(key, fb) { const v = t(key); return (v && v !== key) ? v : fb; },
-    toggle() { this.open = !this.open; },
+    toggle() {
+      this.open = !this.open;
+      if (!this.open) { this.quickOpen = false; this.enviarResumen(); }
+    },
+    toggleQuick() { this.quickOpen = !this.quickOpen; this.quickHint = false; },
+    async startChat() {
+      if (this.hp) { return; }
+      const name = this.lead.name.trim(); const email = this.lead.email.trim();
+      if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { this.gateErr = this.tx('alexia.gate_err', 'Escribe tu nombre y un correo válido.'); return; }
+      this.gating = true; this.gateErr = '';
+      const r = await api.post('/alexia/lead', { name, email, locale: store.locale });
+      this.gating = false;
+      this.leadId = (r.ok && r.data.lead_id) ? r.data.lead_id : null;
+      this.started = true; this.quickHint = true;
+      try { localStorage.setItem('exp_chatlead', JSON.stringify({ name, email, leadId: this.leadId })); } catch (e) {}
+    },
+    resolveLink(key) {
+      const parts = String(key || '').split('/'); const base = parts[0]; const sub = parts[1];
+      const known = ['soluciones', 'productos', 'casos', 'recursos', 'tablero', 'diagnostico', 'agenda', 'contacto', 'nosotros', 'faq'];
+      if (!known.includes(base)) { return pageUrl('contacto'); }
+      return sub ? pageUrl(base, { slug: sub }) : pageUrl(base);
+    },
     status(q) {
       const s = q.toLowerCase();
       if (/precio|costo|plan|inversi|tarifa|cuánto|cuanto/.test(s)) { return this.tx('alexia.st_precio', 'Revisando cómo lo abordaríamos…'); }
@@ -131,16 +175,27 @@ export const AlexIA = {
       if (/servicio|soluci|producto|hac[eé]|ofrec/.test(s)) { return this.tx('alexia.st_serv', 'Revisando nuestros servicios…'); }
       return this.tx('alexia.st_default', 'Analizando tu consulta…');
     },
-    ask(q) { this.text = q; this.send(); },
+    ask(q) { this.quickOpen = false; this.text = q; this.send(); },
     async send() {
       const txt = this.text.trim(); if (!txt || this.loading) { return; }
+      this.quickOpen = false;
       this.msgs.push({ role: 'user', html: '<p>' + axEsc(txt) + '</p>' });
       this.text = ''; this.loading = true; this.statusText = this.status(txt); this.scroll();
-      const r = await api.post('/alexia', { mensaje: txt, conversation_id: this.convId, locale: store.locale });
+      const r = await api.post('/alexia', { mensaje: txt, conversation_id: this.convId, locale: store.locale, nombre: this.lead.name, lead_id: this.leadId });
       this.loading = false;
-      if (r.ok) { this.convId = r.data.conversation_id; this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(r.data.reply).replace(/\n+/g, '</p><p>') + '</p>' }); }
-      else { this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(r.error || 'AlexIA no está disponible ahora. Escríbenos o agenda una sesión.') + '</p>' }); }
+      if (r.ok) {
+        this.convId = r.data.conversation_id;
+        const links = [];
+        const clean = String(r.data.reply || '').replace(/\[\[ir:([^|\]]+)\|([^\]]+)\]\]/g, (m, key, label) => { links.push({ to: this.resolveLink(key.trim()), label: label.trim() }); return ''; }).trim();
+        this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(clean).replace(/\n+/g, '</p><p>') + '</p>', links });
+      } else { this.msgs.push({ role: 'assistant', html: '<p>' + axEsc(r.error || 'AlexIA no está disponible ahora. Escríbenos o agenda una sesión.') + '</p>', links: [] }); }
       this.scroll();
+    },
+    enviarResumen() {
+      if (this.resumenSent || !this.convId || !this.lead.email) { return; }
+      if (!this.msgs.some(m => m.role === 'assistant')) { return; }
+      this.resumenSent = true;
+      api.post('/alexia/resumen', { conversation_id: this.convId, email: this.lead.email, locale: store.locale });
     },
     scroll() { this.$nextTick(() => { const m = this.$refs.msgs; if (m) { m.scrollTop = m.scrollHeight; } }); },
   },

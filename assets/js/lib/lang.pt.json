@@ -86,7 +86,8 @@
   "cta_titulo": "Pronto para converter IA em crescimento?",
   "cta_sub": "Comece com um diagnóstico executivo: claro, acionável e sem fricção. Em 48 horas você terá uma leitura honesta do seu ponto de partida.",
   "cta_cta1": "Solicitar diagnóstico",
-  "cta_cta2": "Fazer o diagnóstico on-line"
+  "cta_cta2": "Fazer o diagnóstico on-line",
+  "productos_lead": "E para acompanhar seu crescimento:"
  },
  "soluciones": {
   "meta_title": "Soluções",
@@ -360,7 +361,14 @@
   "st_agenda": "Preparando a agenda…",
   "st_casos": "Buscando casos relevantes…",
   "st_diag": "Preparando seu diagnóstico…",
-  "st_serv": "Revisando nossos serviços…"
+  "st_serv": "Revisando nossos serviços…",
+  "gate": "Para atendê-lo melhor, qual é o seu nome e e-mail?",
+  "gate_name": "Seu nome",
+  "gate_email": "Seu e-mail",
+  "gate_cta": "Começar a conversar",
+  "gate_nota": "Sem spam. Só para ajudá-lo e enviar o resumo se quiser.",
+  "gate_err": "Escreva seu nome e um e-mail válido.",
+  "quick_title": "Perguntas rápidas"
  },
  "landing": {
   "ver_sol": "Ver solução",
