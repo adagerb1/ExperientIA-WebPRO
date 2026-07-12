@@ -67,6 +67,7 @@ $r->get('/admin/reservas', 'Admin\\BookingsController', 'index');
 $r->patch('/admin/reservas/{id}', 'Admin\\BookingsController', 'update');
 // Rutas específicas ANTES de las genéricas /admin/{tabla} (evita colisiones).
 $r->post('/admin/archivo', 'Admin\\ContentController', 'upload');
+$r->post('/admin/cms/redactar', 'Admin\\CmsAssistController', 'redactar');
 $r->post('/admin/recursos/generar', 'Admin\\ResourceStudioController', 'generar');
 $r->post('/admin/recursos/portada', 'Admin\\ResourceStudioController', 'portada');
 $r->post('/admin/recursos/subir-imagen', 'Admin\\ResourceStudioController', 'subirImagen');

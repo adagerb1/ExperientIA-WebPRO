@@ -48,6 +48,10 @@ const MODULOS = {
 
 const DOW = { 1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo' };
 const txtOf = (v) => { if (v && typeof v === 'object') { return v.es || Object.values(v)[0] || ''; } return String(v == null ? '' : v); };
+// Idiomas del CMS (centralizado: añadir uno nuevo aquí lo habilita en todo el editor).
+const CMS_LANGS = [{ code:'es', label:'ES' }, { code:'en', label:'EN' }, { code:'pt', label:'PT' }];
+const CMS_CODES = CMS_LANGS.map(l => l.code);
+const blankI18n = () => { const o = {}; for (const c of CMS_CODES) o[c] = ''; return o; };
 
 export const Contenido = {
   components: { Icon, SmartTable },
@@ -58,11 +62,21 @@ export const Contenido = {
     <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="searchKeys" @rowClick="editar"/>
     <div class="modal-bg" v-if="editing" @click.self="editing=null"><div class="glass modal modal-lg">
       <h2>{{ form.id?'Editar':'Crear' }} · {{ M.titulo }}</h2>
+
+      <div class="cms-ai glass" v-if="tieneRedactables">
+        <div class="cms-ai-head"><span class="cms-ai-ava"><Icon name="sparkle" :size="15"/></span><b>Redactar con AlexIA</b>
+          <span class="small">Describe qué quieres y AlexIA completa los campos en los {{ langs.length }} idiomas.</span></div>
+        <div class="cms-ai-row"><textarea class="inp" v-model="aiPrompt" rows="2" :placeholder="aiPh" @keydown.enter.exact.prevent="redactarIA"></textarea>
+          <button class="btn btn-grad btn-sm" @click="redactarIA" :disabled="aiLoading"><Icon name="sparkle" :size="14"/> {{ aiLoading?'Redactando…':'Redactar' }}</button></div>
+      </div>
+
+      <div class="lang-tabs" v-if="tieneI18n"><button v-for="l in langs" :key="l.code" type="button" :class="{active:lang===l.code}" @click="lang=l.code">{{ l.label }}<span v-if="l.code==='es'" class="lang-req">·oblig</span></button></div>
+
       <div class="form-grid">
         <template v-for="c in M.campos" :key="c.n">
-          <div v-if="c.t==='i18n'||c.t==='i18ta'" class="i18n-box"><b>{{ c.l }}</b>
-            <div class="field" v-for="l in ['es','en','pt']" :key="l"><label>{{ l.toUpperCase() }}<span v-if="l==='es'" style="color:var(--cyan)"> · obligatorio</span></label>
-              <input v-if="c.t==='i18n'" class="inp" v-model="form[c.n][l]"><textarea v-else class="inp" rows="3" v-model="form[c.n][l]"></textarea></div></div>
+          <div v-if="c.t==='i18n'||c.t==='i18ta'" class="field" :style="c.t==='i18ta'?'grid-column:1/-1':''">
+            <label>{{ c.l }} <span class="lang-chip">{{ lang.toUpperCase() }}</span><span v-if="lang==='es'" style="color:var(--cyan)"> · obligatorio</span></label>
+            <input v-if="c.t==='i18n'" class="inp" v-model="form[c.n][lang]"><textarea v-else class="inp" rows="3" v-model="form[c.n][lang]"></textarea></div>
           <div v-else-if="c.t==='sel'" class="field"><label>{{ c.l }}</label><select class="inp" v-model="form[c.n]"><option v-for="o in c.op" :key="o" :value="o">{{ o }}</option></select></div>
           <div v-else-if="c.t==='bool'" class="field"><label>{{ c.l }}</label><label class="switch"><input type="checkbox" v-model="form[c.n]"><span></span></label></div>
           <div v-else-if="c.t==='num'" class="field"><label>{{ c.l }}</label><input class="inp" type="number" v-model="form[c.n]"></div>
@@ -74,9 +88,12 @@ export const Contenido = {
         <button class="btn btn-ghost btn-sm" @click="editing=null">Cancelar</button>
         <button v-if="form.id" class="btn btn-danger btn-sm" style="margin-left:auto" @click="eliminar">Eliminar</button></div></div></div>
   </div>`,
-  data(){ return { items:[], editing:false, form:{}, q:'' }; },
+  data(){ return { items:[], editing:false, form:{}, q:'', lang:'es', langs:CMS_LANGS, aiPrompt:'', aiLoading:false }; },
   computed:{
     M(){ return MODULOS[this.modulo]; },
+    tieneI18n(){ return this.M.campos.some(c=>c.t==='i18n'||c.t==='i18ta'); },
+    tieneRedactables(){ return this.M.campos.some(c=>c.t==='i18n'||c.t==='i18ta'||c.t==='sel'||c.t==='text'); },
+    aiPh(){ const ej={ solutions:'Una solución sobre analítica predictiva para retail…', products:'Un producto de tablero para el comité ejecutivo…', case_studies:'Un caso de una fintech que automatizó su onboarding…', faqs:'Una FAQ sobre cuánto tarda ver resultados…', industries:'El nombre del sector salud…', campaign_templates:'Un correo de bienvenida cálido que invite a agendar…' }; return ej[this.modulo]||'Describe el contenido que quieres…'; },
     cols(){ return this.M.list.map(c=>({ key:c, label:c,
       raw:(it)=> c==='active'?Number(it[c]) : c==='weekday'?Number(it[c]) : txtOf(it[c]).toLowerCase(),
       render:(it)=> c==='active'?(Number(it[c])?'✓':'—') : c==='weekday'?escT(DOW[it[c]]||it[c]) : escT(txtOf(it[c]).slice(0,80)) })); },
@@ -87,12 +104,23 @@ export const Contenido = {
     async load(){ const r=await api.get('/admin/'+this.modulo+'/list'); if(r.ok) this.items=r.data; },
     txt(v){ if(v&&typeof v==='object') return (v.es||Object.values(v)[0]||'').slice(0,80); return String(v==null?'':v).slice(0,80); },
     dow(n){ return {1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo'}[n]||n; },
-    blank(){ const f={}; for(const c of this.M.campos){ f[c.n]= (c.t==='i18n'||c.t==='i18ta')?{es:'',en:'',pt:''}: c.t==='bool'?true: c.t==='num'?0: c.t==='json'?'[]':''; } return f; },
-    nuevo(){ this.form=this.blank(); this.editing=true; },
+    blank(){ const f={}; for(const c of this.M.campos){ f[c.n]= (c.t==='i18n'||c.t==='i18ta')?blankI18n(): c.t==='bool'?true: c.t==='num'?0: c.t==='json'?'[]':''; } return f; },
+    nuevo(){ this.form=this.blank(); this.lang='es'; this.aiPrompt=''; this.editing=true; },
     editar(it){ const f=this.blank(); for(const c of this.M.campos){ let v=it[c.n];
-      if(c.t==='i18n'||c.t==='i18ta'){ f[c.n]= (v&&typeof v==='object')?{es:v.es||'',en:v.en||'',pt:v.pt||''}:{es:'',en:'',pt:''}; }
+      if(c.t==='i18n'||c.t==='i18ta'){ const o=blankI18n(); if(v&&typeof v==='object'){ for(const k of CMS_CODES) o[k]=v[k]||''; } f[c.n]=o; }
       else if(c.t==='bool'){ f[c.n]=!!Number(v); } else if(c.t==='json'){ f[c.n]=JSON.stringify(v||[],null,1); } else { f[c.n]=v==null?'':v; } }
-      f.id=it.id; this.form=f; this.editing=true; },
+      f.id=it.id; this.form=f; this.lang='es'; this.aiPrompt=''; this.editing=true; },
+    async redactarIA(){
+      if(!this.aiPrompt.trim()){ toast('Escribe qué quieres que redacte AlexIA.','err'); return; }
+      this.aiLoading=true;
+      const r=await api.post('/admin/cms/redactar',{ tabla:this.modulo, instruccion:this.aiPrompt, campos:this.M.campos });
+      this.aiLoading=false;
+      if(r.ok){ const c=r.data.campos||{};
+        for(const k in c){ const def=this.M.campos.find(x=>x.n===k); if(!def) continue;
+          if(def.t==='i18n'||def.t==='i18ta'){ const o=blankI18n(); for(const l of CMS_CODES) o[l]=(c[k]&&c[k][l])||(this.form[k]&&this.form[k][l])||''; this.form[k]=o; }
+          else { this.form[k]=c[k]; } }
+        toast('AlexIA completó los campos. Revísalos y guarda.'); }
+      else toast(r.error||'AlexIA no disponible. Configura OpenAI/Anthropic.','err'); },
     async subir(e){ const file=e.target.files[0]; if(!file)return; const fd=new FormData(); fd.append('archivo',file);
       const r=await api.upload('/admin/archivo',fd); if(r.ok){ this.form.file_path=r.data.file_path; toast('PDF subido.'); } else toast(r.error||'Error','err'); },
     async guardar(){ const payload={}; for(const c of this.M.campos){ let v=this.form[c.n];

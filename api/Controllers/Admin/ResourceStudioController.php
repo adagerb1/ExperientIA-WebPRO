@@ -62,7 +62,10 @@ final class ResourceStudioController extends Controller
             'Estilo: ' . $this->req->input('estilo', 'cinematográfico premium'),
             'Iluminación: ' . $this->req->input('iluminacion', 'natural cálida'),
             'Ambiente: ' . $this->req->input('ambiente', 'inspirador, ejecutivo'),
-            'Marca oscura y tecnológica (azul midnight, cian, violeta), sin texto ni logos, alta calidad.',
+            'Composición editorial de portada premium que comunique el beneficio y venda la marca ExperientIA (firma C-Level de '
+                . 'automatización, datos e IA): metáfora visual clara del valor, foco y jerarquía, calidad publicitaria.',
+            'Paleta de marca oscura y tecnológica (azul midnight #0a1b3a, cian #18d6f1, violeta), degradados sutiles, luz volumétrica. '
+                . 'Sin texto, sin letras, sin logos, sin marcas de agua. Fotorrealista o 3D premium, nítido, alto contraste.',
         ]);
         $prompt = implode(' ', $partes);
 

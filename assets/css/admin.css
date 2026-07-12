@@ -332,3 +332,19 @@ th:hover .sort-arrow{ opacity:1; }
 .seq-step .btn.danger{ margin-left:auto; }
 .seg-send-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
 .seg-send-head .inp{ max-width:260px; }
+
+/* ============ CMS · pestañas por idioma + AlexIA redactora ============ */
+.lang-tabs{ display:flex; gap:.4rem; margin:.2rem 0 1rem; border-bottom:1px solid var(--line-soft); padding-bottom:.6rem; }
+.lang-tabs button{ padding:.4rem .9rem; border-radius:9px; border:1px solid transparent; background:none; color:var(--text-secondary); font-family:var(--font); font-size:.82rem; font-weight:600; cursor:pointer; transition:color var(--motion),background var(--motion); }
+.lang-tabs button:hover{ color:var(--neutral-light); }
+.lang-tabs button.active{ color:var(--cyan); background:rgba(24,214,241,.1); border-color:rgba(24,214,241,.35); }
+.lang-req{ font-size:.6rem; color:var(--cyan); margin-left:.25rem; opacity:.8; }
+.lang-chip{ font-size:.62rem; font-weight:700; color:var(--cyan); background:rgba(24,214,241,.1); padding:.05rem .4rem; border-radius:6px; letter-spacing:.04em; }
+
+.cms-ai{ padding:.9rem 1rem; margin-bottom:1.1rem; border:1px solid rgba(24,214,241,.2); }
+.cms-ai-head{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; margin-bottom:.6rem; }
+.cms-ai-head b{ font-size:.92rem; } .cms-ai-head .small{ color:var(--text-tertiary); }
+.cms-ai-ava{ width:26px; height:26px; border-radius:8px; display:grid; place-items:center; color:#04101f; background:linear-gradient(135deg,var(--cyan),var(--violet)); flex:0 0 auto; }
+.cms-ai-row{ display:flex; gap:.6rem; align-items:flex-end; }
+.cms-ai-row textarea{ flex:1; resize:vertical; }
+.cms-ai-row .btn{ flex:0 0 auto; white-space:nowrap; }
