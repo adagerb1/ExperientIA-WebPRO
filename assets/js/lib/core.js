@@ -31,6 +31,15 @@ export const store = reactive({
   toasts: [],
 });
 
+// Idiomas del CMS/administrador. Centralizado: agregar uno nuevo aquí lo habilita
+// en TODO el editor de contenido y el estudio de recursos (pestañas + generación IA).
+export const CMS_LANGS = [
+  { code: 'es', label: 'ES', nombre: 'Español' },
+  { code: 'en', label: 'EN', nombre: 'English' },
+  { code: 'pt', label: 'PT', nombre: 'Português' },
+];
+export const CMS_CODES = CMS_LANGS.map(l => l.code);
+
 const dictCache = {};
 export async function loadDict(locale) {
   if (dictCache[locale]) { store.dict = dictCache[locale]; return; }

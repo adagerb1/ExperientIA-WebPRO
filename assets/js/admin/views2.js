@@ -1,5 +1,5 @@
 // Portal admin · Reservas, Contenido (CRUD trilingüe), Conectores, Plantillas, AlexIA interno
-import { api, store, toast } from '../lib/core.js';
+import { api, store, toast, CMS_LANGS, CMS_CODES } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
 import { SmartTable } from './table.js';
 const escT = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -48,9 +48,6 @@ const MODULOS = {
 
 const DOW = { 1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo' };
 const txtOf = (v) => { if (v && typeof v === 'object') { return v.es || Object.values(v)[0] || ''; } return String(v == null ? '' : v); };
-// Idiomas del CMS (centralizado: añadir uno nuevo aquí lo habilita en todo el editor).
-const CMS_LANGS = [{ code:'es', label:'ES' }, { code:'en', label:'EN' }, { code:'pt', label:'PT' }];
-const CMS_CODES = CMS_LANGS.map(l => l.code);
 const blankI18n = () => { const o = {}; for (const c of CMS_CODES) o[c] = ''; return o; };
 
 export const Contenido = {

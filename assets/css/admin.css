@@ -355,3 +355,11 @@ th:hover .sort-arrow{ opacity:1; }
 .aic-dl{ position:absolute; top:2px; right:2px; font-size:.64rem; padding:.2rem .5rem; border-radius:7px; border:1px solid var(--line-soft); background:rgba(8,20,44,.8); color:var(--text-secondary); cursor:pointer; opacity:0; transition:opacity var(--motion); }
 .aic-box:hover .aic-dl{ opacity:1; }
 .aic-dl:hover{ color:var(--cyan); border-color:rgba(24,214,241,.4); }
+
+/* Estudio de recursos · barra de idioma superior */
+.rec-editor-head{ position:sticky; top:0; z-index:2; background:rgba(8,20,44,.96); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); margin:-1.5rem -1.5rem 1rem; padding:1.2rem 1.5rem .9rem; border-bottom:1px solid var(--line-soft); }
+.rec-langbar{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-top:.7rem; }
+.rec-langbar .lang-tabs button{ padding:.4rem .95rem; }
+.rec-langbar .btn{ margin-left:auto; }
+.rec-lang-note{ font-size:.74rem; color:var(--text-tertiary); margin:.6rem 0 0; }
+.rec-lang-note b{ color:var(--cyan); }

@@ -1,5 +1,5 @@
 // Portal admin · Estudio de Recursos con IA (contenido trilingüe, portada, audio)
-import { api, toast } from '../lib/core.js';
+import { api, toast, CMS_LANGS, CMS_CODES } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
 import { SmartTable } from './table.js';
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
@@ -11,9 +11,8 @@ const CATS = {
   experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes',
   datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital',
 };
-const LANGS = ['es','en','pt'];
 const slugify = (s)=> (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);
-const empty = ()=> ({ es:'', en:'', pt:'' });
+const empty = ()=> { const o={}; for(const c of CMS_CODES) o[c]=''; return o; };
 
 // ── Editor visual (WYSIWYG) ──────────────────────────────────────────
 const RichEditor = {
@@ -48,17 +47,24 @@ const RecursoEditor = {
   emits:['close','saved'],
   template:`<div class="modal-bg" @click.self="$emit('close')">
    <div class="glass modal modal-lg">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2>{{ item?'Editar recurso':'Nuevo recurso' }}</h2>
-      <button class="btn btn-ghost btn-sm" @click="$emit('close')">✕</button></div>
+    <div class="rec-editor-head">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>{{ item?'Editar recurso':'Nuevo recurso' }}</h2>
+        <button class="btn btn-ghost btn-sm" @click="$emit('close')">✕</button></div>
+      <div class="rec-langbar">
+        <div class="lang-tabs" style="margin:0;border:0;padding:0">
+          <button type="button" v-for="l in langs" :key="l.code" :class="{active:lang===l.code}" @click="lang=l.code">{{ l.label }}<span v-if="l.code==='es'" class="lang-req">·oblig</span></button></div>
+        <button type="button" class="btn btn-grad btn-sm" @click="generar" :disabled="busy.gen"><Icon name="sparkle" :size="13"/> {{ busy.gen?('Generando en '+langs.length+' idiomas…'):'Generar todo con AlexIA' }}</button></div>
+      <p class="rec-lang-note">Editando <b>{{ lang.toUpperCase() }}</b> · todos los campos (título, etiqueta, contenido y SEO) se guardan por idioma. AlexIA genera en los {{ langs.length }} idiomas de una sola vez.</p>
+    </div>
 
     <div class="form-grid two">
-      <div class="field"><label>Título (ES)</label><input class="inp" v-model="f.titulo.es" @input="autoSlug"></div>
-      <div class="field"><label>Slug (URL) · del título</label><input class="inp" v-model="f.slug"></div></div>
+      <div class="field"><label>Título · {{ lang.toUpperCase() }}</label><input class="inp" v-model="f.titulo[lang]" @input="onTitulo"></div>
+      <div class="field"><label>Slug (URL) · del título ES</label><input class="inp" v-model="f.slug"></div></div>
 
     <div class="form-grid two">
       <div class="field"><label>Tipo</label><select class="inp" v-model="f.type"><option value="article">Artículo</option><option value="download">Descargable (PDF)</option></select></div>
-      <div class="field"><label>Etiqueta (ES)</label><input class="inp" v-model="f.tipo_label.es" placeholder="Artículo"></div></div>
+      <div class="field"><label>Etiqueta · {{ lang.toUpperCase() }}</label><input class="inp" v-model="f.tipo_label[lang]" placeholder="Artículo"></div></div>
 
     <div class="field"><label>Categorías (elige una o varias)</label>
       <div class="cats-chips"><button type="button" v-for="(l,k) in cats" :key="k" class="chip-cat" :class="{on:f.categories.includes(k)}" @click="toggleCat(k)">{{ l }}</button></div></div>
@@ -67,11 +73,7 @@ const RecursoEditor = {
       <div class="field"><label>Autor</label><input class="inp" v-model="f.author" placeholder="Equipo ExperientIA"></div>
       <div class="field"><label>Minutos de lectura</label><input class="inp" type="number" min="1" v-model="f.read_minutes"></div></div>
 
-    <div class="sec-divider"><span>Contenido</span>
-      <div class="tabs">
-        <button type="button" v-for="l in langs" :key="l" :class="{active:lang===l}" @click="lang=l">{{ l.toUpperCase() }}</button>
-        <button type="button" class="gen-btn" @click="generar" :disabled="busy.gen"><Icon name="sparkle" :size="12"/> {{ busy.gen?'Generando…':'Generar con AlexIA' }}</button></div></div>
-
+    <div class="sec-divider"><span>Contenido · {{ lang.toUpperCase() }}</span></div>
     <div class="field"><label>Resumen (excerpt) · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="2" v-model="f.extracto[lang]"></textarea></div>
     <div class="field"><label>Contenido · {{ lang.toUpperCase() }}</label><RichEditor v-model="f.cuerpo[lang]"/></div>
 
@@ -111,7 +113,7 @@ const RecursoEditor = {
    </div></div>`,
   data(){
     const base = { slug:'', type:'article', categories:[], author:'', read_minutes:5,
-      titulo:empty(), extracto:empty(), cuerpo:empty(), tipo_label:{es:'Artículo',en:'Article',pt:'Artigo'},
+      titulo:empty(), extracto:empty(), cuerpo:empty(), tipo_label:{...empty(),es:'Artículo',en:'Article',pt:'Artigo'},
       cover_image:'', audio_path:'', video_url:'', file_path:'', seo_title:empty(), seo_desc:empty(),
       gated:0, featured:0, status:'draft', sort:0 };
     let f = base;
@@ -123,16 +125,18 @@ const RecursoEditor = {
       cover_image:it.cover_image||'', audio_path:it.audio_path||'', video_url:it.video_url||'', file_path:it.file_path||'',
       seo_title:{...empty(),...(it.seo_title||{})}, seo_desc:{...empty(),...(it.seo_desc||{})},
       gated:Number(it.gated||0), featured:Number(it.featured||0), status:it.status||'draft', sort:it.sort||0 }; }
-    return { f, cats:CATS, langs:LANGS, lang:'es', img:{ instrucciones:'', estilo:'Cinematográfico premium', iluminacion:'Natural cálida', ambiente:'Inspirador' }, busy:{ gen:false, img:false, audio:false, save:false } };
+    return { f, cats:CATS, langs:CMS_LANGS, lang:'es', img:{ instrucciones:'', estilo:'Cinematográfico premium', iluminacion:'Natural cálida', ambiente:'Inspirador' }, busy:{ gen:false, img:false, audio:false, save:false } };
   },
   methods:{
-    autoSlug(){ if(!this.item) this.f.slug = slugify(this.f.titulo.es); },
+    onTitulo(){ if(!this.item && this.lang==='es') this.f.slug = slugify(this.f.titulo.es); },
     toggleCat(k){ const i=this.f.categories.indexOf(k); if(i>=0) this.f.categories.splice(i,1); else this.f.categories.push(k); },
-    async generar(){ if(!this.f.titulo.es && !this.f.extracto.es){ toast('Escribe un título o una idea primero.','err'); return; }
+    async generar(){ if(!this.f.titulo.es && !this.f.extracto.es){ toast('Escribe un título o una idea (en ES) primero.','err'); return; }
       this.busy.gen=true;
-      const r=await api.post('/admin/recursos/generar',{ titulo:this.f.titulo.es, categorias:this.f.categories.map(k=>CATS[k]), resumen:this.f.extracto.es });
+      const r=await api.post('/admin/recursos/generar',{ titulo:this.f.titulo.es, categorias:this.f.categories.map(k=>CATS[k]), resumen:this.f.extracto.es, idiomas:CMS_CODES });
       this.busy.gen=false;
-      if(r.ok){ for(const k of ['extracto','cuerpo','seo_title','seo_desc']) if(r.data[k]) this.f[k]={...this.f[k],...r.data[k]}; toast('Contenido generado con AlexIA.'); }
+      if(r.ok){ for(const k of ['titulo','tipo_label','extracto','cuerpo','seo_title','seo_desc']) if(r.data[k]) this.f[k]={...this.f[k],...r.data[k]};
+        if(!this.item && !this.f.slug) this.f.slug=slugify(this.f.titulo.es);
+        toast('AlexIA generó todo el contenido en los '+CMS_CODES.length+' idiomas.'); }
       else toast(r.error||'No se pudo generar. Revisa OpenAI en Conectores.','err'); },
     async portada(){ this.busy.img=true;
       const r=await api.post('/admin/recursos/portada',{ instrucciones:this.img.instrucciones, titulo:this.f.titulo.es, estilo:this.img.estilo, iluminacion:this.img.iluminacion, ambiente:this.img.ambiente });

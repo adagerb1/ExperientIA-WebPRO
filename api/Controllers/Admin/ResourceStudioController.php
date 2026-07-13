@@ -23,14 +23,22 @@ final class ResourceStudioController extends Controller
         $idea = trim((string) $this->req->input('resumen', ''));
         if ($titulo === '' && $idea === '') { Response::error('Indica al menos un título o una idea.', 422); }
 
+        // Idiomas habilitados (por defecto es/en/pt; escalable si se envían otros).
+        $idiomas = array_values(array_filter(array_map('strval', (array) $this->req->input('idiomas', ['es', 'en', 'pt']))));
+        if (! $idiomas) { $idiomas = ['es', 'en', 'pt']; }
+        $shape = '{' . implode(',', array_map(fn ($c) => "\"{$c}\":\"\"", $idiomas)) . '}';
+        $lista = implode(', ', $idiomas);
+
         $instr = 'Eres redactor senior de contenidos de ExperientIA SAS (automatización, growth e inteligencia artificial aplicada a negocios). '
             . 'Escribe un artículo de blog profesional, útil y accionable para líderes empresariales. '
-            . 'Devuelve ÚNICAMENTE JSON válido (sin markdown ni texto extra) con esta forma exacta: '
-            . '{"extracto":{"es":"","en":"","pt":""},"cuerpo":{"es":"","en":"","pt":""},"seo_title":{"es":"","en":"","pt":""},"seo_desc":{"es":"","en":"","pt":""}}. '
+            . 'Devuelve ÚNICAMENTE JSON válido (sin markdown ni texto extra) con esta forma exacta, y CADA objeto con TODOS estos idiomas (' . $lista . '): '
+            . '{"titulo":' . $shape . ',"tipo_label":' . $shape . ',"extracto":' . $shape . ',"cuerpo":' . $shape . ',"seo_title":' . $shape . ',"seo_desc":' . $shape . '}. '
+            . 'El "titulo" es atractivo y orientado a valor (si te dan un título, refínalo/tradúcelo; si no, créalo). '
+            . '"tipo_label" es una etiqueta corta del formato (p. ej. "Guía", "Checklist", "Artículo"). '
             . 'El "cuerpo" es HTML simple (usa <h2>, <p>, <ul><li>, <strong>), 500-800 palabras, sin <h1>. '
             . 'El "extracto" es 1-2 frases. "seo_title" máx 60 caracteres; "seo_desc" máx 155. '
-            . 'Redacta genuinamente en español (es), inglés (en) y portugués (pt), no traduzcas literal.';
-        $input = "Título: {$titulo}\nCategorías: " . implode(', ', $cats) . "\nIdea/resumen: {$idea}";
+            . 'Redacta GENUINAMENTE en cada idioma (' . $lista . '), no traduzcas literal. TODOS los campos en TODOS los idiomas, sin dejar ninguno vacío.';
+        $input = "Título/idea inicial: {$titulo}\nCategorías: " . implode(', ', $cats) . "\nIdea/resumen: {$idea}";
 
         try {
             $raw = AlexIA::ask($instr, $input);
@@ -39,10 +47,12 @@ final class ResourceStudioController extends Controller
                 Response::error('La IA no devolvió contenido válido. Intenta de nuevo.', 502);
             }
             Response::ok([
-                'extracto' => $this->tri($data['extracto'] ?? []),
-                'cuerpo' => $this->tri($data['cuerpo'] ?? []),
-                'seo_title' => $this->tri($data['seo_title'] ?? []),
-                'seo_desc' => $this->tri($data['seo_desc'] ?? []),
+                'titulo' => $this->tri($data['titulo'] ?? [], $idiomas),
+                'tipo_label' => $this->tri($data['tipo_label'] ?? [], $idiomas),
+                'extracto' => $this->tri($data['extracto'] ?? [], $idiomas),
+                'cuerpo' => $this->tri($data['cuerpo'] ?? [], $idiomas),
+                'seo_title' => $this->tri($data['seo_title'] ?? [], $idiomas),
+                'seo_desc' => $this->tri($data['seo_desc'] ?? [], $idiomas),
             ]);
         } catch (\Throwable $e) {
             Response::error($e->getMessage(), 503);
@@ -151,10 +161,13 @@ final class ResourceStudioController extends Controller
     }
 
     /** Normaliza un valor i18n a {es,en,pt}. */
-    private function tri($v): array
+    private function tri($v, array $idiomas = ['es', 'en', 'pt']): array
     {
         $v = is_array($v) ? $v : ['es' => (string) $v];
-        return ['es' => $v['es'] ?? '', 'en' => $v['en'] ?? ($v['es'] ?? ''), 'pt' => $v['pt'] ?? ($v['es'] ?? '')];
+        $es = $v['es'] ?? (is_array($v) && $v ? (string) reset($v) : '');
+        $out = [];
+        foreach ($idiomas as $c) { $out[$c] = (isset($v[$c]) && $v[$c] !== '') ? $v[$c] : $es; }
+        return $out;
     }
 
     private function extractJson(string $s): string
