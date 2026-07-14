@@ -44,6 +44,11 @@ function exp_run_install(PDO $pdo, bool $sqlite, ?array $admin = null): array
     }
     $log[] = 'Contenido inicial sembrado (soluciones, productos, casos, FAQs, recursos, disponibilidad).';
 
+    // 2.5b) Landings de conversión: copy curado en soluciones y productos.
+    require __DIR__ . '/api/db/apply_landings.php';
+    $nl = exp_apply_landings($pdo);
+    if ($nl > 0) { $log[] = "Landings de conversión sembradas ({$nl} ítems)."; }
+
     // 2.5) Diagnósticos dinámicos
     foreach (require __DIR__ . '/api/db/seed_diagnostics.php' as $dg) {
         $ex = $pdo->prepare('SELECT COUNT(*) FROM diagnostics WHERE dkey = ?');

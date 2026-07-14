@@ -10,9 +10,9 @@ use Core\Middleware\AuthMiddleware;
 final class ContentController extends Controller
 {
     private const TABLAS = [
-        'solutions' => ['skey', 'icon', 'titulo', 'pilar', 'problema', 'como', 'cambia', 'sort', 'active'],
-        'products' => ['icon', 'nombre', 'rol', 'texto', 'destacado', 'sort', 'active'],
-        'case_studies' => ['sector', 'titulo', 'contexto', 'intervencion', 'resultados', 'sort', 'active'],
+        'solutions' => ['skey', 'icon', 'titulo', 'pilar', 'problema', 'como', 'cambia', 'landing', 'sort', 'active'],
+        'products' => ['icon', 'nombre', 'rol', 'texto', 'destacado', 'landing', 'sort', 'active'],
+        'case_studies' => ['sector', 'titulo', 'contexto', 'intervencion', 'resultados', 'landing', 'sort', 'active'],
         'faqs' => ['pregunta', 'respuesta', 'sort', 'active'],
         'resources' => ['slug', 'type', 'categories', 'tipo_label', 'titulo', 'extracto', 'cuerpo', 'author', 'read_minutes', 'cover_image', 'audio_path', 'video_url', 'file_path', 'gated', 'featured', 'seo_title', 'seo_desc', 'status', 'sort', 'active', 'published_at'],
         'availability_rules' => ['weekday', 'start_time', 'end_time', 'active'],
@@ -21,7 +21,7 @@ final class ContentController extends Controller
         'countries' => ['iso', 'nombre', 'dial', 'sort', 'active'],
         'campaign_templates' => ['nombre', 'canal', 'asunto', 'cuerpo', 'sort', 'active'],
     ];
-    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'cover_image', 'audio_path', 'seo_title', 'seo_desc', 'intro', 'preguntas', 'asunto'];
+    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'cover_image', 'audio_path', 'landing', 'seo_title', 'seo_desc', 'intro', 'preguntas', 'asunto'];
 
     public function index(string $tabla): void
     {

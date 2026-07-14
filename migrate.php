@@ -21,6 +21,9 @@ $sqlite = Database::isSqlite();
 
 /** Columnas deseadas por tabla: nombre => tipo MySQL. */
 $deseadas = [
+    'solutions' => ['landing' => 'JSON NULL'],
+    'products' => ['landing' => 'JSON NULL'],
+    'case_studies' => ['landing' => 'JSON NULL'],
     'leads' => [
         'utm_source' => 'VARCHAR(120) NULL',
         'utm_medium' => 'VARCHAR(120) NULL',
@@ -187,6 +190,13 @@ try {
         echo "+ segmentos sembrados (categorías, tamaños, orígenes, canales)\n";
     }
 } catch (\Throwable $e) { echo '! taxonomías: ' . $e->getMessage() . "\n"; }
+
+// Landings de conversión: sembrar copy curado en soluciones/productos existentes.
+try {
+    require __DIR__ . '/api/db/apply_landings.php';
+    $nl = exp_apply_landings($pdo);
+    if ($nl > 0) { echo "+ landings sembradas en {$nl} ítem(s)\n"; }
+} catch (\Throwable $e) { echo '! landings: ' . $e->getMessage() . "\n"; }
 
 // Portada y audio pasan a trilingües (JSON): ensanchar columnas en MySQL.
 if (! $sqlite) {

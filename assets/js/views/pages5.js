@@ -202,11 +202,11 @@ const Landing = {
     </PageHero>
 
     <section class="section land-oferta-sec" style="padding-top:0"><div class="container"><div class="glass glass-lit card land-oferta" v-reveal>
-      <div class="land-oferta-body"><span class="chip chip--cyan">{{ tx('landing.oferta_badge','Sin costo') }}</span>
-        <h2 class="h3">{{ tx('landing.oferta_t','Diagnóstico ejecutivo gratuito') }}</h2>
-        <p>{{ tx('landing.oferta_s','En 30 minutos te entregamos un mapa de las 3 oportunidades de mayor retorno para tu empresa. Sin costo y sin compromiso.') }}</p></div>
+      <div class="land-oferta-body"><span class="chip chip--cyan">{{ (m.oferta&&m.oferta.badge) || tx('landing.oferta_badge','Sin costo') }}</span>
+        <h2 class="h3">{{ (m.oferta&&m.oferta.titulo) || tx('landing.oferta_t','Diagnóstico ejecutivo gratuito') }}</h2>
+        <p>{{ (m.oferta&&m.oferta.texto) || tx('landing.oferta_s','En 30 minutos te entregamos un mapa de las 3 oportunidades de mayor retorno para tu empresa. Sin costo y sin compromiso.') }}</p></div>
       <div class="land-oferta-cta">
-        <router-link :to="pageUrl('diagnostico')" class="btn btn-grad">{{ tx('landing.oferta_cta','Quiero mi diagnóstico gratis') }}</router-link>
+        <router-link :to="pageUrl('diagnostico')" class="btn btn-grad">{{ (m.oferta&&m.oferta.cta) || tx('landing.oferta_cta','Quiero mi diagnóstico gratis') }}</router-link>
         <p class="small garantia"><Icon name="shield" :size="13"/> {{ tx('landing.garantia','Si no vemos un caso claro, te lo decimos. Sin letra pequeña.') }}</p></div>
     </div></div></section>
 
@@ -251,6 +251,13 @@ const Landing = {
           <div class="proof-metric"><span class="grad-text proof-val">{{ c.valor }}</span><span class="proof-lbl">{{ c.label }}</span></div>
           <span class="link-arrow">{{ tx('landing.ver_caso','Ver el caso') }} <Icon name="arrow" :size="15"/></span></router-link></div></div></section>
 
+    <section class="section" v-if="m.testimonio"><div class="container" style="max-width:820px">
+      <figure class="glass glass-lit card land-quote" v-reveal>
+        <Icon name="bulb" :size="22"/>
+        <blockquote>“{{ m.testimonio.quote }}”</blockquote>
+        <figcaption v-if="m.testimonio.autor||m.testimonio.cargo"><b>{{ m.testimonio.autor }}</b><span v-if="m.testimonio.cargo"> · {{ m.testimonio.cargo }}</span></figcaption>
+      </figure></div></section>
+
     <section class="section" v-if="m.faqs && m.faqs.length"><div class="container land-faqs">
       <div class="section-head"><h2 class="h2" v-reveal>{{ tx('landing.faq_t','Antes de que preguntes') }}</h2></div>
       <div class="faq-list"><details v-for="(f,i) in m.faqs" :key="i" class="glass faq-item" v-reveal :style="{'--d':i*.06+'s'}" :open="i===0"><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details></div></div></section>
@@ -289,7 +296,7 @@ export const SolucionLanding = {
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const items=await fc('soluciones'); const s=items.find(x=>x.skey===this.$route.params.slug);
-    if(s){ const c=SOL[s.skey]||{}; const casos=await proofCasos(); this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia), casos); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
+    if(s){ const c=(s.landing&&typeof s.landing==='object')?s.landing:(SOL[s.skey]||{}); const casos=await proofCasos(); this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia), casos); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
     this.cargado=true;
   },
 };
@@ -300,12 +307,12 @@ export const ProductoLanding = {
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const slug=this.$route.params.slug; const items=await fc('productos'); const p=items.find(x=>slugify(tr(x.nombre,'es'))===slug);
-    if(p){ const c=PROD[slug]||{}; const casos=await proofCasos(); this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol), casos); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
+    if(p){ const c=(p.landing&&typeof p.landing==='object')?p.landing:(PROD[slug]||{}); const casos=await proofCasos(); this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol), casos); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
     this.cargado=true;
   },
 };
 
-// Normaliza entidad CMS + copy curado en el modelo que consume <Landing>.
+// Normaliza entidad CMS + copy de landing (BD o curado) en el modelo que consume <Landing>.
 function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb, despuesFb, casos){
   const beneficios = (c.beneficios||[]).map(b=>({ icon:b.icon, t:L(b.t), x:L(b.x) }));
   const pasos = (c.pasos||[]).map(p=>({ t:L(p.t), x:L(p.x) }));
@@ -313,13 +320,17 @@ function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb
   const faqs = (c.faqs||[]).map(f=>({ q:L(f.q), a:L(f.a) }));
   let entregables = c.entregables ? (c.entregables[store.locale]||c.entregables.es||[]) : [];
   if((!entregables || !entregables.length) && comoLines && comoLines.length) entregables = comoLines;
+  const proofOn = c.proof_casos !== false;
+  const oferta = (c.oferta && c.oferta.on) ? { badge:L(c.oferta.badge), titulo:L(c.oferta.titulo), texto:L(c.oferta.texto), cta:L(c.oferta.cta) } : null;
+  const testimonio = (c.testimonio && c.testimonio.on && L(c.testimonio.quote)) ? { quote:L(c.testimonio.quote), autor:c.testimonio.autor||'', cargo:L(c.testimonio.cargo) } : null;
   return {
     eyebrow, titulo, origen, volver, diag,
     promesa: L(c.promesa) || despuesFb || '',
     antes: L(c.antes) || antesFb || '',
     despues: L(c.despues) || despuesFb || '',
     cta: L(c.cta) || tx('landing.cta','Quiero más información'),
-    beneficios, pasos, entregables, metricas, faqs, casos: casos||[],
+    beneficios, pasos, entregables, metricas, faqs, oferta, testimonio,
+    casos: proofOn ? (casos||[]) : [],
   };
 }
 
@@ -335,6 +346,12 @@ export const CasoDetalle = {
     <section class="section" style="padding-top:0"><div class="container"><div class="glass glass-lit card land-metrics caso-metrics" v-reveal>
       <div v-for="(r,i) in c.resultados" :key="i" class="metric"><span class="metric-val grad-text"><CountUp :value="r.valor"/></span><span class="metric-lbl">{{ tr(r.label) }}</span></div></div></div></section>
 
+    <section class="section" v-if="ld.beneficios && ld.beneficios.length"><div class="container">
+      <div class="section-head"><h2 class="h2" v-reveal>{{ tx('landing.benes_t','Lo que cambia para ti') }}</h2></div>
+      <div class="grid grid-3 land-benes">
+        <article v-for="(b,i) in ld.beneficios" :key="i" class="glass card bene-card" v-reveal :style="{'--d':i*.09+'s'}">
+          <span class="icon-chip"><Icon :name="b.icon||'check'"/></span><h3 class="h3">{{ b.t }}</h3><p>{{ b.x }}</p></article></div></div></section>
+
     <section class="section"><div class="container land-grid">
       <div class="land-body">
         <div class="glass card" v-reveal><h2 class="lbl" style="margin-bottom:.8rem">{{ tx('caso.contexto','El contexto') }}</h2><p class="lead">{{ tr(c.contexto) }}</p></div>
@@ -344,6 +361,15 @@ export const CasoDetalle = {
         <button class="btn btn-grad" style="width:100%" @click="modal=true">{{ tx('caso.cta','Quiero resultados así') }}</button>
         <router-link :to="pageUrl('agenda')" class="btn btn-ghost" style="width:100%">{{ tx('landing.agendar','Agendar 1:1') }}</router-link>
         <p class="small garantia" style="justify-content:center"><Icon name="shield" :size="12"/> {{ tx('landing.garantia_corta','Sin costo · sin compromiso') }}</p></div></aside></div></section>
+
+    <section class="section" v-if="ld.testimonio"><div class="container" style="max-width:820px">
+      <figure class="glass glass-lit card land-quote" v-reveal><Icon name="bulb" :size="22"/>
+        <blockquote>“{{ ld.testimonio.quote }}”</blockquote>
+        <figcaption v-if="ld.testimonio.autor||ld.testimonio.cargo"><b>{{ ld.testimonio.autor }}</b><span v-if="ld.testimonio.cargo"> · {{ ld.testimonio.cargo }}</span></figcaption></figure></div></section>
+
+    <section class="section" v-if="ld.faqs && ld.faqs.length"><div class="container land-faqs">
+      <div class="section-head"><h2 class="h2" v-reveal>{{ tx('landing.faq_t','Antes de que preguntes') }}</h2></div>
+      <div class="faq-list"><details v-for="(f,i) in ld.faqs" :key="i" class="glass faq-item" v-reveal :open="i===0"><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details></div></div></section>
 
     <section class="section"><div class="container"><div class="glass glass-lit card land-final" v-reveal>
       <h2 class="h2">{{ tx('caso.final_t','Los resultados no son suerte: son método') }}</h2>
@@ -355,7 +381,13 @@ export const CasoDetalle = {
     <LeadModal v-if="modal" :titulo="tr(c.titulo)" :origen="'caso:'+slug" @close="modal=false"/>
   </div><NoEncontrado v-else-if="cargado" volver="casos"/>`,
   data(){ return { c:null, cargado:false, modal:false, slug:'' }; },
-  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl, sub(){ return this.c ? tr(this.c.contexto).split('.')[0]+'.' : ''; } },
+  computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl,
+    ld(){ const c=this.c&&this.c.landing; if(!c||typeof c!=='object') return {};
+      return { promesa:L(c.promesa),
+        beneficios:(c.beneficios||[]).map(b=>({ icon:b.icon, t:L(b.t), x:L(b.x) })).filter(b=>b.t),
+        faqs:(c.faqs||[]).map(f=>({ q:L(f.q), a:L(f.a) })).filter(f=>f.q),
+        testimonio:(c.testimonio&&c.testimonio.on&&L(c.testimonio.quote))?{ quote:L(c.testimonio.quote), autor:c.testimonio.autor||'', cargo:L(c.testimonio.cargo) }:null }; },
+    sub(){ if(!this.c) return ''; return this.ld.promesa || (tr(this.c.contexto).split('.')[0]+'.'); } },
   methods:{ tx },
   async mounted(){ this.slug=this.$route.params.slug; const items=await fc('casos');
     this.c=items.find(x=>slugify(tr(x.titulo,'es'))===this.slug)||null; this.cargado=true;

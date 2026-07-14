@@ -2,6 +2,11 @@
 import { api, store, toast, CMS_LANGS, CMS_CODES } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
 import { SmartTable } from './table.js';
+import { LandingEditor } from './landing-editor.js';
+
+// Módulos que además de la ficha tienen una landing de conversión editable.
+const CON_LANDING = ['solutions', 'products', 'case_studies'];
+const txtI18n = (v) => (v && typeof v === 'object') ? (v.es || Object.values(v)[0] || '') : String(v == null ? '' : v);
 const escT = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
 export const Reservas = {
@@ -51,12 +56,17 @@ const txtOf = (v) => { if (v && typeof v === 'object') { return v.es || Object.v
 const blankI18n = () => { const o = {}; for (const c of CMS_CODES) o[c] = ''; return o; };
 
 export const Contenido = {
-  components: { Icon, SmartTable },
+  components: { Icon, SmartTable, LandingEditor },
   props: ['modulo'],
-  template: `<div><h1>{{ M.titulo }}</h1><p class="adm__sub">Contenido del sitio · edición trilingüe (ES obligatorio; EN/PT vacíos muestran ES)</p>
+  template: `<div><h1>{{ M.titulo }}</h1><p class="adm__sub">Contenido del sitio · edición trilingüe (ES obligatorio; EN/PT vacíos muestran ES)<span v-if="tieneLanding"> · cada ítem tiene ficha y landing de conversión</span></p>
     <div class="toolbar"><button class="btn btn-primary btn-sm" @click="nuevo"><Icon name="plug" :size="14"/> Crear</button>
       <input class="inp" v-model="q" placeholder="Buscar…" style="max-width:240px"></div>
-    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="searchKeys" @rowClick="editar"/>
+    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="searchKeys" @rowClick="editar">
+      <template v-if="tieneLanding" #actions="{row}">
+        <button class="btn btn-ghost btn-sm" @click.stop="editar(row)">Ficha</button>
+        <button class="btn btn-primary btn-sm" @click.stop="abrirLanding(row)"><Icon name="growth" :size="13"/> Landing</button></template>
+    </SmartTable>
+    <LandingEditor v-if="landingItem" :item="landingItem" :tabla="modulo" :titulo="landingTitulo" @close="landingItem=null" @saved="onLandingSaved"/>
     <div class="modal-bg" v-if="editing" @click.self="editing=null"><div class="glass modal modal-lg">
       <h2>{{ form.id?'Editar':'Crear' }} · {{ M.titulo }}</h2>
 
@@ -85,9 +95,11 @@ export const Contenido = {
         <button class="btn btn-ghost btn-sm" @click="editing=null">Cancelar</button>
         <button v-if="form.id" class="btn btn-danger btn-sm" style="margin-left:auto" @click="eliminar">Eliminar</button></div></div></div>
   </div>`,
-  data(){ return { items:[], editing:false, form:{}, q:'', lang:'es', langs:CMS_LANGS, aiPrompt:'', aiLoading:false }; },
+  data(){ return { items:[], editing:false, form:{}, q:'', lang:'es', langs:CMS_LANGS, aiPrompt:'', aiLoading:false, landingItem:null }; },
   computed:{
     M(){ return MODULOS[this.modulo]; },
+    tieneLanding(){ return CON_LANDING.includes(this.modulo); },
+    landingTitulo(){ return this.landingItem ? txtI18n(this.landingItem.titulo || this.landingItem.nombre || this.landingItem.sector) : ''; },
     tieneI18n(){ return this.M.campos.some(c=>c.t==='i18n'||c.t==='i18ta'); },
     tieneRedactables(){ return this.M.campos.some(c=>c.t==='i18n'||c.t==='i18ta'||c.t==='sel'||c.t==='text'); },
     aiPh(){ const ej={ solutions:'Una solución sobre analítica predictiva para retail…', products:'Un producto de tablero para el comité ejecutivo…', case_studies:'Un caso de una fintech que automatizó su onboarding…', faqs:'Una FAQ sobre cuánto tarda ver resultados…', industries:'El nombre del sector salud…', campaign_templates:'Un correo de bienvenida cálido que invite a agendar…' }; return ej[this.modulo]||'Describe el contenido que quieres…'; },
@@ -103,6 +115,8 @@ export const Contenido = {
     dow(n){ return {1:'Lunes',2:'Martes',3:'Miércoles',4:'Jueves',5:'Viernes',6:'Sábado',7:'Domingo'}[n]||n; },
     blank(){ const f={}; for(const c of this.M.campos){ f[c.n]= (c.t==='i18n'||c.t==='i18ta')?blankI18n(): c.t==='bool'?true: c.t==='num'?0: c.t==='json'?'[]':''; } return f; },
     nuevo(){ this.form=this.blank(); this.lang='es'; this.aiPrompt=''; this.editing=true; },
+    abrirLanding(it){ this.landingItem=it; },
+    onLandingSaved(){ this.landingItem=null; this.load(); },
     editar(it){ const f=this.blank(); for(const c of this.M.campos){ let v=it[c.n];
       if(c.t==='i18n'||c.t==='i18ta'){ const o=blankI18n(); if(v&&typeof v==='object'){ for(const k of CMS_CODES) o[k]=v[k]||''; } f[c.n]=o; }
       else if(c.t==='bool'){ f[c.n]=!!Number(v); } else if(c.t==='json'){ f[c.n]=JSON.stringify(v||[],null,1); } else { f[c.n]=v==null?'':v; } }
