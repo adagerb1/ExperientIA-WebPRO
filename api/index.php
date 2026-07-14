@@ -78,6 +78,11 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+// Segmentos configurables y trilingües (categorías, tamaños, orígenes, canales).
+$r->get('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'index');
+$r->post('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'store');
+$r->put('/admin/taxonomia/{kind}/{id}', 'Admin\\SegmentTaxonomyController', 'update');
+$r->delete('/admin/taxonomia/{kind}/{id}', 'Admin\\SegmentTaxonomyController', 'destroy');
 $r->post('/admin/alexia/estrategia', 'Admin\\ChatController', 'estrategia'); // AlexIA estratega (BI)
 $r->post('/admin/alexia/analista', 'Admin\\AnalystController', 'consultar'); // AlexIA analista (SQL solo lectura)
 $r->post('/admin/alexia', 'Admin\\ChatController', 'mensaje');         // AlexIA interno (admin)

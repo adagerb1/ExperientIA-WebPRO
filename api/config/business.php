@@ -20,6 +20,14 @@ return [
         'micro' => '1–10 (Micro)', 'pequena' => '11–50 (Pequeña)', 'mediana' => '51–200 (Mediana)',
         'grande' => '201–1000 (Grande)', 'corporativa' => '1000+ (Corporativa)',
     ],
+    'lead_sources' => [
+        'contacto' => 'Formulario de contacto', 'diagnostico' => 'Diagnóstico', 'recurso' => 'Recurso / lead magnet',
+        'newsletter' => 'Newsletter', 'reserva' => 'Reserva de agenda', 'interes' => 'Interés / campaña',
+        'chat' => 'Chat AlexIA', 'referido' => 'Referido', 'otro' => 'Otro',
+    ],
+    'lead_channels' => [
+        'web' => 'Web', 'telegram' => 'Telegram', 'whatsapp' => 'WhatsApp',
+    ],
     'lead_statuses' => [
         'nuevo' => 'Nuevo', 'contactado' => 'Contactado', 'calificado' => 'Calificado',
         'propuesta' => 'Propuesta', 'cliente' => 'Cliente', 'descartado' => 'Descartado',

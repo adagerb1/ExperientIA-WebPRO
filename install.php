@@ -75,7 +75,13 @@ function exp_run_install(PDO $pdo, bool $sqlite, ?array $admin = null): array
                 ->execute([$c['iso'], json_encode($c['nombre'], JSON_UNESCAPED_UNICODE), $c['dial'], $c['sort'], $c['active']]);
         }
     }
-    $log[] = 'Taxonomías sembradas (industrias y países).';
+    if ((int) $pdo->query('SELECT COUNT(*) FROM segments')->fetchColumn() === 0) {
+        foreach ($taxo['segments'] ?? [] as $s) {
+            $pdo->prepare('INSERT INTO segments (kind, skey, nombre, sort, active) VALUES (?,?,?,?,?)')
+                ->execute([$s['kind'], $s['skey'], json_encode($s['nombre'], JSON_UNESCAPED_UNICODE), $s['sort'], $s['active']]);
+        }
+    }
+    $log[] = 'Taxonomías sembradas (industrias, países y segmentos).';
 
     // 2.7) Automatización (plantillas de campaña + secuencia de ejemplo pausada)
     if ((int) $pdo->query('SELECT COUNT(*) FROM campaign_templates')->fetchColumn() === 0) {

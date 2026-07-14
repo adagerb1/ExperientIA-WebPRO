@@ -13,7 +13,10 @@ final class MetaController extends Controller
         Response::ok([
             'industries' => Taxonomy::industries(),
             'countries' => Taxonomy::countries(),
-            'company_sizes' => biz('company_sizes'),
+            'resource_categories' => Taxonomy::segments('category'),
+            'company_sizes' => Taxonomy::segments('company_size'),
+            'lead_sources' => Taxonomy::segments('source'),
+            'lead_channels' => Taxonomy::segments('channel'),
             'lead_statuses' => biz('lead_statuses'),
             'locales' => biz('locales'),
         ]);

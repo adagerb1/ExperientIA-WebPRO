@@ -21,7 +21,7 @@ final class ContentController extends Controller
         'countries' => ['iso', 'nombre', 'dial', 'sort', 'active'],
         'campaign_templates' => ['nombre', 'canal', 'asunto', 'cuerpo', 'sort', 'active'],
     ];
-    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'seo_title', 'seo_desc', 'intro', 'preguntas', 'asunto'];
+    private const JSON_FIELDS = ['titulo', 'pilar', 'problema', 'como', 'cambia', 'nombre', 'rol', 'texto', 'sector', 'contexto', 'intervencion', 'resultados', 'pregunta', 'respuesta', 'tipo_label', 'extracto', 'cuerpo', 'categories', 'cover_image', 'audio_path', 'seo_title', 'seo_desc', 'intro', 'preguntas', 'asunto'];
 
     public function index(string $tabla): void
     {

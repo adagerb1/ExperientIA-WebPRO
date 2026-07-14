@@ -34,8 +34,8 @@ $deseadas = [
         'categories' => 'JSON NULL',
         'author' => 'VARCHAR(120) NULL',
         'read_minutes' => 'INT NOT NULL DEFAULT 5',
-        'cover_image' => 'VARCHAR(255) NULL',
-        'audio_path' => 'VARCHAR(255) NULL',
+        'cover_image' => 'TEXT NULL',
+        'audio_path' => 'TEXT NULL',
         'video_url' => 'VARCHAR(500) NULL',
         'gated' => 'TINYINT NOT NULL DEFAULT 0',
         'featured' => 'TINYINT NOT NULL DEFAULT 0',
@@ -173,7 +173,28 @@ try {
         }
         echo "+ países sembrados\n";
     }
+    // Segmentos configurables (categorías de recursos, tamaños, orígenes, canales).
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS segments (id INTEGER PRIMARY KEY AUTOINCREMENT, kind TEXT NOT NULL, skey TEXT NOT NULL, nombre TEXT NOT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1, UNIQUE(kind, skey))');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS segments (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, kind VARCHAR(40) NOT NULL, skey VARCHAR(60) NOT NULL, nombre JSON NOT NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1, UNIQUE KEY uniq_segment (kind, skey)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+    if ((int) $pdo->query('SELECT COUNT(*) FROM segments')->fetchColumn() === 0) {
+        foreach ($taxo['segments'] ?? [] as $s) {
+            $pdo->prepare('INSERT INTO segments (kind, skey, nombre, sort, active) VALUES (?,?,?,?,?)')
+                ->execute([$s['kind'], $s['skey'], json_encode($s['nombre'], JSON_UNESCAPED_UNICODE), $s['sort'], $s['active']]);
+        }
+        echo "+ segmentos sembrados (categorías, tamaños, orígenes, canales)\n";
+    }
 } catch (\Throwable $e) { echo '! taxonomías: ' . $e->getMessage() . "\n"; }
+
+// Portada y audio pasan a trilingües (JSON): ensanchar columnas en MySQL.
+if (! $sqlite) {
+    foreach (['cover_image', 'audio_path'] as $col) {
+        try { $pdo->exec("ALTER TABLE resources MODIFY {$col} TEXT NULL"); }
+        catch (\Throwable $e) { /* ya es TEXT o tabla ausente */ }
+    }
+}
 
 // Los artículos ya publicados (active=1 + published_at) pasan a status='published'.
 try {

@@ -1,18 +1,26 @@
 // Portal admin · Estudio de Recursos con IA (contenido trilingüe, portada, audio)
-import { api, toast, CMS_LANGS, CMS_CODES } from '../lib/core.js';
+import { api, toast, loadMeta, CMS_LANGS, CMS_CODES } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
 import { SmartTable } from './table.js';
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
-// Categorías (deben coincidir con api/config/business.php · resource_categories)
-const CATS = {
-  ia_negocios:'IA aplicada a negocios', automatizacion:'Automatización', growth:'Growth',
-  estrategia:'Estrategia', marketing:'Marketing estratégico', crm:'CRM', ventas:'Ventas',
-  experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes',
-  datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital',
-};
+// Categorías por defecto (fallback si /meta aún no trae la taxonomía trilingüe de BD).
+const CAT_FALLBACK = [
+  { key:'ia_negocios', nombre:{ es:'IA aplicada a negocios' } }, { key:'automatizacion', nombre:{ es:'Automatización' } },
+  { key:'growth', nombre:{ es:'Growth' } }, { key:'estrategia', nombre:{ es:'Estrategia' } },
+  { key:'marketing', nombre:{ es:'Marketing estratégico' } }, { key:'crm', nombre:{ es:'CRM' } },
+  { key:'ventas', nombre:{ es:'Ventas' } }, { key:'experiencia_cliente', nombre:{ es:'Experiencia de cliente' } },
+  { key:'agentes', nombre:{ es:'Agentes inteligentes' } }, { key:'datos', nombre:{ es:'Datos y analítica' } },
+  { key:'liderazgo', nombre:{ es:'Liderazgo' } }, { key:'transformacion', nombre:{ es:'Transformación digital' } },
+];
 const slugify = (s)=> (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80);
 const empty = ()=> { const o={}; for(const c of CMS_CODES) o[c]=''; return o; };
+// Normaliza un campo a objeto {es,en,pt}. Una cadena heredada (portada/audio
+// únicos) se replica a todos los idiomas para no perder el valor existente.
+const toI18n = (v, replicate=false)=> { const o=empty();
+  if(v && typeof v==='object'){ for(const c of CMS_CODES) o[c]=v[c]||''; }
+  else if(typeof v==='string' && v){ if(replicate){ for(const c of CMS_CODES) o[c]=v; } else { o.es=v; } }
+  return o; };
 
 // ── Editor visual (WYSIWYG) ──────────────────────────────────────────
 const RichEditor = {
@@ -66,8 +74,8 @@ const RecursoEditor = {
       <div class="field"><label>Tipo</label><select class="inp" v-model="f.type"><option value="article">Artículo</option><option value="download">Descargable (PDF)</option></select></div>
       <div class="field"><label>Etiqueta · {{ lang.toUpperCase() }}</label><input class="inp" v-model="f.tipo_label[lang]" placeholder="Artículo"></div></div>
 
-    <div class="field"><label>Categorías (elige una o varias)</label>
-      <div class="cats-chips"><button type="button" v-for="(l,k) in cats" :key="k" class="chip-cat" :class="{on:f.categories.includes(k)}" @click="toggleCat(k)">{{ l }}</button></div></div>
+    <div class="field"><label>Categorías (elige una o varias) · {{ lang.toUpperCase() }}</label>
+      <div class="cats-chips"><button type="button" v-for="c in cats" :key="c.key" class="chip-cat" :class="{on:f.categories.includes(c.key)}" @click="toggleCat(c.key)">{{ c.nombre[lang]||c.nombre.es }}</button></div></div>
 
     <div class="form-grid two">
       <div class="field"><label>Autor</label><input class="inp" v-model="f.author" placeholder="Equipo ExperientIA"></div>
@@ -75,25 +83,28 @@ const RecursoEditor = {
 
     <div class="sec-divider"><span>Contenido · {{ lang.toUpperCase() }}</span></div>
     <div class="field"><label>Resumen (excerpt) · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="2" v-model="f.extracto[lang]"></textarea></div>
-    <div class="field"><label>Contenido · {{ lang.toUpperCase() }}</label><RichEditor v-model="f.cuerpo[lang]"/></div>
+    <div class="field"><label>Contenido · {{ lang.toUpperCase() }}</label><RichEditor :key="lang" v-model="f.cuerpo[lang]"/></div>
 
-    <div class="sec-divider"><span>Imagen de portada</span></div>
+    <div class="sec-divider"><span>Imagen de portada · {{ lang.toUpperCase() }}</span></div>
+    <p class="rec-lang-note">La portada en <b>ES</b> se replica a los {{ langs.length }} idiomas. Si cambias de pestaña y generas o subes otra, se aplica <b>solo</b> a ese idioma.</p>
     <div class="field"><label>Instrucciones para la imagen (opcional)</label><textarea class="inp" rows="2" v-model="img.instrucciones" placeholder="Qué quieres ver: escena, colores, elementos…"></textarea></div>
     <div class="form-grid" style="grid-template-columns:repeat(3,1fr)">
       <div class="field"><label>Estilo</label><input class="inp" v-model="img.estilo"></div>
       <div class="field"><label>Iluminación</label><input class="inp" v-model="img.iluminacion"></div>
       <div class="field"><label>Ambiente</label><input class="inp" v-model="img.ambiente"></div></div>
     <div class="cover-row">
-      <div class="cover-prev"><img v-if="f.cover_image" :src="f.cover_image" alt=""><span v-else>Sin portada</span></div>
+      <div class="cover-prev"><img v-if="f.cover_image[lang]" :src="f.cover_image[lang]" alt=""><span v-else>Sin portada ({{ lang.toUpperCase() }})</span></div>
       <div class="cover-actions">
         <button type="button" class="btn btn-primary btn-sm" @click="portada" :disabled="busy.img"><Icon name="sparkle" :size="12"/> {{ busy.img?'Generando…':'Generar portada' }}</button>
         <label class="btn btn-ghost btn-sm" style="cursor:pointer">Subir imagen<input type="file" accept="image/*" hidden @change="subirImg"></label>
         <p class="hint">JPG, PNG o WebP · máx 10 MB · se optimiza a 1200×630.</p></div></div>
 
-    <div class="sec-divider"><span>Audio (narración)</span></div>
+    <div class="sec-divider"><span>Audio (narración) · {{ lang.toUpperCase() }}</span></div>
+    <p class="rec-lang-note">El audio es la narración del contenido, por eso se genera por idioma desde el texto de esta pestaña.</p>
     <div class="cover-actions" style="flex-direction:row;align-items:center;gap:1rem;flex-wrap:wrap">
-      <button type="button" class="btn btn-primary btn-sm" @click="audio" :disabled="busy.audio"><Icon name="sparkle" :size="12"/> {{ busy.audio?'Generando…':'Generar audio del artículo' }}</button>
-      <audio v-if="f.audio_path" :src="f.audio_path" controls style="height:36px"></audio></div>
+      <button type="button" class="btn btn-primary btn-sm" @click="audio" :disabled="busy.audio"><Icon name="sparkle" :size="12"/> {{ busy.audio?'Generando…':'Generar audio ('+lang.toUpperCase()+')' }}</button>
+      <audio v-if="f.audio_path[lang]" :key="lang" :src="f.audio_path[lang]" controls style="height:36px"></audio>
+      <span v-else class="hint">Sin audio en {{ lang.toUpperCase() }}.</span></div>
 
     <div class="sec-divider"><span>Video</span></div>
     <div class="field"><label>URL de video (opcional)</label><input class="inp" v-model="f.video_url" placeholder="https://…"></div>
@@ -114,7 +125,7 @@ const RecursoEditor = {
   data(){
     const base = { slug:'', type:'article', categories:[], author:'', read_minutes:5,
       titulo:empty(), extracto:empty(), cuerpo:empty(), tipo_label:{...empty(),es:'Artículo',en:'Article',pt:'Artigo'},
-      cover_image:'', audio_path:'', video_url:'', file_path:'', seo_title:empty(), seo_desc:empty(),
+      cover_image:empty(), audio_path:empty(), video_url:'', file_path:'', seo_title:empty(), seo_desc:empty(),
       gated:0, featured:0, status:'draft', sort:0 };
     let f = base;
     if(this.item){ const it=this.item; f = { ...base,
@@ -122,31 +133,39 @@ const RecursoEditor = {
       author:it.author||'', read_minutes:it.read_minutes||5,
       titulo:{...empty(),...(it.titulo||{})}, extracto:{...empty(),...(it.extracto||{})}, cuerpo:{...empty(),...(it.cuerpo||{})},
       tipo_label:{...base.tipo_label,...(it.tipo_label||{})},
-      cover_image:it.cover_image||'', audio_path:it.audio_path||'', video_url:it.video_url||'', file_path:it.file_path||'',
+      cover_image:toI18n(it.cover_image, true), audio_path:toI18n(it.audio_path, true), video_url:it.video_url||'', file_path:it.file_path||'',
       seo_title:{...empty(),...(it.seo_title||{})}, seo_desc:{...empty(),...(it.seo_desc||{})},
       gated:Number(it.gated||0), featured:Number(it.featured||0), status:it.status||'draft', sort:it.sort||0 }; }
-    return { f, cats:CATS, langs:CMS_LANGS, lang:'es', img:{ instrucciones:'', estilo:'Cinematográfico premium', iluminacion:'Natural cálida', ambiente:'Inspirador' }, busy:{ gen:false, img:false, audio:false, save:false } };
+    return { f, cats:CAT_FALLBACK, langs:CMS_LANGS, lang:'es', img:{ instrucciones:'', estilo:'Cinematográfico premium', iluminacion:'Natural cálida', ambiente:'Inspirador' }, busy:{ gen:false, img:false, audio:false, save:false } };
+  },
+  async mounted(){
+    try { const m=await loadMeta(); if(m && Array.isArray(m.resource_categories) && m.resource_categories.length){
+      this.cats = m.resource_categories.map(c=>({ key:c.key, nombre:(c.nombre&&typeof c.nombre==='object')?c.nombre:{ es:String(c.nombre||c.key) } })); } } catch(e){}
   },
   methods:{
     onTitulo(){ if(!this.item && this.lang==='es') this.f.slug = slugify(this.f.titulo.es); },
     toggleCat(k){ const i=this.f.categories.indexOf(k); if(i>=0) this.f.categories.splice(i,1); else this.f.categories.push(k); },
+    catLabelES(k){ const c=this.cats.find(x=>x.key===k); return c?(c.nombre.es||c.nombre[CMS_CODES[0]]||k):k; },
+    // La portada/audio en ES se replica a todos los idiomas; en otro idioma, solo a ese.
+    aplicarPorIdioma(campo, valor){ if(this.lang==='es'){ for(const c of CMS_CODES) this.f[campo][c]=valor; } else { this.f[campo][this.lang]=valor; } },
     async generar(){ if(!this.f.titulo.es && !this.f.extracto.es){ toast('Escribe un título o una idea (en ES) primero.','err'); return; }
       this.busy.gen=true;
-      const r=await api.post('/admin/recursos/generar',{ titulo:this.f.titulo.es, categorias:this.f.categories.map(k=>CATS[k]), resumen:this.f.extracto.es, idiomas:CMS_CODES });
+      const r=await api.post('/admin/recursos/generar',{ titulo:this.f.titulo.es, categorias:this.f.categories.map(k=>this.catLabelES(k)), resumen:this.f.extracto.es, idiomas:CMS_CODES });
       this.busy.gen=false;
       if(r.ok){ for(const k of ['titulo','tipo_label','extracto','cuerpo','seo_title','seo_desc']) if(r.data[k]) this.f[k]={...this.f[k],...r.data[k]};
         if(!this.item && !this.f.slug) this.f.slug=slugify(this.f.titulo.es);
         toast('AlexIA generó todo el contenido en los '+CMS_CODES.length+' idiomas.'); }
       else toast(r.error||'No se pudo generar. Revisa OpenAI en Conectores.','err'); },
     async portada(){ this.busy.img=true;
-      const r=await api.post('/admin/recursos/portada',{ instrucciones:this.img.instrucciones, titulo:this.f.titulo.es, estilo:this.img.estilo, iluminacion:this.img.iluminacion, ambiente:this.img.ambiente });
+      const r=await api.post('/admin/recursos/portada',{ instrucciones:this.img.instrucciones, titulo:this.f.titulo[this.lang]||this.f.titulo.es, estilo:this.img.estilo, iluminacion:this.img.iluminacion, ambiente:this.img.ambiente });
       this.busy.img=false;
-      if(r.ok){ this.f.cover_image=r.data.cover_image; toast('Portada generada.'); } else toast(r.error||'No se pudo generar la portada.','err'); },
+      if(r.ok){ this.aplicarPorIdioma('cover_image', r.data.cover_image); toast(this.lang==='es'?'Portada generada (aplicada a todos los idiomas).':'Portada generada solo para '+this.lang.toUpperCase()+'.'); } else toast(r.error||'No se pudo generar la portada.','err'); },
     async subirImg(e){ const file=e.target.files[0]; if(!file) return; const fd=new FormData(); fd.append('archivo',file);
-      const r=await api.upload('/admin/recursos/subir-imagen',fd); if(r.ok){ this.f.cover_image=r.data.cover_image; toast('Imagen subida.'); } else toast(r.error||'Error al subir.','err'); },
-    async audio(){ const txt=(this.f.cuerpo.es||'').replace(/<[^>]+>/g,' '); if(!txt.trim()){ toast('Genera o escribe el contenido primero.','err'); return; }
+      const r=await api.upload('/admin/recursos/subir-imagen',fd); if(r.ok){ this.aplicarPorIdioma('cover_image', r.data.cover_image); toast(this.lang==='es'?'Imagen aplicada a todos los idiomas.':'Imagen aplicada solo a '+this.lang.toUpperCase()+'.'); } else toast(r.error||'Error al subir.','err');
+      e.target.value=''; },
+    async audio(){ const txt=(this.f.cuerpo[this.lang]||'').replace(/<[^>]+>/g,' '); if(!txt.trim()){ toast('Escribe o genera el contenido en '+this.lang.toUpperCase()+' primero.','err'); return; }
       this.busy.audio=true; const r=await api.post('/admin/recursos/audio',{ texto:txt }); this.busy.audio=false;
-      if(r.ok){ this.f.audio_path=r.data.audio_path; toast('Audio generado.'); } else toast(r.error||'No se pudo generar el audio.','err'); },
+      if(r.ok){ this.f.audio_path[this.lang]=r.data.audio_path; toast('Audio generado ('+this.lang.toUpperCase()+').'); } else toast(r.error||'No se pudo generar el audio.','err'); },
     async guardar(){ if(!this.f.slug){ toast('El slug es obligatorio.','err'); return; }
       const p={...this.f};
       if(p.status==='published'){ p.active=1; p.published_at=this.item&&this.item.published_at?this.item.published_at:new Date().toISOString().slice(0,19).replace('T',' '); }

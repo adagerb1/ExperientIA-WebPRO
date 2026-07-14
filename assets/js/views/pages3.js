@@ -1,13 +1,17 @@
 // Vistas con formularios: Recursos, RecursoDetalle, Contacto, Diagnostico, Agenda
-import { t, tr, pageUrl, api, store, toast, setMeta } from '../lib/core.js';
+import { reactive } from 'vue';
+import { t, tr, pageUrl, api, store, toast, setMeta, loadMeta } from '../lib/core.js';
 import { Icon } from '../lib/ui.js';
 import { PageHero, SectionCTA } from '../lib/layout.js';
 import { LeadFields } from '../lib/forms.js';
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
 function blankLead(){ return { name:'',email:'',phone_wa:'',phone_dial:'',country:'',company:'',role:'',industry:'',company_size:'',website:'' }; }
 const tx = (key,fb)=>{ const v=t(key); return (v && v!==key)?v:fb; };
+// Etiquetas de categoría trilingües desde la BD (/meta), con reserva en ES.
 const RCATS = { ia_negocios:'IA aplicada a negocios', automatizacion:'Automatización', growth:'Growth', estrategia:'Estrategia', marketing:'Marketing estratégico', crm:'CRM', ventas:'Ventas', experiencia_cliente:'Experiencia de cliente', agentes:'Agentes inteligentes', datos:'Datos y analítica', liderazgo:'Liderazgo', transformacion:'Transformación digital' };
-const catLabel = (k)=> RCATS[k]||k;
+const catState = reactive({ map:{} });
+loadMeta().then(m => { for (const c of (m.resource_categories||[])) catState.map[c.key] = c.nombre; }).catch(()=>{});
+const catLabel = (k)=> catState.map[k] ? tr(catState.map[k]) : (RCATS[k]||k);
 
 // Reproductor de audio liquid glass · narración de AlexIA
 const AlexiaAudio = {
@@ -39,11 +43,11 @@ export const Recursos = {
     <PageHero :eyebrow="t('recursos.eyebrow')" :titulo="t('recursos.titulo')" :sub="t('recursos.sub')"/>
     <section class="section"><div class="container"><div class="grid grid-3">
       <article v-for="(r,i) in items" :key="r.id" class="glass card rec-card" v-reveal :style="{'--d':(i%3)*.08+'s'}">
-        <router-link :to="pageUrl('recursos',{slug:r.slug})" v-if="r.cover_image" class="rec-cover"><img :src="r.cover_image" :alt="tr(r.titulo)" loading="lazy"></router-link>
+        <router-link :to="pageUrl('recursos',{slug:r.slug})" v-if="tr(r.cover_image)" class="rec-cover"><img :src="tr(r.cover_image)" :alt="tr(r.titulo)" loading="lazy"></router-link>
         <div class="chip-row"><span class="icon-chip"><Icon :name="r.type==='download'?'doc':'eye'"/></span><span class="chip">{{ tr(r.tipo_label) }}</span>
           <span v-for="c in (r.categories||[]).slice(0,2)" :key="c" class="chip chip-soft">{{ catLabel(c) }}</span></div>
         <h2 class="h3">{{ tr(r.titulo) }}</h2>
-        <p class="rec-meta">{{ r.author||'ExperientIA' }} · {{ r.read_minutes||5 }} min<span v-if="r.audio_path"> · 🔊 audio</span></p>
+        <p class="rec-meta">{{ r.author||'ExperientIA' }} · {{ r.read_minutes||5 }} min<span v-if="tr(r.audio_path)"> · 🔊 audio</span></p>
         <p class="small">{{ tr(r.extracto) }}</p>
         <router-link :to="pageUrl('recursos',{slug:r.slug})" class="link-arrow">{{ r.type==='download'?tx('recursos.list_descarga','Descargar gratis'):t('common.leer') }} <Icon name="arrow" :size="16"/></router-link></article></div></div></section>
     <section class="section"><div class="container"><div class="glass glass-lit card" v-reveal style="position:relative;overflow:hidden;text-align:center;padding:clamp(2.5rem,6vw,4rem)">
@@ -67,16 +71,16 @@ export const RecursoDetalle = {
   template: `<div v-if="rec">
     <PageHero :eyebrow="tr(rec.tipo_label)" :titulo="tr(rec.titulo)" :sub="tr(rec.extracto)"/>
     <section class="section" v-if="rec.type!=='download'"><div class="container articulo">
-      <img v-if="rec.cover_image" :src="rec.cover_image" :alt="tr(rec.titulo)" class="articulo__cover" v-reveal>
+      <img v-if="tr(rec.cover_image)" :src="tr(rec.cover_image)" :alt="tr(rec.titulo)" class="articulo__cover" v-reveal>
       <div class="articulo__meta" v-reveal>
         <span v-for="c in (rec.categories||[])" :key="c" class="chip chip-soft">{{ catLabel(c) }}</span>
         <span class="rec-meta">{{ rec.author||'ExperientIA' }} · {{ rec.read_minutes||5 }} min de lectura</span></div>
-      <AlexiaAudio v-if="rec.audio_path" :src="rec.audio_path" v-reveal/>
+      <AlexiaAudio v-if="tr(rec.audio_path)" :src="tr(rec.audio_path)" v-reveal/>
       <div class="articulo__body" v-reveal v-html="tr(rec.cuerpo)"></div></div></section>
     <section class="section" v-else><div class="container magnet-grid">
       <div class="magnet-sell" v-reveal>
         <span class="chip chip--cyan">{{ tx('recursos.magnet_badge','Descarga gratuita') }}</span>
-        <img v-if="rec.cover_image" :src="rec.cover_image" :alt="tr(rec.titulo)" class="magnet-cover" loading="lazy">
+        <img v-if="tr(rec.cover_image)" :src="tr(rec.cover_image)" :alt="tr(rec.titulo)" class="magnet-cover" loading="lazy">
         <h2 class="lbl" style="margin-top:.3rem">{{ tx('recursos.magnet_qt','Qué te llevas') }}</h2>
         <ul class="check-list check-list--lg">
           <li><span class="check-chip"><Icon name="check" :size="13"/></span>{{ tr(rec.extracto) }}</li>

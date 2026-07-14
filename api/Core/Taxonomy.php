@@ -29,6 +29,31 @@ final class Taxonomy
         return self::$cache['cty'] ??= self::loadCountries();
     }
 
+    /** Segmentos configurables por tipo: category | company_size | source | channel. [{key, nombre:{es,en,pt}}] */
+    public static function segments(string $kind): array
+    {
+        return self::$cache["seg_{$kind}"] ??= self::loadSegments($kind);
+    }
+
+    /** Config de negocio de la que cae cada tipo de segmento si aún no hay BD. */
+    private const SEGMENT_FALLBACK = [
+        'category' => 'resource_categories', 'company_size' => 'company_sizes',
+        'source' => 'lead_sources', 'channel' => 'lead_channels',
+    ];
+
+    private static function loadSegments(string $kind): array
+    {
+        try {
+            $rows = Database::run('SELECT skey, nombre FROM segments WHERE kind = ? AND active = 1 ORDER BY sort, skey', [$kind])->fetchAll();
+            if ($rows) {
+                return array_map(fn ($r) => ['key' => $r['skey'], 'nombre' => self::json($r['nombre'], $r['skey'])], $rows);
+            }
+        } catch (\Throwable $e) { /* sin migrar → fallback */ }
+        $out = [];
+        foreach ((array) biz(self::SEGMENT_FALLBACK[$kind] ?? '') as $k => $es) { $out[] = ['key' => $k, 'nombre' => ['es' => $es]]; }
+        return $out;
+    }
+
     private static function loadIndustries(): array
     {
         try {

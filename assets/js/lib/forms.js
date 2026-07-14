@@ -121,15 +121,20 @@ export const LeadFields = {
       <div class="field"><label>{{ t('form.empleados') }} <span v-if="full">*</span></label><Combo v-model="d.company_size" :options="opcTam" :placeholder="t('form.empleados')" /></div>
     </div>
   </div>`,
-  data() { return { d: this.modelValue, errors: {}, phoneError: false, opcPais: [], metaInd: [] }; },
+  data() { return { d: this.modelValue, errors: {}, phoneError: false, opcPais: [], metaInd: [], metaTam: [] }; },
   computed: {
     t: () => t,
     opcInd() { return this.metaInd.map(i => ({ value: i.key, label: tr(i.nombre) })); },
-    opcTam() { const m = t('form.empleados_opciones') || {}; return Object.keys(m).map(k => ({ value: k, label: m[k] })); },
+    opcTam() {
+      // Taxonomía trilingüe de BD si está disponible; si no, el diccionario de idioma.
+      if (this.metaTam.length) return this.metaTam.map(s => ({ value: s.key, label: tr(s.nombre) }));
+      const m = t('form.empleados_opciones') || {}; return Object.keys(m).map(k => ({ value: k, label: m[k] }));
+    },
   },
   async mounted() {
     const meta = await loadMeta();
     this.metaInd = meta.industries || [];
+    this.metaTam = meta.company_sizes || [];
     this.opcPais = (meta.countries || []).map(c => ({ value: c.iso, label: tr(c.nombre) })).sort((a, b) => a.label.localeCompare(b.label));
     // País por defecto según el visitante (editable). Solo si aún no eligió uno.
     if (!this.d.country) {

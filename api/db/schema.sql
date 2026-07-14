@@ -114,6 +114,19 @@ CREATE TABLE IF NOT EXISTS countries (
   active TINYINT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Segmentos configurables y trilingües: categorías de recursos, tamaños de
+-- empresa, orígenes y canales de lead. `kind` agrupa cada taxonomía; escalable
+-- a nuevas taxonomías ("otros") sin tocar el esquema.
+CREATE TABLE IF NOT EXISTS segments (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kind VARCHAR(40) NOT NULL,
+  skey VARCHAR(60) NOT NULL,
+  nombre JSON NOT NULL,
+  sort INT NOT NULL DEFAULT 0,
+  active TINYINT NOT NULL DEFAULT 1,
+  UNIQUE KEY uniq_segment (kind, skey)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS diagnostics (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   dkey VARCHAR(40) NOT NULL UNIQUE,
@@ -166,8 +179,8 @@ CREATE TABLE IF NOT EXISTS resources (
   cuerpo JSON NULL,
   author VARCHAR(120) NULL,
   read_minutes INT NOT NULL DEFAULT 5,
-  cover_image VARCHAR(255) NULL,
-  audio_path VARCHAR(255) NULL,
+  cover_image TEXT NULL,
+  audio_path TEXT NULL,
   video_url VARCHAR(500) NULL,
   file_path VARCHAR(255) NULL,
   gated TINYINT NOT NULL DEFAULT 0,
