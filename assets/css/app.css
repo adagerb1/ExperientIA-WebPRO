@@ -604,6 +604,15 @@ p { margin: 0; color: var(--text-secondary); }
 .ax-gate-form input{ padding:.7rem .85rem; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:rgba(5,17,38,.5); color:var(--neutral-light); font-family:var(--font); font-size:.9rem; }
 .ax-gate-form input:focus{ outline:none; border-color:rgba(24,214,241,.5); }
 .ax-gate-form .btn{ justify-content:center; }
+.ax-gate-form .phone-field .phone-cc{ min-width:84px; padding:.7rem .4rem; font-size:.85rem; }
+.ax-gate-form .phone-field .phone-num{ padding:.7rem .85rem; font-size:.9rem; }
+.ax-captcha{ display:grid; grid-template-columns:auto 1fr; gap:.6rem; align-items:center; }
+.ax-captcha-img{ position:relative; display:flex; align-items:center; }
+.ax-captcha-img img{ height:44px; border-radius:10px; border:1px solid rgba(255,255,255,.12); display:block; }
+.ax-captcha-img b{ height:44px; min-width:110px; display:grid; place-items:center; border-radius:10px; border:1px solid rgba(255,255,255,.12); letter-spacing:.35em; color:var(--cyan); }
+.ax-captcha-cargando{ height:44px; min-width:110px; display:grid; place-items:center; color:var(--text-tertiary); }
+.ax-captcha-refresh{ position:absolute; right:-4px; top:-8px; width:22px; height:22px; border-radius:50%; border:1px solid rgba(255,255,255,.18); background:rgba(5,17,38,.9); color:var(--cyan); cursor:pointer; font-size:.75rem; line-height:1; }
+.ax-captcha-refresh:hover{ border-color:var(--cyan); }
 .ax-gate-nota{ font-size:.72rem; color:var(--text-tertiary); }
 
 .ax-links{ display:flex; flex-wrap:wrap; gap:.5rem; padding:0 .3rem .2rem 2.4rem; }

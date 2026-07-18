@@ -7,6 +7,7 @@ use Core\Response;
 use Core\Validator;
 use Core\Database;
 use Services\AlexIA;
+use Services\Captcha;
 use Services\LeadService;
 use Services\Mailer;
 
@@ -17,8 +18,12 @@ final class ChatController extends Controller
     public function lead(): void
     {
         RateLimiter::public($this->req);
+        // Anti-bots: reto captcha propio, de un solo uso, verificado en servidor.
+        if (! Captcha::verify((string) $this->req->input('captcha_code', ''), (string) $this->req->input('captcha_token', ''))) {
+            Response::error('El código de verificación no es válido o expiró. Intenta con el nuevo código.', 422, ['captcha' => 'invalid']);
+        }
         $v = Validator::make($this->req->body)->honeypot()
-            ->text('name', true, 160)->email('email', true)->phone('phone_wa')->text('phone_dial', false, 5);
+            ->text('name', true, 160)->email('email', true)->phone('phone_wa', true)->text('phone_dial', false, 5);
         $d = $v->failOrValidated();
         $d['locale'] = in_array($l = $this->req->input('locale', 'es'), biz('locales'), true) ? $l : 'es';
         $d = array_merge($d, \Core\Attribution::fromRequest($this->req));

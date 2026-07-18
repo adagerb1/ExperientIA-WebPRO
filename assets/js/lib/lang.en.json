@@ -362,13 +362,19 @@
   "st_casos": "Looking for relevant cases…",
   "st_diag": "Getting your diagnostic ready…",
   "st_serv": "Reviewing our services…",
-  "gate": "To help you better, what's your name and email?",
+  "gate": "To help you better, tell me your name, email and WhatsApp.",
   "gate_name": "Your name",
   "gate_email": "Your email",
   "gate_cta": "Start chatting",
-  "gate_nota": "No spam. Just to help you and send a summary if you want it.",
+  "gate_nota": "No spam. Only to help you and send the summary if you want it.",
   "gate_err": "Enter your name and a valid email.",
-  "quick_title": "Quick questions"
+  "quick_title": "Quick questions",
+  "gate_err2": "We could not validate your details. Please check and try again.",
+  "gate_wa_err": "Enter a valid WhatsApp number.",
+  "gate_captcha": "Type the code",
+  "gate_captcha_otro": "New code",
+  "gate_captcha_err": "Type the verification code.",
+  "gate_captcha_err2": "The code does not match. Try the new one."
  },
  "landing": {
   "ver_sol": "View solution",

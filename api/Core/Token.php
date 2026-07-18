@@ -34,7 +34,13 @@ final class Token
 
     private static function secret(): string
     {
-        return Env::get('APP_SECRET', 'inseguro-cambiar');
+        $s = Env::get('APP_SECRET', '');
+        // En producción jamás se opera con el secreto por defecto: un atacante
+        // podría forjar tokens de administrador. Instalar .env es obligatorio.
+        if (($s === '' || $s === 'inseguro-cambiar') && Env::get('APP_ENV') !== 'dev') {
+            throw new \RuntimeException('Configura APP_SECRET en el archivo .env (instalación incompleta).', 500);
+        }
+        return $s !== '' ? $s : 'inseguro-cambiar';
     }
 
     private static function b64(string $d): string

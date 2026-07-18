@@ -362,13 +362,19 @@
   "st_casos": "Buscando casos relevantes…",
   "st_diag": "Alistando tu diagnóstico…",
   "st_serv": "Revisando nuestros servicios…",
-  "gate": "Para atenderte mejor, ¿cómo te llamas y a qué correo te escribo?",
+  "gate": "Para atenderte mejor, cuéntame tu nombre, correo y WhatsApp.",
   "gate_name": "Tu nombre",
   "gate_email": "Tu correo",
   "gate_cta": "Empezar a chatear",
   "gate_nota": "Sin spam. Solo para ayudarte y enviarte el resumen si lo quieres.",
   "gate_err": "Escribe tu nombre y un correo válido.",
-  "quick_title": "Preguntas rápidas"
+  "quick_title": "Preguntas rápidas",
+  "gate_err2": "No pudimos validar tus datos. Revisa e intenta de nuevo.",
+  "gate_wa_err": "Escribe un número de WhatsApp válido.",
+  "gate_captcha": "Escribe el código",
+  "gate_captcha_otro": "Otro código",
+  "gate_captcha_err": "Escribe el código de verificación.",
+  "gate_captcha_err2": "El código no coincide. Prueba con el nuevo."
  },
  "landing": {
   "ver_sol": "Ver solución",

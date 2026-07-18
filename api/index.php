@@ -29,6 +29,7 @@ $r->get('/diagnosticos', 'PublicApi\\DiagnosticController', 'index');
 $r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
 $r->post('/reserva', 'PublicApi\\BookingController', 'reservar');
+$r->get('/captcha', 'PublicApi\\CaptchaController', 'nuevo');          // reto captcha (gate del chat)
 $r->post('/alexia', 'PublicApi\\ChatController', 'mensaje');           // AlexIA comercial (web)
 $r->post('/alexia/lead', 'PublicApi\\ChatController', 'lead');         // captura al iniciar chat
 $r->post('/alexia/resumen', 'PublicApi\\ChatController', 'resumen');   // resumen por correo al cerrar

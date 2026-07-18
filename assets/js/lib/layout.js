@@ -1,6 +1,7 @@
 // ExperientIA · Layout del sitio público: header, footer, AlexIA, toasts.
 import { store, t, tr, pageUrl, api, toast } from './core.js';
 import { Icon, BrandLogo, BrandSymbol } from './ui.js';
+import { PhoneInput } from './forms.js';
 
 const SOCIAL = [
   { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/experientia.sas/' },
@@ -86,7 +87,7 @@ export const Toasts = {
 const axEsc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
 
 export const AlexIA = {
-  components: { Icon },
+  components: { Icon, PhoneInput },
   template: `<div>
     <button class="ax-fab" :class="{on:open}" @click="toggle" aria-label="AlexIA"><span class="ax-fab-ring"></span>
       <Icon v-if="!open" name="sparkle" :size="24"/><span v-else class="ax-fab-x">✕</span></button>
@@ -104,11 +105,20 @@ export const AlexIA = {
 
       <div v-if="!started" class="ax-gate">
         <div class="ax-msg a ax-in"><p v-html="saludo"></p></div>
-        <p class="ax-gate-lead ax-in">{{ tx('alexia.gate','Para atenderte mejor, ¿cómo te llamas y a qué correo te escribo?') }}</p>
+        <p class="ax-gate-lead ax-in">{{ tx('alexia.gate','Para atenderte mejor, cuéntame tu nombre, correo y WhatsApp.') }}</p>
         <form class="ax-gate-form ax-in" @submit.prevent="startChat">
           <div class="honeypot"><input type="text" v-model="hp" tabindex="-1" autocomplete="off"></div>
           <input v-model="lead.name" :placeholder="tx('alexia.gate_name','Tu nombre')" autocomplete="name" required>
           <input v-model="lead.email" type="email" :placeholder="tx('alexia.gate_email','Tu correo')" autocomplete="email" required>
+          <PhoneInput ref="axPhone" v-model="lead.phone_wa" @dial="lead.phone_dial=$event"/>
+          <div class="ax-captcha">
+            <div class="ax-captcha-img">
+              <img v-if="cap.image && cap.image.startsWith('data:')" :src="cap.image" alt="captcha" draggable="false">
+              <b v-else-if="cap.image">{{ cap.image.replace('text:','') }}</b>
+              <span v-else class="ax-captcha-cargando">…</span>
+              <button type="button" class="ax-captcha-refresh" @click="cargarCaptcha" :title="tx('alexia.gate_captcha_otro','Otro código')">↻</button></div>
+            <input v-model="cap.code" :placeholder="tx('alexia.gate_captcha','Escribe el código')" autocomplete="off" maxlength="8" required>
+          </div>
           <button class="btn btn-grad" :disabled="gating">{{ gating?'…':tx('alexia.gate_cta','Empezar a chatear') }}</button>
           <p class="err" v-if="gateErr">{{ gateErr }}</p>
           <p class="ax-gate-nota">{{ tx('alexia.gate_nota','Sin spam. Solo para ayudarte y enviarte el resumen si lo quieres.') }}</p></form>
@@ -135,28 +145,51 @@ export const AlexIA = {
     </div></transition></div>`,
   data() { return { open: false, text: '', msgs: [], loading: false, convId: null, statusText: '',
     started: false, gating: false, gateErr: '', quickOpen: false, quickHint: true, hp: '',
-    lead: { name: '', email: '' }, leadId: null, resumenSent: false }; },
+    lead: { name: '', email: '', phone_wa: '', phone_dial: '' }, leadId: null, resumenSent: false,
+    cap: { image: '', token: '', code: '' } }; },
   computed: {
     t: () => t, pageUrl: () => pageUrl,
     saludo() { const n = this.lead.name ? (', ' + this.lead.name.split(' ')[0]) : ''; return '<p>' + axEsc(this.tx('alexia.saludo', 'Hola 👋 Soy AlexIA, de ExperientIA. Cuéntame tu reto de crecimiento y te muestro cómo la automatización y la IA pueden ayudarte.')).replace('👋', n + ' 👋') + '</p>'; },
     quick() { const q = t('alexia.quick'); return Array.isArray(q) ? q : ['¿Qué hace ExperientIA?', '¿Cómo es el diagnóstico?', '¿Qué resultados logran?', 'Quiero agendar una sesión']; },
   },
-  mounted() { try { const s = JSON.parse(localStorage.getItem('exp_chatlead') || 'null'); if (s && s.email) { this.lead = { name: s.name || '', email: s.email }; this.leadId = s.leadId || null; this.started = true; } } catch (e) {} },
+  mounted() { try { const s = JSON.parse(localStorage.getItem('exp_chatlead') || 'null'); if (s && s.email) { this.lead = { ...this.lead, name: s.name || '', email: s.email }; this.leadId = s.leadId || null; this.started = true; } } catch (e) {} },
   methods: {
     tx(key, fb) { const v = t(key); return (v && v !== key) ? v : fb; },
     toggle() {
       this.open = !this.open;
+      if (this.open && !this.started && !this.cap.token) { this.cargarCaptcha(); }
       if (!this.open) { this.quickOpen = false; this.enviarResumen(); }
+    },
+    async cargarCaptcha() {
+      this.cap.image = ''; this.cap.token = ''; this.cap.code = '';
+      const r = await api.get('/captcha');
+      if (r.ok) { this.cap.image = r.data.image; this.cap.token = r.data.token; }
     },
     toggleQuick() { this.quickOpen = !this.quickOpen; this.quickHint = false; },
     async startChat() {
       if (this.hp) { return; }
       const name = this.lead.name.trim(); const email = this.lead.email.trim();
       if (name.length < 2 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { this.gateErr = this.tx('alexia.gate_err', 'Escribe tu nombre y un correo válido.'); return; }
+      const waDigits = (this.lead.phone_wa || '').replace(/\D/g, '');
+      if (waDigits.length < 8 || waDigits.length > 15 || (this.$refs.axPhone && !this.$refs.axPhone.valid())) {
+        this.gateErr = this.tx('alexia.gate_wa_err', 'Escribe un número de WhatsApp válido.'); return; }
+      if (!this.cap.code.trim()) { this.gateErr = this.tx('alexia.gate_captcha_err', 'Escribe el código de verificación.'); return; }
       this.gating = true; this.gateErr = '';
-      const r = await api.post('/alexia/lead', { name, email, locale: store.locale });
+      const r = await api.post('/alexia/lead', {
+        name, email, phone_wa: this.lead.phone_wa, phone_dial: this.lead.phone_dial,
+        captcha_code: this.cap.code.trim(), captcha_token: this.cap.token,
+        website: this.hp, locale: store.locale,
+      });
       this.gating = false;
-      this.leadId = (r.ok && r.data.lead_id) ? r.data.lead_id : null;
+      if (!r.ok) {
+        // El gate solo se abre con verificación real: nuevo reto y mensaje claro.
+        this.gateErr = r.captcha === 'invalid'
+          ? this.tx('alexia.gate_captcha_err2', 'El código no coincide. Prueba con el nuevo.')
+          : (r.error || this.tx('alexia.gate_err2', 'No pudimos validar tus datos. Revisa e intenta de nuevo.'));
+        this.cargarCaptcha();
+        return;
+      }
+      this.leadId = r.data.lead_id || null;
       this.started = true; this.quickHint = true;
       try { localStorage.setItem('exp_chatlead', JSON.stringify({ name, email, leadId: this.leadId })); } catch (e) {}
     },
