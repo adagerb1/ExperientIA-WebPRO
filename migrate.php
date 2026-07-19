@@ -191,6 +191,29 @@ try {
     }
 } catch (\Throwable $e) { echo '! taxonomías: ' . $e->getMessage() . "\n"; }
 
+// GrowthBoard: zonas del método (editables) + resultados de diagnóstico.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_zones (id INTEGER PRIMARY KEY AUTOINCREMENT, zkey TEXT NOT NULL UNIQUE, linea TEXT NOT NULL, icon TEXT NOT NULL DEFAULT \'target\', nombre TEXT NOT NULL, pregunta TEXT NULL, afirmaciones TEXT NOT NULL, senales TEXT NULL, jugada TEXT NULL, sort INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1)');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_results (id INTEGER PRIMARY KEY AUTOINCREMENT, lead_id INTEGER NULL, locale TEXT NOT NULL DEFAULT \'es\', total REAL NOT NULL, banda TEXT NOT NULL, linea_debil TEXT NOT NULL, zona_critica TEXT NOT NULL, scores TEXT NOT NULL, contexto TEXT NULL, extras TEXT NULL, created_at TEXT NOT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_zones (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, zkey VARCHAR(40) NOT NULL UNIQUE, linea VARCHAR(20) NOT NULL, icon VARCHAR(30) NOT NULL DEFAULT \'target\', nombre JSON NOT NULL, pregunta JSON NULL, afirmaciones JSON NOT NULL, senales JSON NULL, jugada JSON NULL, sort INT NOT NULL DEFAULT 0, active TINYINT NOT NULL DEFAULT 1) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_results (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, lead_id INT UNSIGNED NULL, locale CHAR(2) NOT NULL DEFAULT \'es\', total DECIMAL(4,1) NOT NULL, banda VARCHAR(20) NOT NULL, linea_debil VARCHAR(20) NOT NULL, zona_critica VARCHAR(40) NOT NULL, scores JSON NOT NULL, contexto JSON NULL, extras JSON NULL, created_at DATETIME NOT NULL, INDEX idx_gb_lead (lead_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+    if ((int) $pdo->query('SELECT COUNT(*) FROM gb_zones')->fetchColumn() === 0) {
+        $gb = require __DIR__ . '/api/config/growthboard.php';
+        $s = 1;
+        foreach ($gb['zonas'] as $zkey => $z) {
+            $pdo->prepare('INSERT INTO gb_zones (zkey, linea, icon, nombre, pregunta, afirmaciones, senales, jugada, sort, active) VALUES (?,?,?,?,?,?,?,?,?,1)')
+                ->execute([$zkey, $z['linea'], $z['icon'],
+                    json_encode($z['nombre'], JSON_UNESCAPED_UNICODE), json_encode($z['pregunta'], JSON_UNESCAPED_UNICODE),
+                    json_encode($z['afirmaciones'], JSON_UNESCAPED_UNICODE), json_encode($z['senales'], JSON_UNESCAPED_UNICODE),
+                    json_encode($z['jugada'], JSON_UNESCAPED_UNICODE), $s++]);
+        }
+        echo "+ GrowthBoard: 11 zonas sembradas\n";
+    }
+} catch (\Throwable $e) { echo '! growthboard: ' . $e->getMessage() . "\n"; }
+
 // Landings de conversión: sembrar copy curado en soluciones/productos existentes.
 try {
     require __DIR__ . '/api/db/apply_landings.php';

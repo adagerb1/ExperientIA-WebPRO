@@ -45,6 +45,14 @@ const MODULOS = {
     {n:'weekday',l:'Día (1=Lun … 7=Dom)',t:'num'},{n:'start_time',l:'Desde (HH:MM)',t:'text'},{n:'end_time',l:'Hasta (HH:MM)',t:'text'},{n:'active',l:'Activa',t:'bool'}]},
   industries:{titulo:'Industrias',list:['nombre','ikey','active'],campos:[
     {n:'ikey',l:'Clave interna',t:'text'},{n:'nombre',l:'Nombre',t:'i18n'},{n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activa',t:'bool'}]},
+  gb_zones:{titulo:'GrowthBoard · Zonas',list:['nombre','zkey','linea','active'],campos:[
+    {n:'zkey',l:'Clave interna',t:'text'},{n:'linea',l:'Línea',t:'sel',op:['direccion','defensa','mediocampo','ataque']},
+    {n:'icon',l:'Ícono',t:'sel',op:['target','bulb','analitica','gear','people','cube','growth']},
+    {n:'nombre',l:'Nombre de la zona',t:'i18n'},{n:'pregunta',l:'Pregunta central',t:'i18n'},
+    {n:'afirmaciones',l:'Afirmaciones (JSON: lista de {es,en,pt})',t:'json'},
+    {n:'senales',l:'Señales de alerta (JSON: lista de {es,en,pt})',t:'json'},
+    {n:'jugada',l:'Jugada recomendada',t:'i18ta'},
+    {n:'sort',l:'Orden',t:'num'},{n:'active',l:'Activa',t:'bool'}]},
   campaign_templates:{titulo:'Plantillas de campaña',list:['nombre','canal','active'],campos:[
     {n:'nombre',l:'Nombre',t:'text'},{n:'canal',l:'Canal',t:'sel',op:['email','whatsapp']},
     {n:'asunto',l:'Asunto (solo correo)',t:'i18n'},{n:'cuerpo',l:'Mensaje · usa {nombre} y {empresa}',t:'i18ta'},

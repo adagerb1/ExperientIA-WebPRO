@@ -30,6 +30,10 @@ $r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
 $r->post('/reserva', 'PublicApi\\BookingController', 'reservar');
 $r->get('/captcha', 'PublicApi\\CaptchaController', 'nuevo');          // reto captcha (gate del chat)
+$r->get('/growthboard/config', 'PublicApi\\GrowthBoardController', 'config');      // método: zonas, líneas, bandas
+$r->post('/growthboard/diagnostico', 'PublicApi\\GrowthBoardController', 'diagnostico'); // diagnóstico 11 zonas
+$r->get('/growthboard/demo/{industry}', 'PublicApi\\GrowthBoardController', 'demo');     // demo con datos de ejemplo
+$r->get('/growthboard/demo', 'PublicApi\\GrowthBoardController', 'demo');
 $r->post('/alexia', 'PublicApi\\ChatController', 'mensaje');           // AlexIA comercial (web)
 $r->post('/alexia/lead', 'PublicApi\\ChatController', 'lead');         // captura al iniciar chat
 $r->post('/alexia/resumen', 'PublicApi\\ChatController', 'resumen');   // resumen por correo al cerrar

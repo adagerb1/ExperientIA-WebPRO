@@ -8,6 +8,7 @@ import { Home, Soluciones } from './views/pages1.js';
 import { Tablero, Productos, Casos, Nosotros, FAQ } from './views/pages2.js';
 import { Recursos, RecursoDetalle, Contacto } from './views/pages3.js';
 import { SolucionLanding, ProductoLanding, CasoDetalle } from './views/pages5.js';
+import { GBDemo, GBDiagnostico } from './views/growthboard.js';
 import { Diagnostico, Agenda } from './views/pages4.js';
 
 const NotFound = {
@@ -42,6 +43,10 @@ for (const loc of ['es','en','pt']) {
     } else if (key === 'casos') {
       routes.push({ path: `/${loc}/${slug}`, component: Casos });
       routes.push({ path: `/${loc}/${slug}/:slug`, component: CasoDetalle });
+    } else if (key === 'tablero') {
+      routes.push({ path: `/${loc}/${slug}`, component: Tablero });
+      routes.push({ path: `/${loc}/${slug}/demo`, component: GBDemo });
+      routes.push({ path: `/${loc}/${slug}/diagnostico`, component: GBDiagnostico });
     } else {
       routes.push({ path: `/${loc}/${slug}`, component: VIEW[key] });
     }

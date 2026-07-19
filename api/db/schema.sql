@@ -127,6 +127,37 @@ CREATE TABLE IF NOT EXISTS segments (
   UNIQUE KEY uniq_segment (kind, skey)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- GrowthBoard: las 11 zonas del Tablero de Crecimiento (contenido del método,
+-- editable por el consultor) y los resultados de cada diagnóstico.
+CREATE TABLE IF NOT EXISTS gb_zones (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  zkey VARCHAR(40) NOT NULL UNIQUE,
+  linea VARCHAR(20) NOT NULL,
+  icon VARCHAR(30) NOT NULL DEFAULT 'target',
+  nombre JSON NOT NULL,
+  pregunta JSON NULL,
+  afirmaciones JSON NOT NULL,
+  senales JSON NULL,
+  jugada JSON NULL,
+  sort INT NOT NULL DEFAULT 0,
+  active TINYINT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS gb_results (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  lead_id INT UNSIGNED NULL,
+  locale CHAR(2) NOT NULL DEFAULT 'es',
+  total DECIMAL(4,1) NOT NULL,
+  banda VARCHAR(20) NOT NULL,
+  linea_debil VARCHAR(20) NOT NULL,
+  zona_critica VARCHAR(40) NOT NULL,
+  scores JSON NOT NULL,
+  contexto JSON NULL,
+  extras JSON NULL,
+  created_at DATETIME NOT NULL,
+  INDEX idx_gb_lead (lead_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS diagnostics (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   dkey VARCHAR(40) NOT NULL UNIQUE,

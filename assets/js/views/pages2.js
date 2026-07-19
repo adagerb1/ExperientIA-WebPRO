@@ -1,19 +1,27 @@
-// Vistas: Tablero, Productos, Casos, Nosotros, FAQ
+// Vistas: Tablero (GrowthBoard), Productos, Casos, Nosotros, FAQ
 import { t, tr, pageUrl, api, setMeta } from '../lib/core.js';
 import { Icon, DashMock, BrandSymbol } from '../lib/ui.js';
 import { PageHero, SectionCTA } from '../lib/layout.js';
 import { slugify } from './pages5.js';
+import { Cancha } from './growthboard.js';
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
 const tx = (key,fb)=>{ const v=t(key); return (v && v!==key)?v:fb; };
 
 export const Tablero = {
-  components: { Icon, DashMock, PageHero, SectionCTA },
+  components: { Icon, DashMock, PageHero, SectionCTA, Cancha },
   template: `<div>
-    <PageHero :eyebrow="t('tablero.eyebrow')" :titulo="t('tablero.titulo')" :sub="t('tablero.sub')">
-      <div class="hero__actions" v-reveal :style="{'--d':'.24s'}"><router-link :to="pageUrl('agenda')" class="btn btn-primary">{{ t('tablero.cta') }}</router-link></div></PageHero>
+    <PageHero eyebrow="GrowthBoard" :titulo="tx('gb.land_t','¿Tu empresa está creciendo o solo está corriendo?')" :sub="tx('gb.land_s','GrowthBoard es el Tablero de Crecimiento hecho software: lee tu empresa como un partido —dirección, defensa, mediocampo y ataque— y muestra dónde se traba el crecimiento.')">
+      <div class="hero__actions" v-reveal :style="{'--d':'.24s'}">
+        <router-link :to="pageUrl('tablero')+'/diagnostico'" class="btn btn-grad">{{ tx('gb.cta_diag','Hacer mi diagnóstico') }}</router-link>
+        <router-link :to="pageUrl('tablero')+'/demo'" class="btn btn-ghost">{{ tx('gb.cta_demo','Ver la demo en vivo') }}</router-link></div>
+      <p class="hero-trust small" v-reveal :style="{'--d':'.3s'}"><Icon name="check" :size="14"/> {{ tx('gb.land_trust','Gratis · 20 minutos · diseñado para empresarios que quieren dejar de decidir a ciegas') }}</p></PageHero>
     <section class="section" style="padding-block:clamp(1rem,3vw,2rem)"><div class="container"><div class="glass" v-reveal style="position:relative;padding:clamp(1.5rem,4vw,3.5rem);overflow:hidden">
       <div class="bg-atmos"><div class="halo halo-cyan anim-pulse" style="width:560px;height:560px;top:-180px;left:8%"></div><div class="halo halo-violet anim-pulse" style="width:520px;height:520px;bottom:-220px;right:4%;animation-delay:2.2s"></div></div>
-      <div style="position:relative;z-index:1;max-width:760px;margin-inline:auto"><DashMock/></div></div></div></section>
+      <div style="position:relative;z-index:1;max-width:640px;margin-inline:auto">
+        <Cancha v-if="zonas.length && demo" :zonas="zonas" :scores="demo.scores" :critica="demo.zona_critica"/>
+        <DashMock v-else/>
+        <p class="small" style="text-align:center;margin-top:.8rem;color:var(--text-tertiary)">{{ tx('gb.demo_datos','Datos de ejemplo') }} · <router-link :to="pageUrl('tablero')+'/demo'" style="color:var(--cyan)">{{ tx('gb.cta_demo','Ver la demo en vivo') }}</router-link></p>
+      </div></div></div></section>
     <section class="section"><div class="container"><div class="grid grid-3">
       <article v-for="(p,i) in pilares" :key="i" class="glass glass-lit card" v-reveal :style="{'--d':i*.1+'s',display:'grid',gap:'.9rem',alignContent:'start'}">
         <span class="icon-chip"><Icon :name="p.i"/></span><h2 class="h3">{{ tr(p.t) }}</h2><p>{{ tr(p.x) }}</p></article></div></div></section>
@@ -21,9 +29,9 @@ export const Tablero = {
       <div class="container"><div class="section-head"><p class="eyebrow" v-reveal>{{ t('tablero.features_eyebrow') }}</p><h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ t('tablero.features_titulo') }}</h2></div>
       <div class="grid grid-4"><article v-for="(f,i) in features" :key="i" class="glass card" v-reveal :style="{'--d':i*.08+'s',display:'grid',gap:'.8rem',alignContent:'start'}">
         <span class="icon-chip"><Icon :name="f.i"/></span><h3 class="h3" style="font-size:1.05rem">{{ tr(f.t) }}</h3><p class="small">{{ tr(f.x) }}</p></article></div></div></section>
-    <SectionCTA :titulo="t('tablero.cta_titulo')" :sub="t('tablero.cta_sub')" :primary="pageUrl('agenda')" :primaryLabel="t('tablero.cta')" :secondary="pageUrl('soluciones')" :secondaryLabel="t('common.ver_soluciones')"/>
+    <SectionCTA :titulo="t('tablero.cta_titulo')" :sub="tx('gb.cta_sub2','Haz el diagnóstico gratuito de 11 zonas o explora la demo con datos de tu industria.')" :primary="pageUrl('tablero')+'/diagnostico'" :primaryLabel="tx('gb.cta_diag','Hacer mi diagnóstico')" :secondary="pageUrl('tablero')+'/demo'" :secondaryLabel="tx('gb.cta_demo','Ver la demo en vivo')"/>
   </div>`,
-  data(){ return { pilares:[
+  data(){ return { zonas:[], demo:null, pilares:[
     {i:'eye',t:{es:'Visibilidad total',en:'Total visibility',pt:'Visibilidade total'},x:{es:'Ingresos, eficiencia, clientes y adopción de IA en una sola vista. Sin esperar al cierre de mes.',en:'Revenue, efficiency and AI adoption in one view.',pt:'Receita, eficiência e adoção de IA em uma visão.'}},
     {i:'alert',t:{es:'Alertas con criterio',en:'Alerts with judgment',pt:'Alertas com critério'},x:{es:'El tablero no grita datos: señala qué cambió, por qué importa y qué decisión requiere.',en:'It signals what changed, why it matters and what to decide.',pt:'Sinaliza o que mudou, por que importa e o que decidir.'}},
     {i:'shield',t:{es:'Gobierno del crecimiento',en:'Growth governance',pt:'Governança do crescimento'},x:{es:'Cada indicador tiene dueño, meta y ritual de revisión. La estrategia se ejecuta, no se archiva.',en:'Every indicator has an owner, target and review ritual.',pt:'Cada indicador tem dono, meta e ritual de revisão.'}}],
@@ -33,7 +41,11 @@ export const Tablero = {
     {i:'gear',t:{es:'Flujos automatizados',en:'Automated flows',pt:'Fluxos automatizados'},x:{es:'Reportes y rituales ejecutivos que se preparan solos.',en:'Reports and rituals that prepare themselves.',pt:'Relatórios e rituais que se preparam sozinhos.'}},
     {i:'people',t:{es:'Adopción y cultura',en:'Adoption & culture',pt:'Adoção e cultura'},x:{es:'Uso real por equipos: la transformación también se mide.',en:'Real usage by teams.',pt:'Uso real pelas equipes.'}}]}; },
   computed:{ t:()=>t, tr:()=>tr, pageUrl:()=>pageUrl },
-  mounted(){ setMeta(t('tablero.meta_title')+' · ExperientIA', t('tablero.meta_desc')); },
+  methods:{ tx },
+  async mounted(){ setMeta('GrowthBoard · '+t('tablero.meta_title')+' · ExperientIA', t('tablero.meta_desc'));
+    const [cfg, demo] = await Promise.all([api.get('/growthboard/config'), api.get('/growthboard/demo/default')]);
+    if(cfg.ok) this.zonas = cfg.data.zonas;
+    if(demo.ok) this.demo = demo.data; },
 };
 
 export const Productos = {
