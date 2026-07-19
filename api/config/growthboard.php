@@ -74,7 +74,7 @@ return [
 
     // ── Preguntas de contexto (previas al diagnóstico) ───────────────────────
     'contexto' => [
-        ['k' => 'reto', 'q' => $t('¿Cuál es hoy el mayor reto de crecimiento de tu empresa?', 'What is your company’s biggest growth challenge today?', 'Qual é hoje o maior desafio de crescimento da sua empresa?'),
+        ['k' => 'reto', 'multi' => true, 'q' => $t('¿Cuáles son hoy los mayores retos de crecimiento de tu empresa? (elige uno o varios)', 'What are your company’s biggest growth challenges today? (choose one or several)', 'Quais são hoje os maiores desafios de crescimento da sua empresa? (escolha um ou vários)'),
             'op' => [
                 $t('Conseguir más clientes', 'Get more clients', 'Conseguir mais clientes'),
                 $t('Convertir mejor los leads', 'Convert leads better', 'Converter melhor os leads'),

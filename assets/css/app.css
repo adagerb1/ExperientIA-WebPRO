@@ -58,12 +58,15 @@ p { margin: 0; color: var(--text-secondary); }
   transition: border-color var(--motion), transform var(--motion), box-shadow var(--motion);
   overflow: hidden;
 }
-/* Reflejo líquido superior */
+/* Reflejo líquido superior (con radio propio: los paneles de formulario
+   necesitan overflow visible para que los desplegables no se recorten) */
 .glass::before {
   content: ''; position: absolute; inset: 0 0 auto 0; height: 42%; pointer-events: none;
   background: linear-gradient(180deg, rgba(255,255,255,.10), transparent);
-  opacity: .7;
+  opacity: .7; border-radius: calc(var(--r-lg) - 1px) calc(var(--r-lg) - 1px) 0 0;
 }
+/* Los paneles que contienen selectores con búsqueda no recortan su despliegue */
+.glass:has(.combo), .gb-paso { overflow: visible; }
 .glass:hover { border-color: var(--glass-border-lit); transform: translateY(-3px); box-shadow: 0 28px 64px -30px var(--cyan-glow), inset 0 1px 0 var(--glass-hi); }
 .card { padding: 1.75rem; }
 .glass-lit { border-color: rgba(24,214,241,.32); box-shadow: 0 24px 60px -30px var(--cyan-glow), 0 0 40px -22px var(--violet-glow), inset 0 1px 0 var(--glass-hi); }
@@ -233,7 +236,7 @@ p { margin: 0; color: var(--text-secondary); }
 /* Combobox buscable (Vue) */
 .combo{ position:relative; }
 .combo__input{ cursor:pointer; }
-.combo__pop{ position:absolute; z-index:30; top:calc(100% + 4px); left:0; right:0; max-height:260px; overflow:auto;
+.combo__pop{ position:absolute; z-index:80; top:calc(100% + 4px); left:0; right:0; max-height:260px; overflow:auto;
   background:rgba(10,27,58,.96); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
   border:1px solid var(--line-strong); border-radius:var(--r-sm); box-shadow:0 24px 60px -24px rgba(2,8,20,.95); }
 .combo__opt{ padding:.6rem 1rem; cursor:pointer; font-size:.95rem; color:var(--text-secondary); }
@@ -447,6 +450,17 @@ p { margin: 0; color: var(--text-secondary); }
 
 .land-final{ text-align:center; display:grid; gap:1.1rem; justify-items:center; padding:clamp(2rem,5vw,3.4rem); }
 .land-final .lead{ max-width:44rem; }
+/* Chips seleccionables (contexto del diagnóstico, industrias de la demo).
+   El estado elegido debe ser inconfundible: degradado de marca + check. */
+.chip-cat{ display:inline-flex; align-items:center; gap:.35rem; padding:.5rem .95rem; border-radius:999px;
+  border:1px solid rgba(217,226,240,.22); background:rgba(5,17,38,.55); color:var(--text-secondary);
+  font-family:var(--font); font-size:.84rem; cursor:pointer; transition:all .18s ease; }
+.chip-cat:hover{ color:var(--neutral-light); border-color:rgba(24,214,241,.5); }
+.chip-cat.on{ background:var(--grad); color:#041022; border-color:transparent; font-weight:700;
+  box-shadow:0 6px 18px -8px var(--cyan-glow); }
+.chip-cat.on::before{ content:'✓'; font-weight:800; }
+.cats-chips{ display:flex; flex-wrap:wrap; gap:.5rem; }
+
 /* ── GrowthBoard: la cancha, el diagnóstico y la demo ─────────────────── */
 .gb-cancha{ position:relative; display:grid; gap:clamp(.7rem,1.6vw,1.1rem); padding:clamp(1rem,3vw,1.8rem);
   border:1px solid rgba(24,214,241,.28); border-radius:18px;

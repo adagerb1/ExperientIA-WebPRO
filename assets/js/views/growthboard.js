@@ -145,6 +145,13 @@ export const GBDiagnostico = {
   },
   methods: { tx, gbUrl,
     async cargarCaptcha() { this.cap = { image: '', token: '', code: '' }; const r = await api.get('/captcha'); if (r.ok) { this.cap.image = r.data.image; this.cap.token = r.data.token; } },
+    // Contexto: las preguntas con multi permiten varias respuestas (toggle).
+    ctxOn(q, oi) { const v = this.contexto[q.k]; return q.multi ? Array.isArray(v) && v.includes(oi) : v === oi; },
+    ctxToggle(q, oi) {
+      if (!q.multi) { this.contexto[q.k] = this.contexto[q.k] === oi ? undefined : oi; return; }
+      const v = Array.isArray(this.contexto[q.k]) ? this.contexto[q.k] : (this.contexto[q.k] = []);
+      const i = v.indexOf(oi); if (i >= 0) v.splice(i, 1); else v.push(oi);
+    },
     marcar(zkey, i, v) { if (!this.scores[zkey]) this.scores[zkey] = []; this.scores[zkey][i] = v; },
     atras() { if (this.paso > 0) { this.paso--; this.error = ''; window.scrollTo({ top: 0 }); } },
     siguiente() {
@@ -223,7 +230,7 @@ export const GBDiagnostico = {
         <h2 class="h3">{{ tx('gb.p_ctx','Tu contexto') }}</h2>
         <div v-for="(q,qi) in cfg.contexto" :key="q.k" class="gb-ctx">
           <p class="gb-ctx__q">{{ tr(q.q) }}</p>
-          <div class="gb-ctx__ops"><button v-for="(op,oi) in q.op" :key="oi" type="button" class="chip-cat" :class="{on:contexto[q.k]===oi}" @click="contexto[q.k]=oi">{{ tr(op) }}</button></div>
+          <div class="gb-ctx__ops"><button v-for="(op,oi) in q.op" :key="oi" type="button" class="chip-cat" :class="{on:ctxOn(q,oi)}" @click="ctxToggle(q,oi)">{{ tr(op) }}</button></div>
         </div>
       </div>
 
