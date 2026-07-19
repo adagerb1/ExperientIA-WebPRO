@@ -9,16 +9,28 @@ final class Mailer
 {
     public static function send(string $to, string $subject, string $html): bool
     {
+        $ok = false;
+        $via = 'mail()';
         $sg = Connectors\ConnectorRegistry::config('sendgrid');
         if (! empty($sg['api_key'])) {
-            return self::viaSendGrid($sg, $to, $subject, $html);
+            $via = 'sendgrid';
+            $ok = self::viaSendGrid($sg, $to, $subject, $html);
+        } else {
+            // Fallback mail()
+            $from = Env::get('MAIL_FROM', 'hello@experientia.pro');
+            $name = Env::get('MAIL_FROM_NAME', 'ExperientIA');
+            $headers = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n"
+                . 'From: =?UTF-8?B?' . base64_encode($name) . "?= <{$from}>\r\n";
+            $ok = @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', self::wrap($html), $headers);
         }
-        // Fallback mail()
-        $from = Env::get('MAIL_FROM', 'hello@experientia.pro');
-        $name = Env::get('MAIL_FROM_NAME', 'ExperientIA');
-        $headers = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n"
-            . 'From: =?UTF-8?B?' . base64_encode($name) . "?= <{$from}>\r\n";
-        return @mail($to, '=?UTF-8?B?' . base64_encode($subject) . '?=', self::wrap($html), $headers);
+        // Los fallos de correo jamás deben ser silenciosos: quedan en el log del día.
+        if (! $ok) {
+            $dir = BASE_PATH . '/storage/logs';
+            if (! is_dir($dir)) { @mkdir($dir, 0775, true); }
+            @file_put_contents($dir . '/mail-' . gmdate('Y-m-d') . '.log',
+                '[' . gmdate('Y-m-d H:i:s') . "] FALLO via {$via} → {$to} · {$subject}\n", FILE_APPEND | LOCK_EX);
+        }
+        return $ok;
     }
 
     private static function viaSendGrid(array $cfg, string $to, string $subject, string $html): bool

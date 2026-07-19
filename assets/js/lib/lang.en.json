@@ -506,7 +506,7 @@
   "acceso_cta": "Send me the access link",
   "acceso_nota": "No diagnostic yet?",
   "pedido_t": "Check your inbox",
-  "pedido_s": "If your email has a diagnostic, the access link is on its way. It expires in 30 days.",
+  "pedido_s": "If your email has a diagnostic, the access link is on its way (expires in 30 days). If it doesn’t arrive in a few minutes, check spam or ask your consultant for the link directly.",
   "err_email": "Enter the email you used for your diagnostic.",
   "sub": "Your match, live: board, plays and weekly scoreboard. The deep reading happens with you in the advisory.",
   "vs": "vs. previous diagnostic",

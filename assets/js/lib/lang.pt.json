@@ -506,7 +506,7 @@
   "acceso_cta": "Enviar meu link de acesso",
   "acceso_nota": "Ainda sem diagnóstico?",
   "pedido_t": "Confira seu e-mail",
-  "pedido_s": "Se seu e-mail tem um diagnóstico associado, o link de acesso já está a caminho. Expira em 30 dias.",
+  "pedido_s": "Se seu e-mail tem um diagnóstico associado, o link de acesso já está a caminho (expira em 30 dias). Se não chegar em alguns minutos, confira o spam ou peça o link diretamente ao seu consultor.",
   "err_email": "Escreva o e-mail que você usou no diagnóstico.",
   "sub": "Sua partida, ao vivo: painel, jogadas e placar semanal. A leitura profunda acontece com você no acompanhamento.",
   "vs": "vs. diagnóstico anterior",

@@ -173,7 +173,12 @@ export const LeadDetail = {
       <div style="display:flex;gap:.7rem;margin-top:1rem;align-items:center">
         <button class="btn btn-primary btn-sm" @click="guardar">Guardar</button>
         <a v-if="lead.phone_wa" class="btn btn-ghost btn-sm" :href="'https://wa.me/'+lead.phone_wa" target="_blank">WhatsApp</a>
-        <button class="btn btn-danger btn-sm" style="margin-left:auto" @click="eliminar">Eliminar</button></div></div>
+        <button class="btn btn-danger btn-sm" style="margin-left:auto" @click="eliminar">Eliminar</button></div>
+      <div v-if="gb" class="gb-lead-box">
+        <div><b>GrowthBoard</b><p class="small" style="margin:0">Tablero: <b style="color:var(--cyan)">{{ gb.total }}/55</b> · {{ gb.banda }} · zona crítica: {{ gb.zona_critica }}</p></div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" @click="copiarGb">Copiar enlace de Mi GrowthBoard</button>
+          <button class="btn btn-ghost btn-sm" @click="$router.push('/admin/growthboard')">Abrir seguimiento</button></div></div></div>
       <div class="glass panel"><h3>Historial ({{ touchpoints.length }})</h3><div class="timeline">
         <div v-for="tp in touchpoints" :key="tp.id" class="glass tl"><div><span class="badge nuevo">{{ tipoTp(tp.type) }}</span> <b style="color:var(--neutral-light)">{{ tp.title }}</b></div>
           <p class="small" v-if="detalle(tp)">{{ detalle(tp) }}</p><time>{{ tp.created_at }}</time></div>
@@ -181,9 +186,16 @@ export const LeadDetail = {
         <template v-if="reservas.length"><h3 style="margin-top:1.4rem">Sesiones</h3><div class="timeline">
           <div v-for="b in reservas" :key="b.id" class="glass tl"><span class="badge" :class="b.status">{{ b.status }}</span> <b style="color:var(--neutral-light)">{{ b.starts_at }} UTC</b><p class="small" v-if="b.tema">{{ b.tema }}</p></div></div></template></div></div>
   </div>`,
-  data(){ return { lead:null, touchpoints:[], reservas:[], estados:{nuevo:'Nuevo',contactado:'Contactado',calificado:'Calificado',propuesta:'Propuesta',cliente:'Cliente',descartado:'Descartado'} }; },
+  data(){ return { lead:null, touchpoints:[], reservas:[], gb:null, estados:{nuevo:'Nuevo',contactado:'Contactado',calificado:'Calificado',propuesta:'Propuesta',cliente:'Cliente',descartado:'Descartado'} }; },
   methods:{
-    async load(){ const r=await api.get('/admin/leads/'+this.$route.params.id); if(r.ok){ this.lead=r.data.lead; this.touchpoints=r.data.touchpoints; this.reservas=r.data.reservas; } },
+    async load(){ const r=await api.get('/admin/leads/'+this.$route.params.id); if(r.ok){ this.lead=r.data.lead; this.touchpoints=r.data.touchpoints; this.reservas=r.data.reservas; }
+      // GrowthBoard: si el lead tiene diagnóstico, mostrar acceso directo a su tablero.
+      const g=await api.get('/admin/growthboard/clientes/'+this.$route.params.id);
+      if(g.ok && g.data.results && g.data.results.length) this.gb=g.data.results[0]; },
+    async copiarGb(){ const r=await api.get('/admin/growthboard/clientes/'+this.lead.id+'/acceso');
+      if(!r.ok){ toast(r.error||'Error','err'); return; }
+      try { await navigator.clipboard.writeText(r.data.url); toast('Enlace de Mi GrowthBoard copiado. Compártelo con el cliente.'); }
+      catch(e){ prompt('Copia el enlace de acceso:', r.data.url); } },
     async guardar(){ const r=await api.patch('/admin/leads/'+this.lead.id,{status:this.lead.status,notes:this.lead.notes}); toast(r.ok?'Guardado.':(r.error||'Error'),r.ok?'ok':'err'); },
     async eliminar(){ if(!confirm('¿Eliminar este lead y todo su historial?'))return; const r=await api.del('/admin/leads/'+this.lead.id); if(r.ok){ toast('Eliminado.'); this.$router.push('/admin/leads'); } },
     tipoTp(t){ return {contacto:'Contacto',descarga:'Descarga',diagnostico:'Diagnóstico',reserva:'Reserva',newsletter:'Newsletter',telegram:'Telegram',whatsapp:'WhatsApp'}[t]||t; },

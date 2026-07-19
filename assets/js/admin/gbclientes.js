@@ -30,7 +30,8 @@ export const GBClientes = {
     fecha(s){ return String(s||'').slice(0,10); },
     async load(){ const r=await api.get('/admin/growthboard/clientes'); if(r.ok) this.items=r.data; },
     async abrir(row){ const r=await api.get('/admin/growthboard/clientes/'+row.id); if(r.ok){ this.det=r.data; this.play=null; } },
-    async copiarAcceso(){ const r=await api.get('/admin/growthboard/clientes/'+this.det.lead.id+'/acceso');
+    async copiarAcceso(){ return this.copiarAccesoDe(this.det.lead.id); },
+    async copiarAccesoDe(id){ const r=await api.get('/admin/growthboard/clientes/'+id+'/acceso');
       if(!r.ok){ toast(r.error||'Error','err'); return; }
       try { await navigator.clipboard.writeText(r.data.url); toast('Enlace de acceso copiado. Compártelo con el cliente.'); }
       catch(e){ prompt('Copia el enlace de acceso:', r.data.url); } },
@@ -52,7 +53,11 @@ export const GBClientes = {
   template:`<div>
     <div><h1>GrowthBoard · Clientes</h1><p class="adm__sub" style="margin:0">Seguimiento del acompañamiento · cancha, jugadas y marcador semanal de cada cliente</p></div>
     <div class="toolbar" style="margin-top:1.2rem"><input class="inp" v-model="q" placeholder="Buscar cliente o empresa…" style="max-width:280px"></div>
-    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="['name','company','email']" @rowClick="abrir"/>
+    <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="['name','company','email']" @rowClick="abrir">
+      <template #actions="{row}">
+        <button class="btn btn-ghost btn-sm" @click.stop="abrir(row)">Abrir</button>
+        <button class="btn btn-primary btn-sm" @click.stop="copiarAccesoDe(row.id)"><Icon name="plug" :size="12"/> Enlace</button></template>
+    </SmartTable>
 
     <div class="modal-bg" v-if="det" @click.self="det=null"><div class="glass modal modal-lg">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
