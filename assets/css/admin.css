@@ -368,3 +368,7 @@ th:hover .sort-arrow{ opacity:1; }
 .rec-langbar .btn{ margin-left:auto; }
 .rec-lang-note{ font-size:.74rem; color:var(--text-tertiary); margin:.6rem 0 0; }
 .rec-lang-note b{ color:var(--cyan); }
+.studio-item{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.55rem .7rem; border-radius:10px;
+  border:1px solid var(--line-soft); background:rgba(5,17,38,.5); margin-bottom:.4rem; cursor:pointer; }
+.studio-item:hover{ border-color:rgba(24,214,241,.4); }
+.studio-item b{ color:var(--neutral-light); font-size:.86rem; }

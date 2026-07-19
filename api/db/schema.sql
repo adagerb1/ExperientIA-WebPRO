@@ -143,6 +143,40 @@ CREATE TABLE IF NOT EXISTS gb_zones (
   active TINYINT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- GrowthBoard AI Content Studio: estrategias (documento → brief) y piezas del calendario
+CREATE TABLE IF NOT EXISTS gbc_strategies (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  nombre VARCHAR(190) NOT NULL,
+  periodo VARCHAR(20) NOT NULL DEFAULT 'mensual',   -- mensual | trimestral | campana
+  source_doc MEDIUMTEXT NULL,
+  brief JSON NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'borrador',   -- borrador | brief | aprobada
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS gbc_items (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  strategy_id INT UNSIGNED NOT NULL,
+  semana INT NOT NULL DEFAULT 1,
+  fecha VARCHAR(20) NULL,
+  canal VARCHAR(20) NOT NULL DEFAULT 'linkedin',
+  formato VARCHAR(30) NULL,                          -- post | carrusel | video | documento | newsletter
+  pilar VARCHAR(30) NULL,                            -- diagnostico | framework | prueba | vision | oferta
+  tema VARCHAR(255) NOT NULL,
+  objetivo VARCHAR(255) NULL,
+  mecanismo VARCHAR(40) NULL,                        -- motor de interacción (afirmación divisiva, pregunta compleja…)
+  estado VARCHAR(20) NOT NULL DEFAULT 'idea',        -- idea | redaccion | aprobada | programada | publicada
+  score INT NULL,
+  copy JSON NULL,                                    -- {hook, texto, corta, cta, hashtags, comentario}
+  guion TEXT NULL,
+  notas TEXT NULL,
+  sort INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL,
+  INDEX idx_gbc_str (strategy_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Jugadas del acompañamiento (las define el consultor; el cliente reporta avance)
 CREATE TABLE IF NOT EXISTS gb_plays (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

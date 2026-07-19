@@ -87,6 +87,19 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+// GrowthBoard AI Content Studio (estrategia → brief → calendario → piezas)
+$r->get('/admin/studio/estrategias', 'Admin\\ContentStudioController', 'index');
+$r->post('/admin/studio/estrategias', 'Admin\\ContentStudioController', 'store');
+$r->get('/admin/studio/estrategias/{id}', 'Admin\\ContentStudioController', 'show');
+$r->put('/admin/studio/estrategias/{id}', 'Admin\\ContentStudioController', 'update');
+$r->delete('/admin/studio/estrategias/{id}', 'Admin\\ContentStudioController', 'destroy');
+$r->post('/admin/studio/estrategias/{id}/brief', 'Admin\\ContentStudioController', 'brief');
+$r->post('/admin/studio/estrategias/{id}/calendario', 'Admin\\ContentStudioController', 'calendario');
+$r->post('/admin/studio/estrategias/{id}/items', 'Admin\\ContentStudioController', 'itemStore');
+$r->get('/admin/studio/estrategias/{id}/export', 'Admin\\ContentStudioController', 'export');
+$r->post('/admin/studio/items/{pid}/generar', 'Admin\\ContentStudioController', 'generarPieza');
+$r->put('/admin/studio/items/{pid}', 'Admin\\ContentStudioController', 'itemUpdate');
+$r->delete('/admin/studio/items/{pid}', 'Admin\\ContentStudioController', 'itemDestroy');
 // GrowthBoard · seguimiento del acompañamiento (consultor)
 $r->get('/admin/growthboard/clientes', 'Admin\\GrowthBoardAdminController', 'clientes');
 $r->get('/admin/growthboard/clientes/{id}', 'Admin\\GrowthBoardAdminController', 'cliente');
