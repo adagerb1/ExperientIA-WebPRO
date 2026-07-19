@@ -512,8 +512,24 @@ p { margin: 0; color: var(--text-secondary); }
 .gb-ctx{ padding:.8rem 0; border-top:1px solid var(--line-soft); }
 .gb-ctx__q{ font-weight:600; font-size:.92rem; margin-bottom:.6rem; }
 .gb-ctx__ops{ display:flex; flex-wrap:wrap; gap:.45rem; }
-.gb-total{ display:flex; align-items:baseline; gap:.3rem; justify-content:center; margin-bottom:.8rem; }
+.gb-total{ display:flex; align-items:baseline; gap:.3rem; justify-content:center; margin-bottom:.8rem; flex-wrap:wrap; }
 .gb-total__v{ font-size:2.6rem; font-weight:800; } .gb-total__m{ color:var(--text-tertiary); font-weight:600; }
+
+/* Mi GrowthBoard: jugadas + marcador semanal */
+.gb-play{ display:grid; gap:.5rem; padding:.9rem 0; border-top:1px solid var(--line-soft); }
+.gb-play__head{ display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.gb-play__head b{ color:var(--neutral-light); font-size:.95rem; }
+.gb-play__meta{ display:flex; gap:.9rem; flex-wrap:wrap; font-size:.74rem; color:var(--text-tertiary); }
+.gb-play__meta span{ display:inline-flex; align-items:center; gap:.3rem; }
+.gb-play__estado{ display:flex; gap:.35rem; flex-wrap:wrap; }
+.gb-play__estado .chip-cat, .gb-play__resultado .chip-cat{ font-size:.72rem; padding:.3rem .6rem; }
+.gb-play__resultado{ display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
+.gb-play__notas{ display:flex; gap:.4rem; }
+.gb-play__notas .inp{ padding:.5rem .7rem; font-size:.82rem; }
+.gb-ck-hist details{ border-top:1px solid var(--line-soft); }
+.gb-ck-item summary{ cursor:pointer; font-size:.8rem; color:var(--text-secondary); padding:.5rem 0; }
+.gb-ck-item ul{ display:grid; gap:.35rem; padding:0 0 .7rem 1rem; font-size:.8rem; color:var(--text-secondary); }
+.gb-ck-item b{ color:var(--neutral-light); }
 
 .land-quote{ text-align:center; display:grid; gap:1rem; justify-items:center; padding:clamp(1.8rem,4vw,2.8rem); }
 .land-quote blockquote{ font-size:clamp(1.15rem,2.4vw,1.5rem); line-height:1.5; font-weight:500; color:var(--neutral-light); max-width:40rem; margin:0; }

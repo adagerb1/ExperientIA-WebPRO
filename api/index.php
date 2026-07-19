@@ -34,6 +34,10 @@ $r->get('/growthboard/config', 'PublicApi\\GrowthBoardController', 'config');   
 $r->post('/growthboard/diagnostico', 'PublicApi\\GrowthBoardController', 'diagnostico'); // diagnóstico 11 zonas
 $r->get('/growthboard/demo/{industry}', 'PublicApi\\GrowthBoardController', 'demo');     // demo con datos de ejemplo
 $r->get('/growthboard/demo', 'PublicApi\\GrowthBoardController', 'demo');
+$r->post('/mi-tablero/acceso', 'PublicApi\\ClientBoardController', 'acceso');   // enlace de acceso por correo
+$r->get('/mi-tablero', 'PublicApi\\ClientBoardController', 'board');            // tablero del cliente (token gbl)
+$r->post('/mi-tablero/jugadas/{id}/estado', 'PublicApi\\ClientBoardController', 'estado');
+$r->post('/mi-tablero/checkin', 'PublicApi\\ClientBoardController', 'checkin'); // marcador semanal
 $r->post('/alexia', 'PublicApi\\ChatController', 'mensaje');           // AlexIA comercial (web)
 $r->post('/alexia/lead', 'PublicApi\\ChatController', 'lead');         // captura al iniciar chat
 $r->post('/alexia/resumen', 'PublicApi\\ChatController', 'resumen');   // resumen por correo al cerrar
@@ -83,6 +87,13 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+// GrowthBoard · seguimiento del acompañamiento (consultor)
+$r->get('/admin/growthboard/clientes', 'Admin\\GrowthBoardAdminController', 'clientes');
+$r->get('/admin/growthboard/clientes/{id}', 'Admin\\GrowthBoardAdminController', 'cliente');
+$r->get('/admin/growthboard/clientes/{id}/acceso', 'Admin\\GrowthBoardAdminController', 'acceso');
+$r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
+$r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
+$r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');
 // Segmentos configurables y trilingües (categorías, tamaños, orígenes, canales).
 $r->get('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'index');
 $r->post('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'store');

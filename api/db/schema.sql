@@ -143,6 +143,34 @@ CREATE TABLE IF NOT EXISTS gb_zones (
   active TINYINT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Jugadas del acompañamiento (las define el consultor; el cliente reporta avance)
+CREATE TABLE IF NOT EXISTS gb_plays (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  lead_id INT UNSIGNED NOT NULL,
+  zona VARCHAR(40) NULL,
+  titulo VARCHAR(255) NOT NULL,
+  porque TEXT NULL,
+  responsable VARCHAR(120) NULL,
+  fecha_limite VARCHAR(20) NULL,
+  indicador VARCHAR(255) NULL,
+  estado VARCHAR(20) NOT NULL DEFAULT 'pendiente', -- pendiente | ejecucion | ejecutada | descartada
+  resultado VARCHAR(20) NULL,                      -- movio | no_movio
+  notas TEXT NULL,
+  sort INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL,
+  INDEX idx_gbp_lead (lead_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Marcador semanal (las 5 preguntas del ritual del framework)
+CREATE TABLE IF NOT EXISTS gb_checkins (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  lead_id INT UNSIGNED NOT NULL,
+  avanzo TEXT NULL, trabo TEXT NULL, dato TEXT NULL, decision TEXT NULL, proxima TEXT NULL,
+  created_at DATETIME NOT NULL,
+  INDEX idx_gbc_lead (lead_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS gb_results (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   lead_id INT UNSIGNED NULL,
