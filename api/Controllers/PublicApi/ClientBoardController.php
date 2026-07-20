@@ -29,15 +29,7 @@ final class ClientBoardController extends Controller
         if ($email) {
             try {
                 $lead = Database::run('SELECT l.id, l.name FROM leads l WHERE l.email = ? AND EXISTS (SELECT 1 FROM gb_results r WHERE r.lead_id = l.id) LIMIT 1', [mb_strtolower($email)])->fetch();
-                if ($lead) {
-                    $url = self::urlAcceso((int) $lead['id'], $locale);
-                    $tx = [
-                        'es' => ['Tu acceso a Mi GrowthBoard', '<p>Hola, {n}.</p><p>Este es tu enlace de acceso a tu tablero:</p><p><a href="{u}">Entrar a Mi GrowthBoard</a></p><p>El enlace es personal y vence en 30 días.</p><p>ExperientIA</p>'],
-                        'en' => ['Your access to My GrowthBoard', '<p>Hi, {n}.</p><p>Here is your access link to your board:</p><p><a href="{u}">Open My GrowthBoard</a></p><p>The link is personal and expires in 30 days.</p><p>ExperientIA</p>'],
-                        'pt' => ['Seu acesso ao Meu GrowthBoard', '<p>Olá, {n}.</p><p>Este é seu link de acesso ao seu painel:</p><p><a href="{u}">Entrar no Meu GrowthBoard</a></p><p>O link é pessoal e expira em 30 dias.</p><p>ExperientIA</p>'],
-                    ][$locale];
-                    Mailer::send($email, $tx[0], str_replace(['{n}', '{u}'], [explode(' ', trim($lead['name']))[0], $url], $tx[1]));
-                }
+                if ($lead) { self::enviarAcceso((int) $lead['id'], $lead['name'], $email, $locale); }
             } catch (\Throwable $e) { /* nunca revelar si el correo existe */ }
         }
         Response::ok(['message' => 'sent']);
@@ -97,6 +89,27 @@ final class ClientBoardController extends Controller
     }
 
     // ── Helpers compartidos con el admin ─────────────────────────────────────
+    /** Envía el correo de acceso (plantilla editable gb_acceso, con respaldo). */
+    public static function enviarAcceso(int $leadId, string $nombre, string $email, string $locale = 'es'): bool
+    {
+        $url = self::urlAcceso($leadId, $locale);
+        $tpl = Mailer::template('gb_acceso', $locale);
+        if (! $tpl) {
+            $tx = [
+                'es' => ['Tu acceso a Mi GrowthBoard', '<p>Hola, {{nombre}}.</p><p>Este es tu acceso personal a tu tablero de crecimiento en vivo: tu cancha, tus jugadas y tu marcador semanal.</p><p>El enlace es personal y vence en 30 días.</p>'],
+                'en' => ['Your access to My GrowthBoard', '<p>Hi, {{nombre}}.</p><p>This is your personal access to your live growth board: your field, your plays and your weekly scoreboard.</p><p>The link is personal and expires in 30 days.</p>'],
+                'pt' => ['Seu acesso ao Meu GrowthBoard', '<p>Olá, {{nombre}}.</p><p>Este é seu acesso pessoal ao seu painel de crescimento ao vivo: seu campo, suas jogadas e seu placar semanal.</p><p>O link é pessoal e expira em 30 dias.</p>'],
+            ][$locale] ?? null;
+            $tpl = $tx ?: ['Tu acceso a Mi GrowthBoard', '<p>Hola, {{nombre}}.</p>'];
+        }
+        $n = explode(' ', trim($nombre))[0];
+        $cuerpo = str_replace(['{{nombre}}', '{{enlace}}', '{nombre}', '{enlace}'], [$n, $url, $n, $url], $tpl[1]);
+        if (! str_contains($cuerpo, 'display:inline-block')) {
+            $cuerpo .= Mailer::boton($url, ['es' => 'Entrar a Mi GrowthBoard', 'en' => 'Open My GrowthBoard', 'pt' => 'Entrar no Meu GrowthBoard'][$locale] ?? 'Entrar a Mi GrowthBoard');
+        }
+        return Mailer::send($email, $tpl[0], $cuerpo);
+    }
+
     public static function urlAcceso(int $leadId, string $locale = 'es'): string
     {
         $token = Token::issue(['gbl' => $leadId], self::TTL);

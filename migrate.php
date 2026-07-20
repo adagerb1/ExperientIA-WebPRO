@@ -222,6 +222,19 @@ try {
     }
 } catch (\Throwable $e) { echo '! growthboard: ' . $e->getMessage() . "\n"; }
 
+// Plantillas de email nuevas (p. ej. GrowthBoard): sembrar solo las que falten.
+try {
+    $extra = require __DIR__ . '/api/db/seed_extra.php';
+    foreach ($extra['email_templates'] as $tpl) {
+        $ex = $pdo->prepare('SELECT COUNT(*) FROM email_templates WHERE tkey = ?');
+        $ex->execute([$tpl['tkey']]);
+        if ((int) $ex->fetchColumn() > 0) { continue; }
+        $pdo->prepare('INSERT INTO email_templates (tkey, subject, body, active, updated_at) VALUES (?, ?, ?, 1, ?)')
+            ->execute([$tpl['tkey'], json_encode($tpl['subject'], JSON_UNESCAPED_UNICODE), json_encode($tpl['body'], JSON_UNESCAPED_UNICODE), now_utc()]);
+        echo "+ plantilla de email '{$tpl['tkey']}' sembrada\n";
+    }
+} catch (\Throwable $e) { echo '! plantillas email: ' . $e->getMessage() . "\n"; }
+
 // Landings de conversión: sembrar copy curado en soluciones/productos existentes.
 try {
     require __DIR__ . '/api/db/apply_landings.php';

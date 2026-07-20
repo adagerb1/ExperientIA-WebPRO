@@ -4,7 +4,7 @@
 import { t, tr, pageUrl, api, store, setMeta, loadMeta } from '../lib/core.js';
 import { Icon, CountUp, ScrollProgress } from '../lib/ui.js';
 import { PageHero } from '../lib/layout.js';
-import { PhoneInput, Combo } from '../lib/forms.js';
+import { PhoneInput, Combo, CodeInput } from '../lib/forms.js';
 
 const tx = (key, fb) => { const v = t(key); return (v && v !== key) ? v : fb; };
 const gbUrl = (sub) => pageUrl('tablero') + '/' + sub;
@@ -117,7 +117,7 @@ export const GBDemo = {
 
 // ── Diagnóstico de 11 zonas (el instrumento de lectura) ──────────────────────
 export const GBDiagnostico = {
-  components: { Icon, Cancha, LineasBars, PageHero, PhoneInput, Combo, ScrollProgress },
+  components: { Icon, Cancha, LineasBars, PageHero, PhoneInput, Combo, CodeInput, ScrollProgress },
   data() { return {
     cfg: null, meta: { industries: [], countries: [], company_sizes: [] },
     paso: 0, resultado: null, enviando: false, error: '',
@@ -249,13 +249,13 @@ export const GBDiagnostico = {
       <div class="glass card gb-paso" v-else-if="pasoFinal">
         <h2 class="h3">{{ tx('gb.p_verif','Último paso: verificación') }}</h2>
         <p class="small" style="margin-bottom:1rem">{{ tx('gb.p_verif_s','Confirma que eres humano y te mostramos tu tablero.') }}</p>
-        <div class="ax-captcha" style="max-width:360px">
+        <div class="gb-captcha">
           <div class="ax-captcha-img">
             <img v-if="cap.image && cap.image.startsWith('data:')" :src="cap.image" alt="captcha" draggable="false">
             <b v-else-if="cap.image">{{ cap.image.replace('text:','') }}</b>
             <span v-else class="ax-captcha-cargando">…</span>
             <button type="button" class="ax-captcha-refresh" @click="cargarCaptcha" title="↻">↻</button></div>
-          <input class="inp" v-model="cap.code" :placeholder="tx('gb.captcha_ph','Escribe el código')" maxlength="8" autocomplete="off">
+          <CodeInput v-model="cap.code" :length="5"/>
         </div>
       </div>
 

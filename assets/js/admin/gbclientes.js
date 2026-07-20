@@ -15,8 +15,8 @@ export const GBClientes = {
   data(){ return { items:[], q:'', zonas:[], det:null, play:null, guardando:false,
     cols:[
       { key:'name', label:'Cliente', render:(r)=>'<b style="color:var(--neutral-light)">'+esc(r.name)+'</b><br><span class="small">'+esc(r.company||'')+'</span>' },
-      { key:'total', label:'Tablero', raw:(r)=>Number(r.total), render:(r)=>'<b>'+r.total+'</b>/55 · <span class="chip chip-soft">'+esc(r.banda)+'</span>' },
-      { key:'zona_critica', label:'Zona crítica' },
+      { key:'total', label:'Tablero', raw:(r)=>Number(r.total||0), render:(r)=> r.total!=null ? '<b>'+r.total+'</b>/55 · <span class="chip chip-soft">'+esc(r.banda)+'</span>' : '<span class="small">sin resultado guardado</span>' },
+      { key:'zona_critica', label:'Zona crítica', render:(r)=>esc(r.zona_critica||'—') },
       { key:'jugadas', label:'Jugadas', raw:(r)=>Number(r.jugadas), render:(r)=>r.ejecutadas+' / '+r.jugadas },
       { key:'checkins', label:'Semanas', raw:(r)=>Number(r.checkins) },
       { key:'fecha', label:'Diagnóstico', render:(r)=>String(r.fecha||'').slice(0,10) },
@@ -28,8 +28,12 @@ export const GBClientes = {
   methods:{
     estados(){ return ESTADOS; },
     fecha(s){ return String(s||'').slice(0,10); },
-    async load(){ const r=await api.get('/admin/growthboard/clientes'); if(r.ok) this.items=r.data; },
-    async abrir(row){ const r=await api.get('/admin/growthboard/clientes/'+row.id); if(r.ok){ this.det=r.data; this.play=null; } },
+    async load(){ const r=await api.get('/admin/growthboard/clientes');
+      if(r.ok) this.items=r.data; else toast(r.error||'No se pudo cargar la lista de clientes.','err'); },
+    async abrir(row){ const r=await api.get('/admin/growthboard/clientes/'+row.id);
+      if(r.ok){ this.det=r.data; this.play=null; } else toast(r.error||'Error','err'); },
+    async enviarAcceso(id){ const r=await api.post('/admin/growthboard/clientes/'+id+'/enviar-acceso');
+      toast(r.ok?'Correo con el enlace de acceso enviado al cliente.':(r.error||'No se pudo enviar.'), r.ok?'ok':'err'); },
     async copiarAcceso(){ return this.copiarAccesoDe(this.det.lead.id); },
     async copiarAccesoDe(id){ const r=await api.get('/admin/growthboard/clientes/'+id+'/acceso');
       if(!r.ok){ toast(r.error||'Error','err'); return; }
@@ -56,19 +60,24 @@ export const GBClientes = {
     <SmartTable :columns="cols" :rows="items" :search="q" :searchKeys="['name','company','email']" @rowClick="abrir">
       <template #actions="{row}">
         <button class="btn btn-ghost btn-sm" @click.stop="abrir(row)">Abrir</button>
-        <button class="btn btn-primary btn-sm" @click.stop="copiarAccesoDe(row.id)"><Icon name="plug" :size="12"/> Enlace</button></template>
+        <button class="btn btn-ghost btn-sm" @click.stop="copiarAccesoDe(row.id)"><Icon name="plug" :size="12"/> Enlace</button>
+        <button class="btn btn-primary btn-sm" @click.stop="enviarAcceso(row.id)"><Icon name="mail" :size="12"/> Enviar</button></template>
     </SmartTable>
 
     <div class="modal-bg" v-if="det" @click.self="det=null"><div class="glass modal modal-lg">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
         <div><h2>{{ det.lead.company || det.lead.name }}</h2>
           <p class="small">{{ det.lead.name }} · {{ det.lead.email }}<span v-if="det.lead.phone_wa"> · +{{ det.lead.phone_wa }}</span></p></div>
-        <div style="display:flex;gap:.5rem">
-          <button class="btn btn-primary btn-sm" @click="copiarAcceso"><Icon name="plug" :size="13"/> Copiar enlace del cliente</button>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" @click="copiarAcceso"><Icon name="plug" :size="13"/> Copiar enlace</button>
+          <button class="btn btn-primary btn-sm" @click="enviarAcceso(det.lead.id)"><Icon name="mail" :size="13"/> Enviar enlace por correo</button>
           <button class="btn btn-ghost btn-sm" @click="det=null">✕</button></div></div>
 
+      <template v-if="ultimo">
       <div class="sec-divider"><span>Tablero · {{ ultimo.total }}/55 ({{ ultimo.banda }})<template v-if="det.results.length>1"> · evolución: {{ det.results[det.results.length-1].total }} → {{ ultimo.total }}</template></span></div>
       <Cancha :zonas="zonas" :scores="ultimo.scores" :critica="ultimo.zona_critica" compact/>
+      </template>
+      <p class="small" v-else style="margin-top:1rem;color:#ffb84d">Este lead inició por GrowthBoard pero su resultado no quedó guardado (posiblemente la BD no estaba migrada). Pídele repetir el diagnóstico.</p>
 
       <div class="sec-divider"><span>Jugadas <button type="button" class="btn btn-ghost btn-sm" @click="nuevaJugada"><Icon name="plug" :size="12"/> Nueva jugada</button></span></div>
       <div v-if="play" class="glass panel land-block">

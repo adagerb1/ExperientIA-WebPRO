@@ -104,6 +104,7 @@ $r->delete('/admin/studio/items/{pid}', 'Admin\\ContentStudioController', 'itemD
 $r->get('/admin/growthboard/clientes', 'Admin\\GrowthBoardAdminController', 'clientes');
 $r->get('/admin/growthboard/clientes/{id}', 'Admin\\GrowthBoardAdminController', 'cliente');
 $r->get('/admin/growthboard/clientes/{id}/acceso', 'Admin\\GrowthBoardAdminController', 'acceso');
+$r->post('/admin/growthboard/clientes/{id}/enviar-acceso', 'Admin\\GrowthBoardAdminController', 'enviarAcceso');
 $r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
 $r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
 $r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');

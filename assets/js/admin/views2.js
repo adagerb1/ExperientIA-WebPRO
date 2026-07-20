@@ -214,7 +214,7 @@ export const Plantillas = {
   methods:{
     async load(){ const r=await api.get('/admin/email-templates'); if(r.ok){ this.items=r.data.map(t=>({...t,subject:t.subject||{es:'',en:'',pt:''},body:t.body||{es:'',en:'',pt:''}})); this.items.forEach(t=>this.tab[t.tkey]='es'); } },
     cur(k){ return this.tab[k]||'es'; },
-    nombre(k){ return {lead_notify:'Notificación de lead (interno)',booking_confirm:'Confirmación de reserva',resource_delivery:'Entrega de recurso',newsletter_welcome:'Bienvenida al newsletter'}[k]||k; },
+    nombre(k){ return {lead_notify:'Notificación de lead (interno)',booking_confirm:'Confirmación de reserva',resource_delivery:'Entrega de recurso',newsletter_welcome:'Bienvenida al newsletter',gb_diagnostico:'GrowthBoard · Postdiagnóstico',gb_acceso:'GrowthBoard · Acceso a Mi Tablero'}[k]||k; },
     async guardar(tpl){ const r=await api.put('/admin/email-templates/'+tpl.tkey,{subject:tpl.subject,body:tpl.body}); toast(r.ok?'Guardado.':(r.error||'Error'),r.ok?'ok':'err'); },
   },
   mounted(){ this.load(); },

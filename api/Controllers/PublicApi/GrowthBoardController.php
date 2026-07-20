@@ -84,11 +84,15 @@ final class GrowthBoardController extends Controller
             ]);
         } catch (\Throwable $e) { /* tabla sin migrar: el touchpoint ya conserva el resumen */ }
 
-        // Correo postdiagnóstico con el copy del método (best-effort).
+        // Correo postdiagnóstico: plantilla editable (Plantillas email) o copy del método.
         try {
-            $mail = self::cfg()['email'][$locale] ?? self::cfg()['email']['es'];
             $agenda = rtrim(Env::get('APP_URL', 'https://experientia.pro'), '/') . '/' . $locale . '/' . self::slugAgenda($locale);
-            Mailer::send($d['email'], $mail['asunto'], str_replace(['{nombre}', '{enlace}'], [explode(' ', trim($d['name']))[0], $agenda], $mail['cuerpo']));
+            $tpl = Mailer::template('gb_diagnostico', $locale);
+            if (! $tpl) { $m = self::cfg()['email'][$locale] ?? self::cfg()['email']['es']; $tpl = [$m['asunto'], $m['cuerpo']]; }
+            $nombre = explode(' ', trim($d['name']))[0];
+            $cuerpo = str_replace(['{{nombre}}', '{{enlace}}', '{nombre}', '{enlace}'], [$nombre, $agenda, $nombre, $agenda], $tpl[1]);
+            if (! str_contains($cuerpo, 'display:inline-block')) { $cuerpo .= Mailer::boton($agenda, ['es' => 'Agendar mi lectura estratégica', 'en' => 'Book my strategic reading', 'pt' => 'Agendar minha leitura estratégica'][$locale] ?? 'Agendar'); }
+            Mailer::send($d['email'], $tpl[0], $cuerpo);
         } catch (\Throwable $e) { /* sin conector de correo: no rompe el diagnóstico */ }
 
         Response::ok($res + ['scores' => $scores, 'lead_id' => (int) $lead['id']]);

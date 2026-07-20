@@ -188,3 +188,27 @@ export const LeadModal = {
     },
   },
 };
+
+// Código de verificación por cajitas: un solo input real (invisible) que abre el
+// teclado del móvil; cada carácter llena su caja y borrar las vacía en orden.
+export const CodeInput = {
+  props: { modelValue: { type: String, default: '' }, length: { type: Number, default: 5 } },
+  emits: ['update:modelValue'],
+  template: `<div class="code-in" @click="foco">
+    <input ref="real" class="code-in__real" :value="modelValue" @input="onInput"
+      @focus="focused=true" @blur="focused=false" inputmode="text" autocomplete="one-time-code"
+      autocapitalize="characters" spellcheck="false" :maxlength="length" :aria-label="'Código de '+length+' caracteres'">
+    <span v-for="i in length" :key="i" class="code-in__box"
+      :class="{ full: !!chars[i-1], activa: focused && (i-1)===Math.min(modelValue.length, length-1) }">{{ chars[i-1]||'' }}</span>
+  </div>`,
+  data() { return { focused: false }; },
+  computed: { chars() { return this.modelValue.split(''); } },
+  methods: {
+    foco() { this.$refs.real.focus(); },
+    onInput(e) {
+      const v = e.target.value.replace(/[^a-z0-9]/gi, '').toUpperCase().slice(0, this.length);
+      e.target.value = v;
+      this.$emit('update:modelValue', v);
+    },
+  },
+};

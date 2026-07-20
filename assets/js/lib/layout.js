@@ -1,7 +1,7 @@
 // ExperientIA · Layout del sitio público: header, footer, AlexIA, toasts.
 import { store, t, tr, pageUrl, api, toast } from './core.js';
 import { Icon, BrandLogo, BrandSymbol } from './ui.js';
-import { PhoneInput } from './forms.js';
+import { PhoneInput, CodeInput } from './forms.js';
 
 const SOCIAL = [
   { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/experientia.sas/' },
@@ -87,7 +87,7 @@ export const Toasts = {
 const axEsc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;' }[c]));
 
 export const AlexIA = {
-  components: { Icon, PhoneInput },
+  components: { Icon, PhoneInput, CodeInput },
   template: `<div>
     <button class="ax-fab" :class="{on:open}" @click="toggle" aria-label="AlexIA"><span class="ax-fab-ring"></span>
       <Icon v-if="!open" name="sparkle" :size="24"/><span v-else class="ax-fab-x">✕</span></button>
@@ -117,7 +117,7 @@ export const AlexIA = {
               <b v-else-if="cap.image">{{ cap.image.replace('text:','') }}</b>
               <span v-else class="ax-captcha-cargando">…</span>
               <button type="button" class="ax-captcha-refresh" @click="cargarCaptcha" :title="tx('alexia.gate_captcha_otro','Otro código')">↻</button></div>
-            <input v-model="cap.code" :placeholder="tx('alexia.gate_captcha','Escribe el código')" autocomplete="off" maxlength="8" required>
+            <CodeInput v-model="cap.code" :length="5"/>
           </div>
           <button class="btn btn-grad" :disabled="gating">{{ gating?'…':tx('alexia.gate_cta','Empezar a chatear') }}</button>
           <p class="err" v-if="gateErr">{{ gateErr }}</p>

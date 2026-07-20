@@ -3,6 +3,24 @@
 return [
     'email_templates' => [
         [
+            'tkey' => 'gb_diagnostico',
+            'subject' => ['es' => 'Tu Tablero de Crecimiento ya empezó a hablar', 'en' => 'Your Growth Board has started to speak', 'pt' => 'Seu Painel de Crescimento já começou a falar'],
+            'body' => [
+                'es' => '<p>Hola, {{nombre}}.</p><p>Gracias por completar el Diagnóstico Tablero de Crecimiento.</p><p>Este diagnóstico nos ayuda a leer dónde tu empresa puede estar perdiendo fuerza: estrategia, operación, datos, automatización, ventas o experiencia.</p><p>El siguiente paso es revisar tu resultado y detectar tu primera jugada.</p><p>Si tu empresa está vendiendo, pero no está creciendo como debería, probablemente no le falta movimiento.</p><p><b>Le falta tablero.</b></p><p>Tonny Dager<br>ExperientIA</p>',
+                'en' => '<p>Hi, {{nombre}}.</p><p>Thanks for completing the Growth Board Diagnostic.</p><p>It helps us read where your company may be losing strength: strategy, operations, data, automation, sales or experience.</p><p>The next step is to review your result and spot your first play.</p><p>If your company is selling but not growing as it should, it probably does not lack movement.</p><p><b>It lacks a board.</b></p><p>Tonny Dager<br>ExperientIA</p>',
+                'pt' => '<p>Olá, {{nombre}}.</p><p>Obrigado por completar o Diagnóstico Painel de Crescimento.</p><p>Ele nos ajuda a ler onde sua empresa pode estar perdendo força: estratégia, operação, dados, automação, vendas ou experiência.</p><p>O próximo passo é revisar seu resultado e detectar sua primeira jogada.</p><p>Se sua empresa está vendendo, mas não está crescendo como deveria, provavelmente não falta movimento.</p><p><b>Falta painel.</b></p><p>Tonny Dager<br>ExperientIA</p>',
+            ],
+        ],
+        [
+            'tkey' => 'gb_acceso',
+            'subject' => ['es' => 'Tu acceso a Mi GrowthBoard', 'en' => 'Your access to My GrowthBoard', 'pt' => 'Seu acesso ao Meu GrowthBoard'],
+            'body' => [
+                'es' => '<p>Hola, {{nombre}}.</p><p>Este es tu acceso personal a tu tablero de crecimiento en vivo: tu cancha, tus jugadas y tu marcador semanal.</p><p>El enlace es personal y vence en 30 días.</p>',
+                'en' => '<p>Hi, {{nombre}}.</p><p>This is your personal access to your live growth board: your field, your plays and your weekly scoreboard.</p><p>The link is personal and expires in 30 days.</p>',
+                'pt' => '<p>Olá, {{nombre}}.</p><p>Este é seu acesso pessoal ao seu painel de crescimento ao vivo: seu campo, suas jogadas e seu placar semanal.</p><p>O link é pessoal e expira em 30 dias.</p>',
+            ],
+        ],
+        [
             'tkey' => 'lead_notify',
             'subject' => ['es' => '[ExperientIA] Nueva interacción: {{titulo}}', 'en' => '[ExperientIA] New interaction: {{titulo}}', 'pt' => '[ExperientIA] Nova interação: {{titulo}}'],
             'body' => ['es' => '<h2>{{titulo}}</h2><p><b>{{name}}</b> · {{company}}</p><ul><li>Correo: {{email}}</li><li>WhatsApp: {{phone}}</li><li>País: {{country}} · Industria: {{industry}}</li></ul><p>{{detalle}}</p>', 'en' => '', 'pt' => ''],

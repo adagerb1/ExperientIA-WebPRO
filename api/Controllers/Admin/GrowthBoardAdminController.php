@@ -14,20 +14,38 @@ use Core\Middleware\AuthMiddleware;
  */
 final class GrowthBoardAdminController extends Controller
 {
-    /** Clientes con diagnóstico: último resultado + conteos de jugadas/check-ins. */
+    /**
+     * Clientes con diagnóstico: último resultado + conteos de jugadas/check-ins.
+     * Incluye también leads con origen growthboard aunque el resultado no se haya
+     * guardado (p. ej. diagnóstico hecho antes de migrar la BD): nunca invisibles.
+     */
     public function clientes(): void
     {
         AuthMiddleware::require($this->req);
         $rows = Database::run(
-            'SELECT l.id, l.name, l.company, l.email, l.status, r.total, r.banda, r.zona_critica, r.created_at AS fecha,
+            'SELECT l.id, l.name, l.company, l.email, l.status, l.locale,
+                r.total, r.banda, r.zona_critica, COALESCE(r.created_at, l.created_at) AS fecha,
                 (SELECT COUNT(*) FROM gb_plays p WHERE p.lead_id = l.id) AS jugadas,
                 (SELECT COUNT(*) FROM gb_plays p WHERE p.lead_id = l.id AND p.estado = \'ejecutada\') AS ejecutadas,
                 (SELECT COUNT(*) FROM gb_checkins c WHERE c.lead_id = l.id) AS checkins
              FROM leads l
-             JOIN gb_results r ON r.id = (SELECT MAX(r2.id) FROM gb_results r2 WHERE r2.lead_id = l.id)
-             ORDER BY r.created_at DESC'
+             LEFT JOIN gb_results r ON r.id = (SELECT MAX(r2.id) FROM gb_results r2 WHERE r2.lead_id = l.id)
+             WHERE r.id IS NOT NULL OR l.source = \'growthboard\'
+             ORDER BY fecha DESC'
         )->fetchAll();
         Response::ok($rows);
+    }
+
+    /** Envía al cliente el correo con su enlace de acceso a Mi GrowthBoard. */
+    public function enviarAcceso(string $id): void
+    {
+        AuthMiddleware::require($this->req, 'admin');
+        $lead = Database::run('SELECT id, name, email, locale FROM leads WHERE id = ?', [$id])->fetch();
+        if (! $lead) { Response::error('Cliente no encontrado.', 404); }
+        if (empty($lead['email'])) { Response::error('Este lead no tiene correo registrado.', 422); }
+        $ok = ClientBoardController::enviarAcceso((int) $lead['id'], $lead['name'], $lead['email'], $lead['locale'] ?: 'es');
+        if (! $ok) { Response::error('No se pudo enviar el correo. Revisa SendGrid en Conectores (o storage/logs/mail-*.log).', 502); }
+        Response::ok(['message' => 'ok']);
     }
 
     /** Detalle: resultados (evolución), jugadas y check-ins de un cliente. */

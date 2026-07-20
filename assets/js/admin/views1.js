@@ -177,7 +177,8 @@ export const LeadDetail = {
       <div v-if="gb" class="gb-lead-box">
         <div><b>GrowthBoard</b><p class="small" style="margin:0">Tablero: <b style="color:var(--cyan)">{{ gb.total }}/55</b> · {{ gb.banda }} · zona crítica: {{ gb.zona_critica }}</p></div>
         <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-          <button class="btn btn-primary btn-sm" @click="copiarGb">Copiar enlace de Mi GrowthBoard</button>
+          <button class="btn btn-primary btn-sm" @click="enviarGb">Enviar enlace por correo</button>
+          <button class="btn btn-ghost btn-sm" @click="copiarGb">Copiar enlace</button>
           <button class="btn btn-ghost btn-sm" @click="$router.push('/admin/growthboard')">Abrir seguimiento</button></div></div></div>
       <div class="glass panel"><h3>Historial ({{ touchpoints.length }})</h3><div class="timeline">
         <div v-for="tp in touchpoints" :key="tp.id" class="glass tl"><div><span class="badge nuevo">{{ tipoTp(tp.type) }}</span> <b style="color:var(--neutral-light)">{{ tp.title }}</b></div>
@@ -192,6 +193,8 @@ export const LeadDetail = {
       // GrowthBoard: si el lead tiene diagnóstico, mostrar acceso directo a su tablero.
       const g=await api.get('/admin/growthboard/clientes/'+this.$route.params.id);
       if(g.ok && g.data.results && g.data.results.length) this.gb=g.data.results[0]; },
+    async enviarGb(){ const r=await api.post('/admin/growthboard/clientes/'+this.lead.id+'/enviar-acceso');
+      toast(r.ok?'Correo con el enlace de acceso enviado.':(r.error||'No se pudo enviar.'), r.ok?'ok':'err'); },
     async copiarGb(){ const r=await api.get('/admin/growthboard/clientes/'+this.lead.id+'/acceso');
       if(!r.ok){ toast(r.error||'Error','err'); return; }
       try { await navigator.clipboard.writeText(r.data.url); toast('Enlace de Mi GrowthBoard copiado. Compártelo con el cliente.'); }

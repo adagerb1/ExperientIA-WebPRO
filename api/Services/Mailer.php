@@ -62,9 +62,44 @@ final class Mailer
         self::send($to, "[ExperientIA] {$titulo}", $html);
     }
 
+    /**
+     * Plantilla editable desde el admin (Plataforma → Plantillas email), con
+     * respaldo al contenido por defecto si no existe o está inactiva.
+     * @return array{0:string,1:string}|null [asunto, cuerpo] en el idioma pedido
+     */
+    public static function template(string $tkey, string $locale = 'es'): ?array
+    {
+        try {
+            $r = Database::run('SELECT subject, body, active FROM email_templates WHERE tkey = ?', [$tkey])->fetch();
+            if (! $r || ! (int) $r['active']) { return null; }
+            $s = json_decode($r['subject'], true) ?: [];
+            $b = json_decode($r['body'], true) ?: [];
+            $subject = $s[$locale] ?? $s['es'] ?? null;
+            $body = $b[$locale] ?? $b['es'] ?? null;
+            return ($subject && $body) ? [$subject, $body] : null;
+        } catch (\Throwable $e) { return null; }
+    }
+
+    /** Botón de acción con estilos en línea (compatibles con Gmail/Outlook). */
+    public static function boton(string $url, string $texto): string
+    {
+        return '<p style="text-align:center;margin:26px 0;"><a href="' . htmlspecialchars($url) . '" '
+            . 'style="background-color:#18d6f1;background-image:linear-gradient(135deg,#18d6f1,#7a63ff);color:#041022;'
+            . 'text-decoration:none;font-weight:700;font-size:15px;padding:14px 30px;border-radius:999px;display:inline-block;">'
+            . $texto . '</a></p>';
+    }
+
     private static function wrap(string $html): string
     {
-        return '<div style="max-width:560px;margin:0 auto;font-family:Arial,sans-serif;background:#fff;border-radius:12px;padding:28px;border:1px solid #e3e9f2;color:#1a2333;">'
-            . $html . '<hr style="border:none;border-top:1px solid #e3e9f2;margin:24px 0 12px;"><p style="font-size:12px;color:#7a869c;">ExperientIA · Automatización · Growth · IA</p></div>';
+        $base = rtrim(Env::get('APP_URL', 'https://experientia.pro'), '/');
+        return '<div style="max-width:560px;margin:0 auto;font-family:Arial,Helvetica,sans-serif;">'
+            . '<div style="background-color:#0a1b3a;border-radius:14px 14px 0 0;padding:22px 28px;">'
+            .   '<a href="' . $base . '" style="text-decoration:none;"><img src="' . $base . '/assets/img/brand/logo.png" alt="ExperientIA" height="30" style="height:30px;border:0;display:block;"></a>'
+            . '</div>'
+            . '<div style="background:#ffffff;border:1px solid #e3e9f2;border-top:0;border-radius:0 0 14px 14px;padding:30px 28px;color:#1a2333;font-size:15px;line-height:1.6;">'
+            .   $html
+            .   '<hr style="border:none;border-top:1px solid #e3e9f2;margin:26px 0 14px;">'
+            .   '<p style="font-size:12px;color:#7a869c;margin:0;">ExperientIA · Automatización · Growth · IA · <a href="' . $base . '" style="color:#0aa9c4;text-decoration:none;">experientia.pro</a></p>'
+            . '</div></div>';
     }
 }
