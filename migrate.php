@@ -222,6 +222,17 @@ try {
     }
 } catch (\Throwable $e) { echo '! growthboard: ' . $e->getMessage() . "\n"; }
 
+// Analítica de primera parte + gasto de pauta (funnel y costo por lead).
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS hits (id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT NOT NULL, path TEXT NOT NULL, locale TEXT NOT NULL DEFAULT \'es\', count INTEGER NOT NULL DEFAULT 0, UNIQUE(fecha, path, locale))');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS ad_spend (id INTEGER PRIMARY KEY AUTOINCREMENT, mes TEXT NOT NULL, campaign TEXT NOT NULL, source TEXT NULL, monto REAL NOT NULL DEFAULT 0, updated_at TEXT NOT NULL, UNIQUE(mes, campaign))');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS hits (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, fecha DATE NOT NULL, path VARCHAR(190) NOT NULL, locale CHAR(2) NOT NULL DEFAULT \'es\', count INT NOT NULL DEFAULT 0, UNIQUE KEY uniq_hit (fecha, path, locale)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+        $pdo->exec('CREATE TABLE IF NOT EXISTS ad_spend (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, mes CHAR(7) NOT NULL, campaign VARCHAR(160) NOT NULL, source VARCHAR(120) NULL, monto DECIMAL(12,2) NOT NULL DEFAULT 0, updated_at DATETIME NOT NULL, UNIQUE KEY uniq_spend (mes, campaign)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! funnel: ' . $e->getMessage() . "\n"; }
+
 // Plantillas de email nuevas (p. ej. GrowthBoard): sembrar solo las que falten.
 try {
     $extra = require __DIR__ . '/api/db/seed_extra.php';

@@ -60,6 +60,14 @@ routes.push({ path: '/:pathMatch(.*)*', component: NotFound });
 
 const router = createRouter({ history: createWebHistory(), routes, scrollBehavior(){ return { top: 0 }; } });
 
+// Analítica propia, sin cookies: una señal por vista de página (alimenta el funnel).
+router.afterEach((to) => {
+  try {
+    fetch('/api/hit', { method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: to.path, locale: store.locale }) }).catch(() => {});
+  } catch (e) { /* la medición jamás rompe la navegación */ }
+});
+
 const App = {
   components: { SiteBackdrop, SiteHeader, SiteFooter, Toasts, AlexIA },
   template: `<div><SiteBackdrop/><SiteHeader/><main id="main"><router-view v-slot="{Component}"><component :is="Component" :key="$route.path"/></router-view></main><SiteFooter/><Toasts/><AlexIA/></div>`,

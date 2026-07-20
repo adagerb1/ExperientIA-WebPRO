@@ -30,6 +30,7 @@ $r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
 $r->post('/reserva', 'PublicApi\\BookingController', 'reservar');
 $r->get('/captcha', 'PublicApi\\CaptchaController', 'nuevo');          // reto captcha (gate del chat)
+$r->post('/hit', 'Admin\\FunnelController', 'hit');                    // beacon de visita (sin cookies)
 $r->get('/growthboard/config', 'PublicApi\\GrowthBoardController', 'config');      // método: zonas, líneas, bandas
 $r->post('/growthboard/diagnostico', 'PublicApi\\GrowthBoardController', 'diagnostico'); // diagnóstico 11 zonas
 $r->get('/growthboard/demo/{industry}', 'PublicApi\\GrowthBoardController', 'demo');     // demo con datos de ejemplo
@@ -87,6 +88,9 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+// Funnel comercial y costo por lead
+$r->get('/admin/funnel', 'Admin\\FunnelController', 'resumen');
+$r->put('/admin/funnel/gasto', 'Admin\\FunnelController', 'gasto');
 // GrowthBoard AI Content Studio (estrategia → brief → calendario → piezas)
 $r->get('/admin/studio/estrategias', 'Admin\\ContentStudioController', 'index');
 $r->post('/admin/studio/estrategias', 'Admin\\ContentStudioController', 'store');

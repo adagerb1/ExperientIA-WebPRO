@@ -143,6 +143,27 @@ CREATE TABLE IF NOT EXISTS gb_zones (
   active TINYINT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Analítica de primera parte, sin cookies ni IPs: conteo agregado por día y ruta.
+CREATE TABLE IF NOT EXISTS hits (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  fecha DATE NOT NULL,
+  path VARCHAR(190) NOT NULL,
+  locale CHAR(2) NOT NULL DEFAULT 'es',
+  count INT NOT NULL DEFAULT 0,
+  UNIQUE KEY uniq_hit (fecha, path, locale)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Gasto de pauta por mes y campaña (para costo por lead/adquisición)
+CREATE TABLE IF NOT EXISTS ad_spend (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  mes CHAR(7) NOT NULL,                              -- YYYY-MM
+  campaign VARCHAR(160) NOT NULL,
+  source VARCHAR(120) NULL,
+  monto DECIMAL(12,2) NOT NULL DEFAULT 0,
+  updated_at DATETIME NOT NULL,
+  UNIQUE KEY uniq_spend (mes, campaign)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- GrowthBoard AI Content Studio: estrategias (documento → brief) y piezas del calendario
 CREATE TABLE IF NOT EXISTS gbc_strategies (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

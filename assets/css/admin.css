@@ -372,3 +372,12 @@ th:hover .sort-arrow{ opacity:1; }
   border:1px solid var(--line-soft); background:rgba(5,17,38,.5); margin-bottom:.4rem; cursor:pointer; }
 .studio-item:hover{ border-color:rgba(24,214,241,.4); }
 .studio-item b{ color:var(--neutral-light); font-size:.86rem; }
+.fun-etapas{ display:grid; gap:.8rem; }
+.fun-etapa__head{ display:flex; justify-content:space-between; font-size:.85rem; color:var(--text-secondary); margin-bottom:.3rem; }
+.fun-etapa__head b{ color:var(--neutral-light); font-variant-numeric:tabular-nums; }
+.fun-conv{ font-style:normal; font-size:.72rem; color:var(--cyan); margin-left:.5rem; }
+.fun-etapa__bar{ height:12px; border-radius:99px; background:rgba(217,226,240,.08); overflow:hidden; }
+.fun-etapa__bar span{ display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#18d6f1,#7a63ff); transition:width .5s ease; }
+.fun-chart{ display:flex; align-items:flex-end; gap:3px; height:160px; }
+.fun-bar{ flex:1; display:flex; align-items:flex-end; min-width:4px; }
+.fun-bar span{ width:100%; border-radius:4px 4px 0 0; background:linear-gradient(180deg,#18d6f1,#7a63ff); opacity:.85; }
