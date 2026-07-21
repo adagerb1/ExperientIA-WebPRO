@@ -223,6 +223,15 @@ try {
     }
 } catch (\Throwable $e) { echo '! growthboard: ' . $e->getMessage() . "\n"; }
 
+// Reseñas de Google Business (sincronizadas).
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, review_id TEXT NOT NULL UNIQUE, name TEXT NULL, author TEXT NULL, stars INTEGER NOT NULL DEFAULT 0, comment TEXT NULL, reply TEXT NULL, featured INTEGER NOT NULL DEFAULT 0, created_at TEXT NULL, synced_at TEXT NOT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS gb_reviews (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, review_id VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(255) NULL, author VARCHAR(190) NULL, stars TINYINT NOT NULL DEFAULT 0, comment TEXT NULL, reply TEXT NULL, featured TINYINT NOT NULL DEFAULT 0, created_at DATETIME NULL, synced_at DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! gb_reviews: ' . $e->getMessage() . "\n"; }
+
 // Analítica de primera parte + gasto de pauta (funnel y costo por lead).
 try {
     if ($sqlite) {

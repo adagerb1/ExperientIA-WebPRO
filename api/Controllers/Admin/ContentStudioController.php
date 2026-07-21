@@ -212,6 +212,29 @@ final class ContentStudioController extends Controller
         Response::ok(['message' => 'ok']);
     }
 
+    /** Publica la pieza en su canal (hoy LinkedIn). Requiere el conector activo. */
+    public function publicar(string $pid): void
+    {
+        AuthMiddleware::require($this->req, 'admin');
+        $it = Database::run('SELECT * FROM gbc_items WHERE id = ?', [$pid])->fetch();
+        if (! $it) { Response::error('Pieza no encontrada.', 404); }
+        $copy = $it['copy'] ? json_decode($it['copy'], true) : [];
+        $texto = trim((string) ($copy['texto'] ?? ''));
+        if ($texto === '') { Response::error('Redacta el copy de la pieza antes de publicar.', 422); }
+        $cta = $copy['cta'] ?? '';
+        if ($cta && ! str_contains($texto, $cta)) { $texto .= "\n\n" . $cta; }
+        if (! empty($copy['hashtags'])) { $texto .= "\n\n" . $copy['hashtags']; }
+
+        $res = match ($it['canal']) {
+            'linkedin' => \Services\Connectors\LinkedInConnector::publish($texto),
+            default => ['ok' => false, 'error' => 'La publicación automática está disponible para LinkedIn. Para ' . $it['canal'] . ', exporta y publica manualmente.'],
+        };
+        if (! empty($res['ok'])) {
+            Database::run('UPDATE gbc_items SET estado = ?, updated_at = ? WHERE id = ?', ['publicada', now_utc(), $pid]);
+        }
+        Response::ok($res);
+    }
+
     public function itemDestroy(string $pid): void
     {
         AuthMiddleware::require($this->req, 'admin');

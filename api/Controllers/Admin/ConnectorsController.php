@@ -10,6 +10,8 @@ use Services\Connectors\TelegramConnector;
 use Services\Connectors\WhatsAppConnector;
 use Services\Connectors\PaymentConnector;
 use Services\Connectors\GoogleCalendarConnector;
+use Services\Connectors\LinkedInConnector;
+use Services\Connectors\GoogleBusinessConnector;
 
 /** Gestión de conectores + plantillas de email desde el panel. */
 final class ConnectorsController extends Controller
@@ -129,6 +131,10 @@ final class ConnectorsController extends Controller
             'test:telegram' => TelegramConnector::test(),
             'test:whatsapp' => WhatsAppConnector::test(),
             'test:google_calendar' => GoogleCalendarConnector::test(),
+            'test:linkedin' => LinkedInConnector::test(),
+            'publish_test:linkedin' => LinkedInConnector::publish('Publicación de prueba desde el panel de ExperientIA · GrowthBoard. ' . gmdate('Y-m-d H:i') . ' UTC'),
+            'test:google_business' => GoogleBusinessConnector::test(),
+            'sync_reviews:google_business' => GoogleBusinessConnector::syncReviews(),
             'test:wompi', 'test:epayco', 'test:stripe', 'test:paypal' => PaymentConnector::test($provider),
             'test:sendgrid' => ['ok' => ! empty($reg::config('sendgrid')['api_key']), 'message' => 'API key presente.', 'error' => 'Falta la API key de SendGrid.'],
             'send_test:sendgrid' => $this->enviarCorreoPrueba(),

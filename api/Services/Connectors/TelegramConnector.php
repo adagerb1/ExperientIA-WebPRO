@@ -48,11 +48,19 @@ final class TelegramConnector
             return ['ok' => false, 'error' => 'Configure al menos un token de bot.'];
         }
         $results = [];
-        foreach (['commercial' => $cfg['commercial_token'] ?? null, 'internal' => $cfg['internal_token'] ?? null] as $name => $tok) {
+        $todosOk = true;
+        foreach (['comercial' => $cfg['commercial_token'] ?? null, 'interno' => $cfg['internal_token'] ?? null] as $name => $tok) {
             if (! $tok) { continue; }
             $r = Http::json('GET', "https://api.telegram.org/bot{$tok}/getMe");
-            $results[] = $name . ': ' . (($r['body']['ok'] ?? false) ? '@' . $r['body']['result']['username'] : 'token inválido');
+            $ok = ($r['body']['ok'] ?? false) === true;
+            if (! $ok) { $todosOk = false; }
+            $results[] = $name . ': ' . ($ok ? '@' . $r['body']['result']['username'] : '⚠ token inválido');
         }
-        return ['ok' => true, 'message' => implode(' · ', $results)];
+        // Cuántos usuarios del equipo recibirán notificaciones internas.
+        try {
+            $subs = (int) \Core\Database::run("SELECT COUNT(*) FROM admins WHERE active = 1 AND notify_telegram = 1 AND telegram_user_id IS NOT NULL AND telegram_user_id != ''")->fetchColumn();
+            $results[] = $subs . ' usuario(s) reciben notificaciones';
+        } catch (\Throwable $e) {}
+        return ['ok' => $todosOk, 'message' => implode(' · ', $results), 'error' => $todosOk ? null : 'Uno o más tokens son inválidos.'];
     }
 }

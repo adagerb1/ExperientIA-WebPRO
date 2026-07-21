@@ -144,6 +144,20 @@ CREATE TABLE IF NOT EXISTS gb_zones (
   active TINYINT NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Reseñas de Google Business (sincronizadas): prueba social + gestión de respuestas.
+CREATE TABLE IF NOT EXISTS gb_reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  review_id VARCHAR(190) NOT NULL UNIQUE,
+  name VARCHAR(255) NULL,
+  author VARCHAR(190) NULL,
+  stars TINYINT NOT NULL DEFAULT 0,
+  comment TEXT NULL,
+  reply TEXT NULL,
+  featured TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME NULL,
+  synced_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Analítica de primera parte, sin cookies ni IPs: conteo agregado por día y ruta.
 CREATE TABLE IF NOT EXISTS hits (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

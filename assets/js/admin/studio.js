@@ -21,7 +21,7 @@ export const Studio = {
   components: { Icon, SmartTable },
   data(){ return { items:[], q:'', nuevo:null, det:null, pieza:null,
     cal:{ semanas:4, por_semana:5, canales:['linkedin'] },
-    busy:{ brief:false, cal:false, pieza:false, save:false },
+    busy:{ brief:false, cal:false, pieza:false, save:false, pub:false },
     cols:[
       { key:'nombre', label:'Estrategia', render:(r)=>'<b style="color:var(--neutral-light)">'+esc(r.nombre)+'</b>' },
       { key:'periodo', label:'Periodo' },
@@ -79,6 +79,13 @@ export const Studio = {
                             : await api.post('/admin/studio/estrategias/'+id+'/items', this.pieza);
       this.busy.save=false;
       if(r.ok){ toast('Pieza guardada.'); this.pieza=null; this.abrir({id}); } else toast(r.error||'Error','err'); },
+    async publicarPieza(){ if(!this.pieza.id){ toast('Guarda la pieza primero.','err'); return; }
+      if(this.pieza.canal!=='linkedin'){ toast('La publicación automática está disponible para LinkedIn. Para '+this.pieza.canal+', usa Exportar.','err'); return; }
+      if(!confirm('¿Publicar esta pieza en LinkedIn ahora?')) return;
+      this.busy.pub=true;
+      const r=await api.post('/admin/studio/items/'+this.pieza.id+'/publicar');
+      this.busy.pub=false;
+      if(r.ok){ this.pieza.estado='publicada'; toast('Publicada en LinkedIn.'); this.abrir({id:this.det.estrategia.id}); } else toast(r.error||'No se pudo publicar.','err'); },
     async eliminarPieza(){ if(!this.pieza.id){ this.pieza=null; return; }
       if(!confirm('¿Eliminar esta pieza?')) return;
       const id=this.det.estrategia.id;
@@ -185,8 +192,9 @@ export const Studio = {
           <div class="field"><label>Hashtags</label><input class="inp" v-model="pieza.copy.hashtags"></div></div>
         <div class="field" v-if="pieza.formato==='video' || pieza.canal==='tiktok' || pieza.canal==='youtube'"><label>Guion de video</label><textarea class="inp" rows="6" v-model="pieza.guion"></textarea></div>
         <div class="field"><label>Notas</label><input class="inp" v-model="pieza.notas"></div>
-        <div style="display:flex;gap:.6rem;justify-content:flex-end">
+        <div style="display:flex;gap:.6rem;justify-content:flex-end;flex-wrap:wrap">
           <button v-if="pieza.id" class="btn btn-danger btn-sm" style="margin-right:auto" @click="eliminarPieza">Eliminar</button>
+          <button v-if="pieza.id && pieza.canal==='linkedin'" class="btn btn-grad btn-sm" @click="publicarPieza" :disabled="busy.pub"><Icon name="send" :size="12"/> {{ busy.pub?'Publicando…':'Publicar en LinkedIn' }}</button>
           <button class="btn btn-ghost btn-sm" @click="pieza=null">Cancelar</button>
           <button class="btn btn-primary btn-sm" @click="guardarPieza" :disabled="busy.save">Guardar pieza</button></div>
       </div></div>

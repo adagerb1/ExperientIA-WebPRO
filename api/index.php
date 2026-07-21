@@ -107,6 +107,7 @@ $r->post('/admin/studio/estrategias/{id}/calendario', 'Admin\\ContentStudioContr
 $r->post('/admin/studio/estrategias/{id}/items', 'Admin\\ContentStudioController', 'itemStore');
 $r->get('/admin/studio/estrategias/{id}/export', 'Admin\\ContentStudioController', 'export');
 $r->post('/admin/studio/items/{pid}/generar', 'Admin\\ContentStudioController', 'generarPieza');
+$r->post('/admin/studio/items/{pid}/publicar', 'Admin\\ContentStudioController', 'publicar');
 $r->put('/admin/studio/items/{pid}', 'Admin\\ContentStudioController', 'itemUpdate');
 $r->delete('/admin/studio/items/{pid}', 'Admin\\ContentStudioController', 'itemDestroy');
 // GrowthBoard · seguimiento del acompañamiento (consultor)

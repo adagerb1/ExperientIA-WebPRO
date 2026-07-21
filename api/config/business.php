@@ -35,6 +35,7 @@ return [
     // Categorías (orden de las pestañas del panel de Conectores)
     'connector_groups' => [
         'ia' => 'Inteligencia artificial (AlexIA)',
+        'redes' => 'Redes y presencia',
         'pagos' => 'Pasarelas de pago',
         'correo' => 'Correo',
         'bots' => 'Mensajería y bots',
@@ -134,6 +135,33 @@ return [
                 ['n' => 'mode', 'l' => 'Entorno', 't' => 'select', 'op' => ['live', 'sandbox']],
             ],
             'acciones' => [['k' => 'test', 'l' => 'Probar']],
+        ],
+        'linkedin' => [
+            'nombre' => 'LinkedIn', 'grupo' => 'redes',
+            'desc' => 'Publica el contenido del Studio en tu página o perfil y mide su alcance.',
+            'campos' => [
+                ['n' => 'client_id', 'l' => 'Client ID', 't' => 'text', 'ph' => '86xxxxxxxx',
+                    'help' => 'App de LinkedIn Developers con los productos "Share on LinkedIn" y "Sign In".'],
+                ['n' => 'client_secret', 'l' => 'Client Secret', 't' => 'secret'],
+                ['n' => 'access_token', 'l' => 'Access token (OAuth)', 't' => 'secret',
+                    'help' => 'Token con scope w_member_social (perfil) o w_organization_social (página). Vence ~60 días.'],
+                ['n' => 'author_urn', 'l' => 'Autor (URN)', 't' => 'text', 'ph' => 'urn:li:organization:12345678',
+                    'help' => 'urn:li:organization:ID para publicar como página, o urn:li:person:ID para tu perfil.'],
+            ],
+            'acciones' => [['k' => 'test', 'l' => 'Probar'], ['k' => 'publish_test', 'l' => 'Publicar prueba']],
+        ],
+        'google_business' => [
+            'nombre' => 'Google Business Profile', 'grupo' => 'redes',
+            'desc' => 'Gestiona tu ficha de Google: reseñas (leer y responder), publicaciones y estadísticas.',
+            'campos' => [
+                ['n' => 'client_id', 'l' => 'Client ID', 't' => 'text', 'ph' => '...apps.googleusercontent.com'],
+                ['n' => 'client_secret', 'l' => 'Client secret', 't' => 'secret'],
+                ['n' => 'refresh_token', 'l' => 'Refresh token', 't' => 'secret',
+                    'help' => 'OAuth con scope https://www.googleapis.com/auth/business.manage.'],
+                ['n' => 'account_id', 'l' => 'Account ID', 't' => 'text', 'ph' => 'accounts/1234567890'],
+                ['n' => 'location_id', 'l' => 'Location ID', 't' => 'text', 'ph' => 'locations/9876543210'],
+            ],
+            'acciones' => [['k' => 'test', 'l' => 'Probar'], ['k' => 'sync_reviews', 'l' => 'Sincronizar reseñas']],
         ],
         'google_calendar' => [
             'nombre' => 'Google Calendar', 'grupo' => 'agenda',
