@@ -70,6 +70,14 @@ final class ClientBoardController extends Controller
 
         Database::run('UPDATE gb_plays SET estado = ?, resultado = ?, notas = ?, updated_at = ? WHERE id = ? AND lead_id = ?',
             [$estado, $resultado, $notas ?: null, now_utc(), $id, $leadId]);
+        if ($estado === 'ejecutada') {
+            try {
+                $l = Database::run('SELECT name, company FROM leads WHERE id = ?', [$leadId])->fetch();
+                $p = Database::run('SELECT titulo FROM gb_plays WHERE id = ?', [$id])->fetch();
+                \Services\Notifier::telegram('✅ <b>Jugada ejecutada</b>' . "\n" . '👤 ' . htmlspecialchars($l['company'] ?: $l['name'])
+                    . "\n" . '🎯 ' . htmlspecialchars($p['titulo'] ?? '') . ($resultado === 'movio' ? "\n📈 Movió el indicador" : ''));
+            } catch (\Throwable $e) {}
+        }
         Response::ok(['message' => 'ok']);
     }
 
@@ -85,6 +93,14 @@ final class ClientBoardController extends Controller
         if (! array_filter($campos)) { Response::error('Escribe al menos una respuesta del marcador.', 422); }
         Database::run('INSERT INTO gb_checkins (lead_id, avanzo, trabo, dato, decision, proxima, created_at) VALUES (?,?,?,?,?,?,?)',
             [$leadId, $campos['avanzo'], $campos['trabo'], $campos['dato'], $campos['decision'], $campos['proxima'], now_utc()]);
+        try {
+            $l = Database::run('SELECT name, company FROM leads WHERE id = ?', [$leadId])->fetch();
+            $ln = [];
+            if ($campos['avanzo']) { $ln[] = '▶️ Avanzó: ' . htmlspecialchars($campos['avanzo']); }
+            if ($campos['trabo']) { $ln[] = '⛔ Se trabó: ' . htmlspecialchars($campos['trabo']); }
+            if ($campos['proxima']) { $ln[] = '➡️ Próxima jugada: ' . htmlspecialchars($campos['proxima']); }
+            \Services\Notifier::telegram('📒 <b>Marcador semanal registrado</b>' . "\n" . '👤 ' . htmlspecialchars($l['company'] ?: $l['name']) . "\n" . implode("\n", $ln));
+        } catch (\Throwable $e) {}
         Response::ok(['message' => 'ok']);
     }
 

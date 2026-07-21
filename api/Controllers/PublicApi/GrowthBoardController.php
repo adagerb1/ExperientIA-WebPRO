@@ -84,14 +84,20 @@ final class GrowthBoardController extends Controller
             ]);
         } catch (\Throwable $e) { /* tabla sin migrar: el touchpoint ya conserva el resumen */ }
 
-        // Correo postdiagnóstico: plantilla editable (Plantillas email) o copy del método.
+        // Correo postdiagnóstico: plantilla editable + RESULTADOS visuales (barras
+        // por línea, zona crítica y primera jugada) + CTA a la lectura estratégica.
         try {
             $agenda = rtrim(Env::get('APP_URL', 'https://experientia.pro'), '/') . '/' . $locale . '/' . self::slugAgenda($locale);
             $tpl = Mailer::template('gb_diagnostico', $locale);
             if (! $tpl) { $m = self::cfg()['email'][$locale] ?? self::cfg()['email']['es']; $tpl = [$m['asunto'], $m['cuerpo']]; }
             $nombre = explode(' ', trim($d['name']))[0];
             $cuerpo = str_replace(['{{nombre}}', '{{enlace}}', '{nombre}', '{enlace}'], [$nombre, $agenda, $nombre, $agenda], $tpl[1]);
-            if (! str_contains($cuerpo, 'display:inline-block')) { $cuerpo .= Mailer::boton($agenda, ['es' => 'Agendar mi lectura estratégica', 'en' => 'Book my strategic reading', 'pt' => 'Agendar minha leitura estratégica'][$locale] ?? 'Agendar'); }
+            $cuerpo .= self::emailResultados($res, $locale);
+            $cuerpo .= Mailer::boton($agenda, ['es' => 'Agendar mi lectura estratégica', 'en' => 'Book my strategic reading', 'pt' => 'Agendar minha leitura estratégica'][$locale] ?? 'Agendar');
+            $miTablero = rtrim(Env::get('APP_URL', 'https://experientia.pro'), '/') . '/' . $locale . '/' . (['es' => 'mi-tablero', 'en' => 'my-board', 'pt' => 'meu-painel'][$locale] ?? 'mi-tablero');
+            $cuerpo .= '<p style="text-align:center;font-size:12px;color:#7a869c;margin:0;">'
+                . (['es' => 'También puedes ver tu tablero en línea en', 'en' => 'You can also see your board online at', 'pt' => 'Você também pode ver seu painel online em'][$locale] ?? '')
+                . ' <a href="' . $miTablero . '" style="color:#0aa9c4;">' . str_replace('https://', '', $miTablero) . '</a></p>';
             Mailer::send($d['email'], $tpl[0], $cuerpo);
         } catch (\Throwable $e) { /* sin conector de correo: no rompe el diagnóstico */ }
 
@@ -165,6 +171,63 @@ final class GrowthBoardController extends Controller
         $out = [];
         foreach (self::cfg()['zonas'] as $zkey => $z) { $out[] = ['zkey' => $zkey] + $z; }
         return $out;
+    }
+
+    /**
+     * Bloque visual de resultados para el correo del lead: puntaje, barras por
+     * línea (HTML de tablas, compatible con Gmail/Outlook), zona crítica y
+     * primera jugada. Sin imágenes externas ni scripts.
+     */
+    private static function emailResultados(array $res, string $locale): string
+    {
+        $L = fn ($o) => is_array($o) ? ($o[$locale] ?? $o['es'] ?? '') : (string) $o;
+        $e = fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
+        $tx = fn ($es, $en, $pt) => ['es' => $es, 'en' => $en, 'pt' => $pt][$locale] ?? $es;
+        $cfg = self::cfg();
+
+        // Puntaje + banda
+        $html = '<div style="background:#f2f9fd;border:1px solid #d8ecf6;border-radius:12px;padding:20px 22px;margin:22px 0;text-align:center;">'
+            . '<p style="margin:0;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7a869c;">' . $tx('Tu tablero', 'Your board', 'Seu painel') . '</p>'
+            . '<p style="margin:6px 0 2px;font-size:40px;font-weight:800;color:#0a1b3a;">' . $e($res['total']) . '<span style="font-size:18px;color:#7a869c;"> / 55</span></p>'
+            . '<p style="margin:0;font-size:16px;font-weight:700;color:#0aa9c4;">' . $e($L($res['banda']['titulo'])) . '</p>'
+            . '<p style="margin:8px 0 0;font-size:13px;color:#5b6a82;">' . $e($L($res['banda']['lectura'])) . '</p></div>';
+
+        // Barras por línea (la débil en ámbar)
+        $html .= '<p style="margin:0 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7a869c;">' . $tx('Lectura por líneas', 'Reading by lines', 'Leitura por linhas') . '</p>';
+        foreach ($res['lineas'] as $k => $ln) {
+            $pct = max(4, min(100, (int) round($ln['score'] / $ln['max'] * 100)));
+            $debil = $k === $res['linea_debil'];
+            $color = $debil ? '#f5a623' : '#18d6f1';
+            $html .= '<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px;"><tr>'
+                . '<td style="font-size:13px;color:#1a2333;padding-bottom:3px;">' . $e($L($ln['nombre']))
+                . ($debil ? ' <span style="color:#b97708;font-size:11px;font-weight:700;">· ' . $tx('línea débil', 'weak line', 'linha fraca') . '</span>' : '')
+                . '</td><td align="right" style="font-size:13px;color:#5b6a82;font-weight:700;">' . $e($ln['score']) . ' / ' . $e($ln['max']) . '</td></tr>'
+                . '<tr><td colspan="2"><table width="100%" cellpadding="0" cellspacing="0"><tr>'
+                . '<td width="' . $pct . '%" style="background:' . $color . ';height:10px;border-radius:6px;font-size:2px;line-height:10px;">&nbsp;</td>'
+                . ($pct < 100 ? '<td style="background:#e8edf5;height:10px;border-radius:6px;font-size:2px;line-height:10px;">&nbsp;</td>' : '')
+                . '</tr></table></td></tr></table>';
+        }
+
+        // Zona crítica + señales
+        $zc = null;
+        foreach (self::zonas() as $z) { if ($z['zkey'] === $res['zona_critica']) { $zc = $z; break; } }
+        if ($zc) {
+            $senales = '';
+            foreach (array_slice($res['senales'] ?? [], 0, 3) as $s) { $senales .= '<li style="margin:3px 0;color:#5b6a82;font-size:13px;">' . $e($L($s)) . '</li>'; }
+            $html .= '<div style="background:#fff8ec;border:1px solid #f3e2bd;border-radius:12px;padding:16px 20px;margin:16px 0;">'
+                . '<p style="margin:0 0 4px;font-size:13px;color:#b97708;font-weight:700;">⚠ ' . $tx('Tu zona crítica', 'Your critical zone', 'Sua zona crítica') . ': ' . $e($L($zc['nombre'])) . '</p>'
+                . ($senales ? '<ul style="margin:6px 0 0;padding-left:18px;">' . $senales . '</ul>' : '') . '</div>';
+        }
+
+        // Primera jugada + prioridad
+        if (! empty($res['jugada'])) {
+            $html .= '<div style="background:#eefbf6;border:1px solid #c9ecdd;border-radius:12px;padding:16px 20px;margin:16px 0;">'
+                . '<p style="margin:0 0 4px;font-size:13px;color:#0e8a5f;font-weight:700;">🎯 ' . $tx('Primera jugada sugerida', 'Suggested first play', 'Primeira jogada sugerida') . '</p>'
+                . '<p style="margin:0;font-size:14px;color:#1a2333;font-weight:600;">' . $e($L($res['jugada'])) . '</p>'
+                . '<p style="margin:8px 0 0;font-size:12px;color:#5b6a82;">' . $tx('Prioridad', 'Priority', 'Prioridade') . ': ' . $e($L($res['banda']['prioridad']))
+                . ' · ' . $tx('Ruta recomendada', 'Recommended path', 'Rota recomendada') . ': <b>' . $e($L($res['banda']['oferta'])) . '</b></p></div>';
+        }
+        return $html;
     }
 
     private static function cfg(): array

@@ -32,7 +32,9 @@ final class WebhookController extends Controller
             // Solo usuarios del portal admin vinculados por telegram_user_id
             $admin = Database::run('SELECT * FROM admins WHERE telegram_user_id = ? AND active = 1', [(string) $msg['from']['id']])->fetch();
             if (! $admin) {
-                TelegramConnector::sendMessage('internal', $chatId, 'Este bot es exclusivo del equipo ExperientIA. Vincula tu cuenta desde el portal admin.');
+                TelegramConnector::sendMessage('internal', $chatId, 'Este bot es exclusivo del equipo ExperientIA.' . "\n"
+                    . 'Tu ID de Telegram es: <code>' . htmlspecialchars((string) $msg['from']['id']) . '</code>' . "\n"
+                    . 'Regístralo en el portal admin (Plataforma → Usuarios) para vincular tu cuenta y recibir notificaciones.');
                 Response::ok(['unauthorized' => true]);
             }
             $out = AlexIA::chat('interno', 'telegram', $texto, ['external_id' => $chatId, 'admin_id' => $admin['id'], 'locale' => 'es']);

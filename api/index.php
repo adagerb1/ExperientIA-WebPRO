@@ -88,6 +88,11 @@ $r->post('/admin/connectors/{provider}/test', 'Admin\\ConnectorsController', 'te
 $r->post('/admin/connectors/{provider}/accion/{accion}', 'Admin\\ConnectorsController', 'accion');
 $r->get('/admin/email-templates', 'Admin\\ConnectorsController', 'templates');
 $r->put('/admin/email-templates/{tkey}', 'Admin\\ConnectorsController', 'saveTemplate');
+// Usuarios del portal admin (gestión de equipo + notificaciones Telegram)
+$r->get('/admin/usuarios', 'Admin\\UsersController', 'index');
+$r->post('/admin/usuarios', 'Admin\\UsersController', 'store');
+$r->put('/admin/usuarios/{id}', 'Admin\\UsersController', 'update');
+$r->delete('/admin/usuarios/{id}', 'Admin\\UsersController', 'destroy');
 // Funnel comercial y costo por lead
 $r->get('/admin/funnel', 'Admin\\FunnelController', 'resumen');
 $r->put('/admin/funnel/gasto', 'Admin\\FunnelController', 'gasto');

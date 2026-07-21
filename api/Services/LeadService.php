@@ -65,8 +65,9 @@ final class LeadService
         $pdo->prepare('INSERT INTO touchpoints (lead_id, type, title, payload, created_at) VALUES (?,?,?,?,?)')
             ->execute([$lead['id'], $tipo, $titulo, json_encode($payload, JSON_UNESCAPED_UNICODE), now_utc()]);
 
-        // Notificación (SendGrid si está configurado; si no, mail())
+        // Notificación al equipo: correo + Telegram (ambas best-effort)
         \Services\Mailer::notifyLead($lead, $titulo, $payload);
+        \Services\Notifier::interaccion($lead, $tipo, $titulo, $payload);
 
         return $lead;
     }

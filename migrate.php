@@ -21,6 +21,7 @@ $sqlite = Database::isSqlite();
 
 /** Columnas deseadas por tabla: nombre => tipo MySQL. */
 $deseadas = [
+    'admins' => ['notify_telegram' => 'TINYINT NOT NULL DEFAULT 0'],
     'solutions' => ['landing' => 'JSON NULL'],
     'products' => ['landing' => 'JSON NULL'],
     'case_studies' => ['landing' => 'JSON NULL'],

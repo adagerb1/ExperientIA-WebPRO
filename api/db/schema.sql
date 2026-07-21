@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS admins (
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(20) NOT NULL DEFAULT 'staff',       -- owner | admin | staff
   telegram_user_id VARCHAR(40) NULL,
+  notify_telegram TINYINT NOT NULL DEFAULT 0,      -- recibe notificaciones del negocio por Telegram
   active TINYINT NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

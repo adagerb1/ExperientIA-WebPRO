@@ -47,18 +47,52 @@ final class Mailer
         return $resp['status'] >= 200 && $resp['status'] < 300;
     }
 
+    /** Notificación interna de lead: legible de un vistazo, sin claves crudas. */
     public static function notifyLead(array $lead, string $titulo, array $payload): void
     {
         $to = Env::get('MAIL_NOTIFY', 'hello@experientia.pro');
-        $wa = !empty($lead['phone_wa']) ? "+{$lead['phone_wa']}" : '—';
+        $e = fn ($s) => htmlspecialchars((string) $s, ENT_QUOTES, 'UTF-8');
+        $base = rtrim(Env::get('APP_URL', 'https://experientia.pro'), '/');
+
+        // Traducciones de claves y valores conocidos a lenguaje del negocio.
+        $labels = ['total' => 'Puntaje del tablero', 'banda' => 'Lectura', 'linea_debil' => 'Línea débil',
+            'zona_critica' => 'Zona crítica', 'ciudad' => 'Ciudad', 'facturacion' => 'Facturación mensual',
+            'recurso' => 'Recurso', 'origen' => 'Origen', 'tema' => 'Tema', 'fecha' => 'Fecha', 'solucion' => 'Solución'];
+        $gb = null;
+        $traducir = function (string $k, $v) use (&$gb): string {
+            $gb ??= require BASE_PATH . '/api/config/growthboard.php';
+            if ($k === 'total') { return $v . ' / 55'; }
+            if ($k === 'banda') { foreach ($gb['bandas'] as $b) { if ($b['key'] === $v) { return $b['titulo']['es']; } } }
+            if ($k === 'linea_debil') { return $gb['lineas'][$v]['nombre']['es'] ?? (string) $v; }
+            if ($k === 'zona_critica') { return $gb['zonas'][$v]['nombre']['es'] ?? (string) $v; }
+            if ($k === 'facturacion') { return $gb['facturacion'][$v]['es'] ?? (string) $v; }
+            return (string) $v;
+        };
+
+        $fila = fn ($l, $v) => '<tr><td style="padding:7px 12px 7px 0;color:#7a869c;font-size:13px;white-space:nowrap;vertical-align:top;">' . $l . '</td>'
+            . '<td style="padding:7px 0;color:#1a2333;font-size:14px;font-weight:600;">' . $v . '</td></tr>';
+
+        $info = '';
+        if (! empty($lead['email'])) { $info .= $fila('Correo', '<a href="mailto:' . $e($lead['email']) . '" style="color:#0aa9c4;text-decoration:none;">' . $e($lead['email']) . '</a>'); }
+        $info .= $fila('WhatsApp', ! empty($lead['phone_wa']) ? '<a href="https://wa.me/' . $e($lead['phone_wa']) . '" style="color:#0aa9c4;text-decoration:none;">+' . $e($lead['phone_wa']) . '</a>' : '—');
+        $lugar = array_filter([$lead['country'] ?? null, biz('industries')[$lead['industry'] ?? ''] ?? ($lead['industry'] ?? null), $lead['company_size'] ?? null]);
+        if ($lugar) { $info .= $fila('Perfil', $e(implode(' · ', $lugar))); }
+        if (! empty($lead['utm_campaign'])) { $info .= $fila('Campaña', $e($lead['utm_campaign']) . (! empty($lead['utm_source']) ? ' (' . $e($lead['utm_source']) . ')' : '')); }
+
         $det = '';
         foreach ($payload as $k => $v) {
-            if (is_scalar($v) && $v !== '') { $det .= '<li><b>' . htmlspecialchars((string) $k) . ':</b> ' . htmlspecialchars((string) $v) . '</li>'; }
+            if (! is_scalar($v) || $v === '' || $v === null) { continue; }
+            $det .= $fila($labels[$k] ?? $e(ucfirst(str_replace('_', ' ', $k))), $e($traducir($k, $v)));
         }
-        $html = "<h2>{$titulo}</h2><p><b>" . htmlspecialchars($lead['name'] ?? '') . '</b> · ' . htmlspecialchars($lead['company'] ?? '') . '</p>'
-            . '<ul><li>Correo: ' . htmlspecialchars($lead['email'] ?? '—') . "</li><li>WhatsApp: {$wa}</li>"
-            . '<li>País: ' . htmlspecialchars($lead['country'] ?? '—') . ' · Industria: ' . htmlspecialchars(biz('industries')[$lead['industry'] ?? ''] ?? '—') . '</li></ul>'
-            . ($det ? "<ul>{$det}</ul>" : '');
+
+        $html = '<p style="margin:0 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7a869c;">Nueva interacción</p>'
+            . '<h2 style="margin:0 0 6px;font-size:20px;color:#0a1b3a;">' . $e($titulo) . '</h2>'
+            . '<p style="margin:0 0 18px;font-size:16px;"><b>' . $e($lead['name'] ?? 'Lead') . '</b>'
+            . (! empty($lead['company']) ? ' · ' . $e($lead['company']) : '') . '</p>'
+            . '<table cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid #eef2f8;">' . $info . '</table>'
+            . ($det ? '<p style="margin:18px 0 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#7a869c;">Detalle</p>'
+                . '<table cellpadding="0" cellspacing="0" style="width:100%;border-top:1px solid #eef2f8;background:#f7fafd;border-radius:10px;">' . $det . '</table>' : '')
+            . (! empty($lead['id']) ? self::boton($base . '/admin/leads/' . (int) $lead['id'], 'Abrir en el CRM') : '');
         self::send($to, "[ExperientIA] {$titulo}", $html);
     }
 
