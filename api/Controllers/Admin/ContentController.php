@@ -111,6 +111,32 @@ final class ContentController extends Controller
         if (! isset(self::TABLAS[$tabla])) { Response::error('Recurso no encontrado.', 404); }
     }
 
+    /**
+     * Genera un borrador de landing con IA (AlexIA orquesta estratega, copywriter
+     * y traductor) a partir de la ficha + un brief corto. NO guarda: devuelve el
+     * JSON para que el editor lo cargue y el usuario lo revise y publique.
+     */
+    public function generarLanding(string $tabla, string $id): void
+    {
+        AuthMiddleware::require($this->req, 'admin');
+        $this->assert($tabla);
+        if (! in_array($tabla, ['solutions', 'products', 'case_studies'], true)) {
+            Response::error('Este contenido no tiene landing.', 422);
+        }
+        $row = Database::run("SELECT * FROM {$tabla} WHERE id = ?", [$id])->fetch();
+        if (! $row) { Response::error('Ficha no encontrada.', 404); }
+        $item = $this->decode($row);
+        $brief = trim((string) $this->req->input('brief', ''));
+
+        try {
+            $landing = \Services\LandingGenerator::generar($tabla, $item, $brief);
+        } catch (\Throwable $e) {
+            $code = ($e->getCode() >= 400 && $e->getCode() < 600) ? (int) $e->getCode() : 503;
+            Response::error('AlexIA no pudo generar la landing: ' . $e->getMessage(), $code);
+        }
+        Response::ok(['landing' => $landing]);
+    }
+
     private function decode(array $row): array
     {
         foreach ($row as $k => $v) {

@@ -152,6 +152,20 @@ export const LandingEditor = {
 
     <div class="land-editor__body">
      <div class="land-editor__form">
+    <div class="glass panel land-ai" :class="{open:aiOpen}">
+      <div class="land-ai__head" @click="aiOpen=!aiOpen">
+        <b><Icon name="ia" :size="15"/> Generar con IA</b>
+        <span class="land-ai__chev" :class="{on:aiOpen}">▾</span></div>
+      <div v-if="aiOpen" class="land-ai__body">
+        <p class="rec-lang-note" style="margin:0">AlexIA orquesta a su equipo (estratega · copywriter · traductor) y arma un borrador trilingüe desde la ficha + tu enfoque. Lo revisas aquí y lo guardas. No se publica solo.</p>
+        <textarea class="inp" rows="2" v-model="brief" placeholder="Enfoque opcional: público objetivo, ángulo, tono, algo a resaltar… (2-3 líneas)"></textarea>
+        <div style="display:flex;gap:.6rem;align-items:center">
+          <button class="btn btn-grad btn-sm" @click="generar" :disabled="aiBusy"><Icon name="ia" :size="14"/> {{ aiBusy?'Generando…':'Generar borrador' }}</button>
+          <span v-if="aiBusy" class="rec-lang-note" style="margin:0">AlexIA está escribiendo y traduciendo; puede tardar unos segundos.</span></div>
+        <p v-if="aiMsg" class="small" :style="{color:aiOk?'#4be3a0':'#ff7d9d',margin:0}">{{ aiMsg }}</p>
+      </div>
+    </div>
+
     <div class="sec-divider"><span>Promesa (héroe)</span></div>
     <div class="field"><label>Promesa · subtítulo del héroe · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="2" v-model="f.promesa[lang]" placeholder="La transformación en una frase potente"></textarea></div>
     <div class="field"><label>Texto del botón principal (CTA) · {{ lang.toUpperCase() }}</label><input class="inp" v-model="f.cta[lang]" placeholder="Quiero más información"></div>
@@ -255,11 +269,23 @@ export const LandingEditor = {
      <aside class="land-editor__preview" v-if="showPreview"><LandingPreview :f="f" :lang="lang" :tabla="tabla" :item="item"/></aside>
     </div>
    </div></div>`,
-  data() { return { f: normalizar(this.item.landing), langs: CMS_LANGS, lang: 'es', icons: ICONS, busy: false, showPreview: window.innerWidth >= 1100 }; },
+  data() { return { f: normalizar(this.item.landing), langs: CMS_LANGS, lang: 'es', icons: ICONS, busy: false, showPreview: window.innerWidth >= 1100, aiOpen: false, aiBusy: false, aiMsg: '', aiOk: false, brief: '' }; },
   methods: {
     blank() { return i18n(); },
     add(k, obj) { this.f[k].push(obj); },
     del(k, i) { this.f[k].splice(i, 1); },
+    async generar() {
+      this.aiBusy = true; this.aiMsg = ''; this.aiOk = false;
+      const r = await api.post('/admin/landing/' + this.tabla + '/' + this.item.id + '/generar', { brief: this.brief });
+      this.aiBusy = false;
+      if (r.ok && r.data && r.data.landing) {
+        this.f = normalizar(r.data.landing);
+        this.aiOk = true; this.aiMsg = 'Borrador generado. Revísalo en la vista previa, ajústalo y guarda.';
+        this.showPreview = true;
+      } else {
+        this.aiMsg = r.error || 'No se pudo generar. Revisa que OpenAI o Claude estén activos en Conectores.';
+      }
+    },
     async subirImg(e, h) {
       const file = e.target.files[0]; if (!file) return;
       const fd = new FormData(); fd.append('archivo', file);

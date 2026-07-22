@@ -487,3 +487,10 @@ th:hover .sort-arrow{ opacity:1; }
 .lp-quote span{ display:block; margin-top:.35rem; font-size:.68rem; color:var(--text-tertiary); }
 .lp-faq{ padding:.5rem .6rem; border-radius:8px; background:rgba(5,17,38,.4); }
 .lp-faq b{ color:var(--neutral-light); font-size:.76rem; } .lp-faq p{ margin:.2rem 0 0; color:var(--text-secondary); font-size:.72rem; line-height:1.4; }
+
+/* Generador de landing con IA (dentro del editor) */
+.land-ai{ padding:0; border:1px solid rgba(122,99,255,.3); background:linear-gradient(180deg,rgba(122,99,255,.08),rgba(18,34,66,.4)); overflow:hidden; }
+.land-ai__head{ display:flex; align-items:center; justify-content:space-between; padding:.9rem 1.1rem; cursor:pointer; }
+.land-ai__head b{ display:flex; align-items:center; gap:.5rem; color:var(--neutral-light); font-size:.9rem; }
+.land-ai__chev{ color:var(--text-tertiary); transition:transform .2s; } .land-ai__chev.on{ transform:rotate(180deg); }
+.land-ai__body{ padding:0 1.1rem 1.1rem; display:grid; gap:.7rem; }

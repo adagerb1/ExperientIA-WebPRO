@@ -133,6 +133,8 @@ $r->delete('/admin/taxonomia/{kind}/{id}', 'Admin\\SegmentTaxonomyController', '
 $r->post('/admin/alexia/estrategia', 'Admin\\ChatController', 'estrategia'); // AlexIA estratega (BI)
 $r->post('/admin/alexia/analista', 'Admin\\AnalystController', 'consultar'); // AlexIA analista (SQL solo lectura)
 $r->post('/admin/alexia', 'Admin\\ChatController', 'mensaje');         // AlexIA interno (admin)
+// Generador de landing con IA (AlexIA orquesta estratega + copywriter + traductor)
+$r->post('/admin/landing/{tabla}/{id}/generar', 'Admin\\ContentController', 'generarLanding');
 // Genéricas de contenido (soluciones, productos, casos, faqs, recursos, disponibilidad)
 $r->get('/admin/{tabla}/list', 'Admin\\ContentController', 'index');
 $r->post('/admin/{tabla}', 'Admin\\ContentController', 'store');

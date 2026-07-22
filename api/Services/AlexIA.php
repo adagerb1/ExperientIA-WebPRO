@@ -137,6 +137,49 @@ final class AlexIA
     }
 
     /**
+     * Pide a AlexIA una respuesta JSON y la decodifica de forma tolerante
+     * (extrae el primer bloque {...} o [...] aunque venga con texto o ```json).
+     * Lanza si no hay JSON válido. Usado por el generador de landings.
+     */
+    public static function askJson(string $instructions, string $userInput): array
+    {
+        $raw = self::ask($instructions . "\nDevuelve SOLO JSON válido, sin explicaciones ni markdown.", $userInput);
+        $out = self::extractJson($raw);
+        if ($out === null) {
+            throw new \RuntimeException('AlexIA devolvió una respuesta no interpretable como JSON.', 502);
+        }
+        return $out;
+    }
+
+    private static function extractJson(string $s): ?array
+    {
+        $s = trim($s);
+        // Quitar cercas ```json ... ```
+        $s = preg_replace('/^```(?:json)?\s*|\s*```$/m', '', $s);
+        $decoded = json_decode($s, true);
+        if (is_array($decoded)) { return $decoded; }
+        // Buscar el primer { o [ y recortar hasta su cierre balanceado.
+        $start = strcspn($s, '{[');
+        if ($start >= strlen($s)) { return null; }
+        $open = $s[$start];
+        $close = $open === '{' ? '}' : ']';
+        $depth = 0; $inStr = false; $esc = false;
+        for ($i = $start, $n = strlen($s); $i < $n; $i++) {
+            $ch = $s[$i];
+            if ($inStr) {
+                if ($esc) { $esc = false; }
+                elseif ($ch === '\\') { $esc = true; }
+                elseif ($ch === '"') { $inStr = false; }
+                continue;
+            }
+            if ($ch === '"') { $inStr = true; }
+            elseif ($ch === $open) { $depth++; }
+            elseif ($ch === $close) { $depth--; if ($depth === 0) { $frag = substr($s, $start, $i - $start + 1); $d = json_decode($frag, true); return is_array($d) ? $d : null; } }
+        }
+        return null;
+    }
+
+    /**
      * Redacta la respuesta a una reseña de Google respetando la voz de marca y la
      * división de roles: ExperientIA/GrowthBoard agradece, humaniza y orienta al
      * siguiente paso, pero NO da consultoría por su cuenta (eso es de Tonny Dager).
