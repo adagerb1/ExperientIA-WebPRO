@@ -494,3 +494,5 @@ th:hover .sort-arrow{ opacity:1; }
 .land-ai__head b{ display:flex; align-items:center; gap:.5rem; color:var(--neutral-light); font-size:.9rem; }
 .land-ai__chev{ color:var(--text-tertiary); transition:transform .2s; } .land-ai__chev.on{ transform:rotate(180deg); }
 .land-ai__body{ padding:0 1.1rem 1.1rem; display:grid; gap:.7rem; }
+
+.help-q--page{ width:1.45rem; height:1.45rem; font-size:.85rem; vertical-align:middle; margin-left:.3rem; }

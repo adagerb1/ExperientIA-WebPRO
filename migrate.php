@@ -239,6 +239,15 @@ try {
     }
 } catch (\Throwable $e) { echo '! gb_reviews: ' . $e->getMessage() . "\n"; }
 
+// Testimonios de clientes: invitación con código corto, formulario público y publicación.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS testimonials (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, status TEXT NOT NULL DEFAULT \'invitado\', client_name TEXT NULL, client_email TEXT NULL, author TEXT NULL, cargo TEXT NULL, empresa TEXT NULL, quote TEXT NULL, locale TEXT NOT NULL DEFAULT \'es\', photo TEXT NULL, logo TEXT NULL, items TEXT NULL, featured INTEGER NOT NULL DEFAULT 0, sort INTEGER NOT NULL DEFAULT 0, sent_via TEXT NULL, invited_at TEXT NULL, submitted_at TEXT NULL, published_at TEXT NULL, created_at TEXT NOT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS testimonials (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, code VARCHAR(24) NOT NULL UNIQUE, status VARCHAR(20) NOT NULL DEFAULT \'invitado\', client_name VARCHAR(190) NULL, client_email VARCHAR(190) NULL, author VARCHAR(190) NULL, cargo VARCHAR(190) NULL, empresa VARCHAR(190) NULL, quote TEXT NULL, locale CHAR(2) NOT NULL DEFAULT \'es\', photo VARCHAR(255) NULL, logo VARCHAR(255) NULL, items JSON NULL, featured TINYINT NOT NULL DEFAULT 0, sort INT NOT NULL DEFAULT 0, sent_via VARCHAR(30) NULL, invited_at DATETIME NULL, submitted_at DATETIME NULL, published_at DATETIME NULL, created_at DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! testimonials: ' . $e->getMessage() . "\n"; }
+
 // Ajustes de aplicación (clave/valor). P. ej. el interruptor de auto-respuesta de AlexIA.
 try {
     if ($sqlite) {

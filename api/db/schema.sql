@@ -162,6 +162,31 @@ CREATE TABLE IF NOT EXISTS gb_reviews (
   synced_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Testimonios de clientes: se invita con un enlace de código corto; el cliente
+-- diligencia el formulario público (con foto y logo opcionales) y el admin publica.
+CREATE TABLE IF NOT EXISTS testimonials (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(24) NOT NULL UNIQUE,
+  status VARCHAR(20) NOT NULL DEFAULT 'invitado',   -- invitado | recibido | publicado
+  client_name VARCHAR(190) NULL,
+  client_email VARCHAR(190) NULL,
+  author VARCHAR(190) NULL,
+  cargo VARCHAR(190) NULL,
+  empresa VARCHAR(190) NULL,
+  quote TEXT NULL,
+  locale CHAR(2) NOT NULL DEFAULT 'es',
+  photo VARCHAR(255) NULL,
+  logo VARCHAR(255) NULL,
+  items JSON NULL,                                   -- ["sol:estrategia","prod:2",...]
+  featured TINYINT NOT NULL DEFAULT 0,
+  sort INT NOT NULL DEFAULT 0,
+  sent_via VARCHAR(30) NULL,
+  invited_at DATETIME NULL,
+  submitted_at DATETIME NULL,
+  published_at DATETIME NULL,
+  created_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Ajustes de aplicación (clave/valor): interruptores como la auto-respuesta de AlexIA.
 CREATE TABLE IF NOT EXISTS app_settings (
   skey VARCHAR(80) PRIMARY KEY,

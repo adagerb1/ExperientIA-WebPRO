@@ -26,6 +26,15 @@ return [
             'body' => ['es' => '<h2>{{titulo}}</h2><p><b>{{name}}</b> · {{company}}</p><ul><li>Correo: {{email}}</li><li>WhatsApp: {{phone}}</li><li>País: {{country}} · Industria: {{industry}}</li></ul><p>{{detalle}}</p>', 'en' => '', 'pt' => ''],
         ],
         [
+            'tkey' => 'testimonial_invite',
+            'subject' => ['es' => '{{nombre}}, tu experiencia con ExperientIA vale oro', 'en' => '{{nombre}}, your experience with ExperientIA is gold', 'pt' => '{{nombre}}, sua experiência com a ExperientIA vale ouro'],
+            'body' => [
+                'es' => '<p>Hola, {{nombre}}.</p><p>Trabajar contigo ha sido un privilegio, y tu opinión puede ayudar a otras empresas a dar el paso.</p><p>¿Nos regalas un testimonio de tu experiencia? Es un formulario de <b>2 minutos</b>: puedes contar qué cambió en tu negocio y, si quieres, incluir tu foto y el logo de tu empresa.</p>',
+                'en' => '<p>Hi, {{nombre}}.</p><p>Working with you has been a privilege, and your opinion can help other companies take the leap.</p><p>Would you share a testimonial about your experience? It is a <b>2-minute</b> form: tell us what changed in your business and, if you like, include your photo and your company logo.</p>',
+                'pt' => '<p>Olá, {{nombre}}.</p><p>Trabalhar com você foi um privilégio, e sua opinião pode ajudar outras empresas a dar o passo.</p><p>Você nos daria um depoimento sobre sua experiência? É um formulário de <b>2 minutos</b>: conte o que mudou no seu negócio e, se quiser, inclua sua foto e o logo da sua empresa.</p>',
+            ],
+        ],
+        [
             'tkey' => 'booking_confirm',
             'subject' => ['es' => 'Su sesión 1:1 con ExperientIA está confirmada', 'en' => 'Your 1:1 session with ExperientIA is confirmed', 'pt' => 'Sua sessão 1:1 com a ExperientIA está confirmada'],
             'body' => ['es' => '<h2>Su sesión está confirmada</h2><p>Hola {{name}}, su sesión quedó agendada para <b>{{fecha}}</b> ({{tz}}).</p><p>Le contactaremos con el enlace de la reunión.</p>', 'en' => '<h2>Your session is confirmed</h2><p>Hi {{name}}, your session is booked for <b>{{fecha}}</b> ({{tz}}).</p>', 'pt' => '<h2>Sua sessão está confirmada</h2><p>Olá {{name}}, sua sessão foi agendada para <b>{{fecha}}</b> ({{tz}}).</p>'],

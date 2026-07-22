@@ -3,7 +3,7 @@
 // entregables · prueba (métricas) · objeciones (FAQ) · cierre + CTA sticky + modal.
 import { t, tr, trLines, pageUrl, api, store, setMeta } from '../lib/core.js';
 import { Icon, CountUp, ScrollProgress, inView } from '../lib/ui.js';
-import { PageHero } from '../lib/layout.js';
+import { PageHero, TestimonialsProof } from '../lib/layout.js';
 import { LeadModal } from '../lib/forms.js';
 
 async function fc(s){ const r=await api.get('/content/'+s); return r.ok?r.data:[]; }
@@ -17,7 +17,7 @@ const L = (o)=> o ? (o[store.locale] || o.es || '') : '';
 
 // ————————————————————— Componente de landing (compartido) —————————————————————
 const Landing = {
-  components:{ Icon, CountUp, ScrollProgress, PageHero, LeadModal },
+  components:{ Icon, CountUp, ScrollProgress, PageHero, LeadModal, TestimonialsProof },
   props:{ m:Object },
   data(){ return { modal:false }; },
   computed:{ t:()=>t, pageUrl:()=>pageUrl },
@@ -81,6 +81,8 @@ const Landing = {
           <div class="proof-metric"><span class="grad-text proof-val">{{ c.valor }}</span><span class="proof-lbl">{{ c.label }}</span></div>
           <span class="link-arrow">{{ tx('landing.ver_caso','Ver el caso') }} <Icon name="arrow" :size="15"/></span></router-link></div></div></section>
 
+    <TestimonialsProof v-if="m.token" :filtro="m.token" :max="3"/>
+
     <section class="section" v-if="m.testimonio"><div class="container" style="max-width:820px">
       <figure class="glass glass-lit card land-quote" v-reveal>
         <Icon name="bulb" :size="22"/>
@@ -126,7 +128,7 @@ export const SolucionLanding = {
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const items=await fc('soluciones'); const s=items.find(x=>x.skey===this.$route.params.slug);
-    if(s){ const c=(s.landing&&typeof s.landing==='object')?s.landing:{}; const casos=await proofCasos(); this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia), casos); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
+    if(s){ const c=(s.landing&&typeof s.landing==='object')?s.landing:{}; const casos=await proofCasos(); this.m=build(s, c, tr(s.pilar), tr(s.titulo), 'solucion:'+s.skey, 'soluciones', trLines(s.como), true, tr(s.problema), tr(s.cambia), casos, 'sol:'+s.skey); setMeta(tr(s.titulo)+' · ExperientIA', L(c.promesa)||tr(s.cambia)); }
     this.cargado=true;
   },
 };
@@ -137,13 +139,13 @@ export const ProductoLanding = {
   data(){ return { m:null, cargado:false }; },
   async mounted(){
     const slug=this.$route.params.slug; const items=await fc('productos'); const p=items.find(x=>slugify(tr(x.nombre,'es'))===slug);
-    if(p){ const c=(p.landing&&typeof p.landing==='object')?p.landing:{}; const casos=await proofCasos(); this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol), casos); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
+    if(p){ const c=(p.landing&&typeof p.landing==='object')?p.landing:{}; const casos=await proofCasos(); this.m=build(p, c, tr(p.rol), tr(p.nombre), 'producto:'+slug, 'productos', [], false, tr(p.texto), tr(p.rol), casos, 'prod:'+p.id); setMeta(tr(p.nombre)+' · ExperientIA', L(c.promesa)||tr(p.texto)); }
     this.cargado=true;
   },
 };
 
 // Normaliza entidad CMS + copy de landing (BD o curado) en el modelo que consume <Landing>.
-function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb, despuesFb, casos){
+function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb, despuesFb, casos, token){
   const beneficios = (c.beneficios||[]).map(b=>({ icon:b.icon, t:L(b.t), x:L(b.x) }));
   const pasos = (c.pasos||[]).map(p=>({ t:L(p.t), x:L(p.x) }));
   const metricas = (c.metricas||[]).map(mt=>({ valor:mt.valor, suf:mt.suf||'', label:L(mt.label) }));
@@ -154,7 +156,7 @@ function build(ent, c, eyebrow, titulo, origen, volver, comoLines, diag, antesFb
   const oferta = (c.oferta && c.oferta.on) ? { badge:L(c.oferta.badge), titulo:L(c.oferta.titulo), texto:L(c.oferta.texto), cta:L(c.oferta.cta) } : null;
   const testimonio = (c.testimonio && c.testimonio.on && L(c.testimonio.quote)) ? { quote:L(c.testimonio.quote), autor:c.testimonio.autor||'', cargo:L(c.testimonio.cargo) } : null;
   return {
-    eyebrow, titulo, origen, volver, diag,
+    eyebrow, titulo, origen, volver, diag, token: token || '',
     promesa: L(c.promesa) || despuesFb || '',
     antes: L(c.antes) || antesFb || '',
     despues: L(c.despues) || despuesFb || '',

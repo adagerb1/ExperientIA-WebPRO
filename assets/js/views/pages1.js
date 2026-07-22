@@ -1,7 +1,7 @@
 // Vistas del sitio: Home, Soluciones, Tablero, Productos, Casos
 import { t, tr, trLines, pageUrl, api, store, setMeta } from '../lib/core.js';
 import { Icon, DashMock } from '../lib/ui.js';
-import { PageHero, SectionCTA, ReviewsProof } from '../lib/layout.js';
+import { PageHero, SectionCTA, ReviewsProof, TestimonialsProof } from '../lib/layout.js';
 import { slugify } from './pages5.js';
 const tx = (k, fb) => { const v = t(k); return (v && v !== k) ? v : fb; };
 
@@ -11,7 +11,7 @@ const META = {
 async function fetchContent(seccion) { const r = await api.get('/content/' + seccion); return r.ok ? r.data : []; }
 
 export const Home = {
-  components: { Icon, DashMock, SectionCTA, ReviewsProof },
+  components: { Icon, DashMock, SectionCTA, ReviewsProof, TestimonialsProof },
   template: `<div>
     <section class="hero"><div class="bg-atmos">
       <div class="halo halo-cyan anim-pulse" style="width:640px;height:640px;top:-300px;right:-180px"></div>
@@ -74,6 +74,7 @@ export const Home = {
           <span class="link-arrow">{{ tx('caso.ver_completo','Ver el caso completo') }} <Icon name="arrow" :size="15"/></span></router-link></div>
       <div class="section-foot" v-reveal><router-link :to="pageUrl('casos')" class="link-arrow">{{ t('home.casos_cta') }} <Icon name="arrow" :size="16"/></router-link></div></div></section>
 
+    <TestimonialsProof/>
     <ReviewsProof/>
 
     <SectionCTA :titulo="t('home.cta_titulo')" :sub="t('home.cta_sub')" :primary="pageUrl('contacto')" :primaryLabel="t('home.cta_cta1')" :secondary="pageUrl('diagnostico')" :secondaryLabel="t('home.cta_cta2')"/>

@@ -14,3 +14,6 @@ assets/img/covers/*
 assets/media/*
 !assets/media/.gitkeep
 storage/*.sqlite
+
+# Subidas de clientes (testimonios): contenido de usuario, no del repo
+assets/img/testimonios/*

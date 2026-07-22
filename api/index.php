@@ -26,6 +26,9 @@ $r->post('/descarga', 'PublicApi\\ResourceController', 'descargar');
 $r->get('/descarga-archivo', 'PublicApi\\ResourceController', 'archivo');
 $r->get('/meta', 'PublicApi\\MetaController', 'index');
 $r->get('/resenas', 'PublicApi\\ReviewsController', 'index');   // prueba social pública (Google)
+$r->get('/testimonios', 'PublicApi\\TestimonialsController', 'index');           // testimonios publicados
+$r->get('/testimonio/{code}', 'PublicApi\\TestimonialsController', 'invitacion'); // invitación (código corto)
+$r->post('/testimonio/{code}', 'PublicApi\\TestimonialsController', 'enviar');    // cliente envía testimonio
 $r->get('/diagnosticos', 'PublicApi\\DiagnosticController', 'index');
 $r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
@@ -119,6 +122,12 @@ $r->post('/admin/growthboard/clientes/{id}/enviar-acceso', 'Admin\\GrowthBoardAd
 $r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
 $r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
 $r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');
+// Testimonios de clientes: invitar (código corto), enviar, revisar y publicar.
+$r->get('/admin/testimonios', 'Admin\\TestimonialsController', 'index');
+$r->post('/admin/testimonios', 'Admin\\TestimonialsController', 'store');
+$r->post('/admin/testimonios/{id}/enviar', 'Admin\\TestimonialsController', 'enviar');
+$r->put('/admin/testimonios/{id}', 'Admin\\TestimonialsController', 'update');
+$r->delete('/admin/testimonios/{id}', 'Admin\\TestimonialsController', 'destroy');
 // Reseñas de Google: prueba social + respuestas de AlexIA (sugerir/aprobar/destacar/auto-piloto).
 $r->get('/admin/resenas', 'Admin\\ReviewsController', 'index');
 $r->post('/admin/resenas/ajustes', 'Admin\\ReviewsController', 'ajustes');

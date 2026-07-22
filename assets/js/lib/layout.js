@@ -306,6 +306,36 @@ export const ReviewsProof = {
   },
 };
 
+// Testimonios de clientes (módulo propio, publicados desde el panel): cita,
+// autor con foto, cargo/empresa y logo. Se auto-oculta si no hay publicados.
+// Con `filtro` (token sol:/prod:) muestra solo los relacionados a ese ítem.
+export const TestimonialsProof = {
+  props: { filtro: { type: String, default: '' }, max: { type: Number, default: 6 } },
+  template: `<section class="section testi-proof" v-if="items.length"><div class="container">
+    <div class="section-head"><p class="eyebrow" v-reveal>{{ tx('testi.sec_eyebrow','Clientes con resultados') }}</p>
+      <h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ tx('testi.sec_titulo','Lo dicen quienes ya lo viven') }}</h2></div>
+    <div class="testi-grid">
+      <figure v-for="(x,i) in items" :key="i" class="glass testi-card" v-reveal :style="{'--d':i*.08+'s'}">
+        <blockquote>“{{ x.quote }}”</blockquote>
+        <figcaption>
+          <img v-if="x.photo" :src="x.photo" alt="" class="testi-photo">
+          <span v-else class="testi-photo testi-photo--ini">{{ inicial(x.author) }}</span>
+          <span class="testi-who"><b>{{ x.author }}</b><em v-if="x.cargo||x.empresa">{{ [x.cargo,x.empresa].filter(Boolean).join(' · ') }}</em></span>
+          <img v-if="x.logo" :src="x.logo" alt="" class="testi-logo">
+        </figcaption></figure></div>
+  </div></section>`,
+  data() { return { items: [] }; },
+  computed: { tx: () => tx },
+  methods: { inicial(a) { return (a || '?').trim().charAt(0).toUpperCase(); } },
+  async mounted() {
+    const r = await api.get('/testimonios');
+    if (!r.ok) return;
+    let list = r.data || [];
+    if (this.filtro) list = list.filter(x => (x.items || []).includes(this.filtro));
+    this.items = list.slice(0, this.max);
+  },
+};
+
 export const SectionCTA = {
   template: `<section class="section"><div class="container"><div class="glass glass-lit card" v-reveal style="text-align:center;padding:clamp(2.75rem,7vw,5rem) clamp(1.5rem,6vw,4.5rem);position:relative;overflow:hidden">
     <div class="bg-atmos"><div class="halo halo-cyan anim-pulse" style="width:420px;height:420px;bottom:-260px;left:-120px"></div><div class="halo halo-violet anim-pulse" style="width:460px;height:460px;top:-280px;right:-140px;animation-delay:2.4s"></div></div>
