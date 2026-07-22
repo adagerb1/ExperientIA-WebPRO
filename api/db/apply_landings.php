@@ -63,6 +63,20 @@ if (! function_exists('exp_apply_landings')) {
             }
         } catch (\Throwable $e) { /* tabla o columna aún ausente */ }
 
+        // Casos por slug del título ES (misma clave que usa la ruta pública).
+        try {
+            $rows = $pdo->query('SELECT id, titulo, landing FROM case_studies')->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $r) {
+                if (! $vacio($r['landing'] ?? null)) { continue; }
+                $slug = exp_slug_landing(exp_nombre_es($r['titulo']));
+                $land = $seed['case_studies'][$slug] ?? null;
+                if (! $land) { continue; }
+                $pdo->prepare('UPDATE case_studies SET landing = ? WHERE id = ?')
+                    ->execute([json_encode($land, JSON_UNESCAPED_UNICODE), $r['id']]);
+                $n++;
+            }
+        } catch (\Throwable $e) { /* tabla o columna aún ausente */ }
+
         return $n;
     }
 }

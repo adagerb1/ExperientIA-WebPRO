@@ -236,4 +236,14 @@ $products = [
     ],
 ];
 
-return ['solutions' => $solutions, 'products' => $products];
+// Casos: la landing narrativa (historia por capítulos, línea de tiempo,
+// testimonio, confidencialidad) vive como JSON editable, emparejada por el slug
+// del título ES. Se carga desde el archivo de semilla para no inflar este PHP.
+$case_studies = [];
+$casesFile = __DIR__ . '/landings/case_studies.json';
+if (is_file($casesFile)) {
+    $decoded = json_decode((string) file_get_contents($casesFile), true);
+    if (is_array($decoded)) { $case_studies = $decoded; }
+}
+
+return ['solutions' => $solutions, 'products' => $products, 'case_studies' => $case_studies];
