@@ -59,16 +59,90 @@ function serializar(f) {
   return out;
 }
 
-export const LandingEditor = {
+// Vista previa en vivo: refleja los bloques del idioma actual mientras se edita.
+// Compacta y de marca (clases lp-*), sin router-links. Cae al ES si el idioma está vacío.
+const LandingPreview = {
   components: { Icon },
+  props: { f: { type: Object, required: true }, lang: { type: String, default: 'es' }, tabla: { type: String, required: true }, item: { type: Object, default: () => ({}) } },
+  computed: {
+    esCaso() { return this.tabla === 'case_studies'; },
+    titulo() { return this.trItem(this.item.titulo || this.item.nombre) || 'Título de la landing'; },
+    sector() { return this.trItem(this.item.sector || this.item.rol); },
+    star() { const r = (this.item.resultados || [])[0]; return r ? { valor: r.valor, label: this.trItem(r.label) } : null; },
+    promesa() { return this.L(this.f.promesa); },
+    antes() { return this.L(this.f.antes); },
+    despues() { return this.L(this.f.despues); },
+    cta() { return this.L(this.f.cta) || 'Quiero más información'; },
+    historia() { return (this.f.historia || []).map(h => ({ tag: this.L(h.tag), t: this.L(h.t), x: this.L(h.x), viz: h.viz || 'bars', img: h.img })).filter(h => h.t || h.x); },
+    timeline() { return (this.f.timeline || []).map(s => ({ fase: this.L(s.fase), t: this.L(s.t), x: this.L(s.x) })).filter(s => s.t); },
+    beneficios() { return (this.f.beneficios || []).map(b => ({ icon: b.icon, t: this.L(b.t), x: this.L(b.x) })).filter(b => b.t); },
+    pasos() { return (this.f.pasos || []).map(p => ({ t: this.L(p.t), x: this.L(p.x) })).filter(p => p.t); },
+    entregables() { return (this.f.entregables[this.lang] || this.f.entregables.es || '').split('\n').map(s => s.trim()).filter(Boolean); },
+    metricas() { return (this.f.metricas || []).map(m => ({ valor: m.valor, suf: m.suf, label: this.L(m.label) })).filter(m => String(m.valor || '').trim()); },
+    faqs() { return (this.f.faqs || []).map(x => ({ q: this.L(x.q), a: this.L(x.a) })).filter(x => x.q); },
+    testimonio() { return (this.f.testimonio && this.f.testimonio.on && this.L(this.f.testimonio.quote)) ? { quote: this.L(this.f.testimonio.quote), autor: this.f.testimonio.autor, cargo: this.L(this.f.testimonio.cargo) } : null; },
+    oferta() { return (this.f.oferta && this.f.oferta.on) ? { badge: this.L(this.f.oferta.badge), titulo: this.L(this.f.oferta.titulo), texto: this.L(this.f.oferta.texto), cta: this.L(this.f.oferta.cta) } : null; },
+  },
+  methods: {
+    L(o) { return o ? (o[this.lang] || o.es || '') : ''; },
+    trItem(v) { if (!v) return ''; if (typeof v !== 'object') return String(v); return v[this.lang] || v.es || Object.values(v)[0] || ''; },
+    vizLabel(v) { return { radar: 'Visual · radar', flow: 'Visual · flujo', bars: 'Visual · barras' }[v] || 'Visual'; },
+  },
+  template: `<div class="lp">
+    <div class="lp-badge">Vista previa · {{ lang.toUpperCase() }}</div>
+    <!-- Hero -->
+    <div class="lp-hero">
+      <div class="lp-chips"><span v-if="sector" class="lp-chip">{{ sector }}</span><span v-if="esCaso && f.confidencial" class="lp-chip lp-chip--conf">Caso real · confidencial</span></div>
+      <h3 class="lp-title">{{ titulo }}</h3>
+      <p v-if="promesa" class="lp-lead">{{ promesa }}</p>
+      <span class="lp-btn">{{ cta }}</span>
+      <div v-if="esCaso && star" class="lp-star"><b>{{ star.valor }}</b><span>{{ star.label }}</span></div>
+    </div>
+    <!-- Contraste -->
+    <div v-if="antes || despues" class="lp-contrast">
+      <div class="lp-col"><span class="lp-tag">Hoy</span><p>{{ antes || '—' }}</p></div>
+      <div class="lp-col lp-col--win"><span class="lp-tag">Con ExperientIA</span><p>{{ despues || '—' }}</p></div>
+    </div>
+    <!-- Historia (casos) -->
+    <div v-if="esCaso && historia.length" class="lp-sec"><h4 class="lp-h">Historia</h4>
+      <div v-for="(h,i) in historia" :key="i" class="lp-cap">
+        <div class="lp-cap-media"><img v-if="h.img" :src="h.img" alt=""><span v-else class="lp-viz">{{ vizLabel(h.viz) }}</span></div>
+        <div class="lp-cap-txt"><span class="lp-num">{{ ('0'+(i+1)).slice(-2) }}</span><span class="lp-cap-tag">{{ h.tag }}</span><b>{{ h.t }}</b><p>{{ h.x }}</p></div></div></div>
+    <!-- Beneficios -->
+    <div v-if="beneficios.length" class="lp-sec"><h4 class="lp-h">Lo que cambia</h4>
+      <div class="lp-grid"><div v-for="(b,i) in beneficios" :key="i" class="lp-bene"><span class="lp-ic"><Icon :name="b.icon||'check'" :size="14"/></span><b>{{ b.t }}</b><p>{{ b.x }}</p></div></div></div>
+    <!-- Pasos -->
+    <div v-if="pasos.length" class="lp-sec"><h4 class="lp-h">Cómo funciona</h4>
+      <div v-for="(p,i) in pasos" :key="i" class="lp-step"><span class="lp-num">{{ i+1 }}</span><div><b>{{ p.t }}</b><p>{{ p.x }}</p></div></div></div>
+    <!-- Timeline (casos) -->
+    <div v-if="esCaso && timeline.length" class="lp-sec"><h4 class="lp-h">El camino</h4>
+      <div v-for="(s,i) in timeline" :key="i" class="lp-tl"><span class="lp-dot"></span><div><span class="lp-fase">{{ s.fase }}</span><b>{{ s.t }}</b><p>{{ s.x }}</p></div></div></div>
+    <!-- Entregables + métricas -->
+    <div v-if="entregables.length" class="lp-sec"><h4 class="lp-h">Qué recibes</h4>
+      <ul class="lp-list"><li v-for="(e,i) in entregables" :key="i">{{ e }}</li></ul></div>
+    <div v-if="metricas.length" class="lp-metrics"><div v-for="(m,i) in metricas" :key="i"><b>{{ m.valor }}{{ m.suf }}</b><span>{{ m.label }}</span></div></div>
+    <!-- Oferta -->
+    <div v-if="oferta" class="lp-oferta"><span class="lp-chip lp-chip--cyan">{{ oferta.badge||'Sin costo' }}</span><b>{{ oferta.titulo }}</b><p>{{ oferta.texto }}</p></div>
+    <!-- Testimonio -->
+    <div v-if="testimonio" class="lp-quote"><p>“{{ testimonio.quote }}”</p><span v-if="testimonio.autor||testimonio.cargo">{{ testimonio.autor }}<template v-if="testimonio.cargo"> · {{ testimonio.cargo }}</template></span></div>
+    <!-- FAQs -->
+    <div v-if="faqs.length" class="lp-sec"><h4 class="lp-h">Objeciones</h4>
+      <div v-for="(x,i) in faqs" :key="i" class="lp-faq"><b>{{ x.q }}</b><p>{{ x.a }}</p></div></div>
+  </div>`,
+};
+
+export const LandingEditor = {
+  components: { Icon, LandingPreview },
   props: { item: { type: Object, required: true }, tabla: { type: String, required: true }, titulo: { type: String, default: '' } },
   emits: ['close', 'saved'],
   template: `<div class="modal-bg" @click.self="$emit('close')">
-   <div class="glass modal modal-lg">
+   <div class="glass modal modal-xl land-editor" :class="{'has-preview':showPreview}">
     <div class="rec-editor-head">
-      <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem">
         <h2>Landing de conversión<span v-if="titulo"> · {{ titulo }}</span></h2>
-        <button class="btn btn-ghost btn-sm" @click="$emit('close')">✕</button></div>
+        <div style="display:flex;gap:.5rem;align-items:center">
+          <button class="btn btn-ghost btn-sm" @click="showPreview=!showPreview"><Icon name="eye" :size="14"/> {{ showPreview?'Ocultar preview':'Ver preview' }}</button>
+          <button class="btn btn-ghost btn-sm" @click="$emit('close')">✕</button></div></div>
       <div class="rec-langbar">
         <div class="lang-tabs" style="margin:0;border:0;padding:0">
           <button type="button" v-for="l in langs" :key="l.code" :class="{active:lang===l.code}" @click="lang=l.code">{{ l.label }}<span v-if="l.code==='es'" class="lang-req">·oblig</span></button></div>
@@ -76,6 +150,8 @@ export const LandingEditor = {
       <p class="rec-lang-note">Editando <b>{{ lang.toUpperCase() }}</b>. Las secciones vacías no se muestran en la landing pública. ES es el respaldo si un idioma queda sin texto.</p>
     </div>
 
+    <div class="land-editor__body">
+     <div class="land-editor__form">
     <div class="sec-divider"><span>Promesa (héroe)</span></div>
     <div class="field"><label>Promesa · subtítulo del héroe · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="2" v-model="f.promesa[lang]" placeholder="La transformación en una frase potente"></textarea></div>
     <div class="field"><label>Texto del botón principal (CTA) · {{ lang.toUpperCase() }}</label><input class="inp" v-model="f.cta[lang]" placeholder="Quiero más información"></div>
@@ -175,8 +251,11 @@ export const LandingEditor = {
     <div style="display:flex;justify-content:flex-end;gap:.7rem;margin-top:1rem">
       <button class="btn btn-ghost btn-sm" @click="$emit('close')">Cancelar</button>
       <button class="btn btn-primary btn-sm" @click="guardar" :disabled="busy">{{ busy?'Guardando…':'Guardar landing' }}</button></div>
+     </div>
+     <aside class="land-editor__preview" v-if="showPreview"><LandingPreview :f="f" :lang="lang" :tabla="tabla" :item="item"/></aside>
+    </div>
    </div></div>`,
-  data() { return { f: normalizar(this.item.landing), langs: CMS_LANGS, lang: 'es', icons: ICONS, busy: false }; },
+  data() { return { f: normalizar(this.item.landing), langs: CMS_LANGS, lang: 'es', icons: ICONS, busy: false, showPreview: window.innerWidth >= 1100 }; },
   methods: {
     blank() { return i18n(); },
     add(k, obj) { this.f[k].push(obj); },
