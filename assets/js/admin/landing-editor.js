@@ -30,6 +30,10 @@ function normalizar(L) {
     },
     faqs: (L.faqs || []).map(f => ({ q: fillI18n(f.q), a: fillI18n(f.a) })),
     proof_casos: L.proof_casos !== false,
+    // Solo casos: historia visual por capítulos, línea de tiempo y confidencialidad.
+    historia: (L.historia || []).map(h => ({ tag: fillI18n(h.tag), t: fillI18n(h.t), x: fillI18n(h.x), viz: h.viz || 'bars', img: h.img || '' })),
+    timeline: (L.timeline || []).map(s => ({ fase: fillI18n(s.fase), t: fillI18n(s.t), x: fillI18n(s.x) })),
+    confidencial: !!L.confidencial,
   };
 }
 
@@ -44,6 +48,9 @@ function serializar(f) {
     metricas: f.metricas.filter(m => String(m.valor).trim()),
     faqs: f.faqs.filter(x => CMS_CODES.some(c => (x.q[c] || '').trim())),
     proof_casos: !!f.proof_casos,
+    historia: f.historia.filter(h => CMS_CODES.some(c => (h.x[c] || '').trim())),
+    timeline: f.timeline.filter(s => CMS_CODES.some(c => (s.t[c] || '').trim())),
+    confidencial: !!f.confidencial,
   };
   if (f.oferta.on) out.oferta = { on: true, badge: f.oferta.badge, titulo: f.oferta.titulo, texto: f.oferta.texto, cta: f.oferta.cta };
   if (f.testimonio.on && CMS_CODES.some(c => (f.testimonio.quote[c] || '').trim())) {
@@ -77,6 +84,37 @@ export const LandingEditor = {
     <div class="form-grid two">
       <div class="field"><label>Hoy (el problema) · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="3" v-model="f.antes[lang]"></textarea></div>
       <div class="field"><label>Con ExperientIA · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="3" v-model="f.despues[lang]"></textarea></div></div>
+
+    <template v-if="tabla==='case_studies'">
+      <div class="sec-divider"><span>Historia visual por capítulos <button type="button" class="btn btn-ghost btn-sm" @click="add('historia',{tag:blank(),t:blank(),x:blank(),viz:'bars',img:''})"><Icon name="plug" :size="12"/> Añadir capítulo</button></span></div>
+      <p class="rec-lang-note">Cada capítulo alterna texto y visual (reto → jugada → resultado). Sin imagen, se muestra una visual animada de marca. Si no defines capítulos, la landing usa el contexto e intervención del caso.</p>
+      <div v-for="(h,i) in f.historia" :key="'h'+i" class="glass panel land-block">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr auto;align-items:end">
+          <div class="field"><label>Etiqueta (p. ej. El reto) · {{ lang.toUpperCase() }}</label><input class="inp" v-model="h.tag[lang]" placeholder="El reto"></div>
+          <div class="field"><label>Título del capítulo · {{ lang.toUpperCase() }}</label><input class="inp" v-model="h.t[lang]"></div>
+          <button class="btn btn-danger btn-sm" @click="del('historia',i)">✕</button></div>
+        <div class="field"><label>Relato · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="3" v-model="h.x[lang]"></textarea></div>
+        <div class="form-grid two" style="align-items:end">
+          <div class="field"><label>Visual de marca (si no hay imagen)</label>
+            <select class="inp" v-model="h.viz"><option value="radar">radar · diagnóstico / reto</option><option value="flow">flow · proceso / intervención</option><option value="bars">bars · crecimiento / resultado</option></select></div>
+          <div class="field"><label>Imagen del capítulo (opcional · JPG/PNG/WebP)</label>
+            <div style="display:flex;gap:.6rem;align-items:center">
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">{{ h.img?'Cambiar':'Subir imagen' }}<input type="file" accept="image/jpeg,image/png,image/webp" hidden @change="subirImg($event,h)"></label>
+              <button v-if="h.img" class="btn btn-danger btn-sm" @click="h.img=''">Quitar</button>
+              <img v-if="h.img" :src="h.img" alt="" style="height:44px;border-radius:8px;object-fit:cover;aspect-ratio:4/3"></div></div></div>
+      </div>
+
+      <div class="sec-divider"><span>Línea de tiempo <button type="button" class="btn btn-ghost btn-sm" @click="add('timeline',{fase:blank(),t:blank(),x:blank()})"><Icon name="plug" :size="12"/> Añadir hito</button></span></div>
+      <div v-for="(s,i) in f.timeline" :key="'tl'+i" class="glass panel land-block">
+        <div class="form-grid" style="grid-template-columns:160px 1fr auto;align-items:end">
+          <div class="field"><label>Fase · {{ lang.toUpperCase() }}</label><input class="inp" v-model="s.fase[lang]" placeholder="Semanas 1–2"></div>
+          <div class="field"><label>Hito · {{ lang.toUpperCase() }}</label><input class="inp" v-model="s.t[lang]"></div>
+          <button class="btn btn-danger btn-sm" @click="del('timeline',i)">✕</button></div>
+        <div class="field"><label>Detalle · {{ lang.toUpperCase() }}</label><textarea class="inp" rows="2" v-model="s.x[lang]"></textarea></div>
+      </div>
+
+      <div class="field"><label class="switch-row"><label class="switch"><input type="checkbox" v-model="f.confidencial"><span></span></label> Mostrar sello «Caso real · cliente en confidencialidad»</label></div>
+    </template>
 
     <div class="sec-divider"><span>Beneficios <button type="button" class="btn btn-ghost btn-sm" @click="add('beneficios',{icon:'target',t:blank(),x:blank()})"><Icon name="plug" :size="12"/> Añadir</button></span></div>
     <div v-for="(b,i) in f.beneficios" :key="'b'+i" class="glass panel land-block">
@@ -143,6 +181,13 @@ export const LandingEditor = {
     blank() { return i18n(); },
     add(k, obj) { this.f[k].push(obj); },
     del(k, i) { this.f[k].splice(i, 1); },
+    async subirImg(e, h) {
+      const file = e.target.files[0]; if (!file) return;
+      const fd = new FormData(); fd.append('archivo', file);
+      const r = await api.upload('/admin/recursos/subir-imagen', fd);
+      if (r.ok) { h.img = r.data.cover_image; toast('Imagen subida.'); } else toast(r.error || 'Error al subir.', 'err');
+      e.target.value = '';
+    },
     async guardar() {
       this.busy = true;
       const r = await api.put('/admin/' + this.tabla + '/' + this.item.id, { landing: serializar(this.f) });
