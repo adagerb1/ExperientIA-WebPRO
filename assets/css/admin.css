@@ -152,6 +152,19 @@ tr.row{ cursor:pointer; } tr.row:hover td{ background:rgba(24,214,241,.05); colo
 .hint{ font-size:.72rem; color:var(--text-tertiary); margin:.35rem 0 0; line-height:1.4; }
 .switch-row{ display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:var(--text-secondary); padding:.5rem 0; border-top:1px solid var(--line-soft); }
 .conn-actions{ display:flex; flex-wrap:wrap; gap:.6rem; justify-content:flex-end; }
+/* Botón de ayuda "?" (conector y campos) + modal explicativo */
+.help-q{ display:inline-grid; place-items:center; width:1.15rem; height:1.15rem; border-radius:50%; border:1px solid var(--line-strong); background:rgba(24,214,241,.08); color:var(--cyan); font-size:.7rem; font-weight:800; cursor:pointer; vertical-align:middle; line-height:1; padding:0; transition:background .15s,transform .15s; }
+.help-q:hover{ background:rgba(24,214,241,.22); transform:scale(1.1); }
+.help-modal{ position:fixed; inset:0; z-index:200; background:rgba(3,10,24,.72); backdrop-filter:blur(4px); display:grid; place-items:center; padding:1.2rem; }
+.help-box{ position:relative; max-width:540px; width:100%; max-height:82vh; overflow:auto; padding:1.8rem; }
+.help-box h3{ margin:0 2rem .6rem 0; color:var(--neutral-light); font-size:1.15rem; }
+.help-box h4{ margin:1.2rem 0 .5rem; color:var(--cyan); font-size:.82rem; text-transform:uppercase; letter-spacing:.05em; }
+.help-que{ color:var(--text-secondary); font-size:.92rem; line-height:1.55; margin:0; }
+.help-guia ol{ margin:0; padding-left:0; list-style:none; counter-reset:hg; display:grid; gap:.7rem; }
+.help-guia li{ counter-increment:hg; position:relative; padding:.2rem 0 .2rem 2.2rem; color:var(--neutral-light); font-size:.88rem; line-height:1.5; }
+.help-guia li::before{ content:counter(hg); position:absolute; left:0; top:.05rem; width:1.5rem; height:1.5rem; border-radius:50%; display:grid; place-items:center; font-size:.72rem; font-weight:700; color:#041022; background:var(--grad); }
+.help-close{ position:absolute; top:1rem; right:1rem; width:1.9rem; height:1.9rem; border-radius:50%; border:1px solid var(--line-strong); background:rgba(255,255,255,.04); color:var(--text-secondary); cursor:pointer; font-size:.85rem; }
+.help-close:hover{ color:var(--neutral-light); background:rgba(255,255,255,.1); }
 
 /* ── AlexIA · Estratega (panel en el Tablero) ────────────────────────── */
 .alexia-panel{ border:1px solid rgba(122,99,255,.28); background:linear-gradient(180deg, rgba(122,99,255,.06), rgba(18,34,66,.5)); }
@@ -381,3 +394,32 @@ th:hover .sort-arrow{ opacity:1; }
 .fun-chart{ display:flex; align-items:flex-end; gap:3px; height:160px; }
 .fun-bar{ flex:1; display:flex; align-items:flex-end; min-width:4px; }
 .fun-bar span{ width:100%; border-radius:4px 4px 0 0; background:linear-gradient(180deg,#18d6f1,#7a63ff); opacity:.85; }
+
+/* ── Reseñas de Google (admin) ───────────────────────────────────────── */
+.rev-autopilot{ display:flex; align-items:center; gap:1.2rem; padding:1.1rem 1.4rem; margin:.4rem 0 .6rem; border:1px solid var(--line-soft); }
+.rev-autopilot.on{ border-color:rgba(122,99,255,.4); background:linear-gradient(180deg,rgba(122,99,255,.08),rgba(18,34,66,.4)); }
+.ra-txt{ flex:1; } .ra-txt b{ color:var(--neutral-light); font-size:.95rem; } .ra-txt p{ margin:.3rem 0 0; font-size:.82rem; color:var(--text-secondary); line-height:1.5; }
+.rev-warn{ font-size:.78rem; color:#ffc247; background:rgba(255,194,71,.08); border:1px solid rgba(255,194,71,.25); border-radius:10px; padding:.7rem .9rem; margin:0 0 1rem; }
+.rev-toolbar{ display:flex; align-items:center; gap:.8rem; margin-bottom:1.2rem; }
+.rev-list{ display:grid; gap:1rem; }
+.rev-card{ padding:1.4rem; display:grid; gap:.9rem; border-left:3px solid transparent; }
+.rev-card.st-ninguna{ border-left-color:rgba(255,194,71,.5); }
+.rev-card.st-sugerida{ border-left-color:var(--violet); }
+.rev-card.st-publicada{ border-left-color:#4be3a0; }
+.rev-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
+.rev-who{ display:flex; gap:.7rem; align-items:center; }
+.rev-avatar{ display:grid; place-items:center; width:2.4rem; height:2.4rem; border-radius:50%; background:var(--grad); color:#041022; font-weight:700; flex-shrink:0; }
+.rev-who b{ color:var(--neutral-light); }
+.rev-stars{ font-size:.85rem; color:rgba(255,255,255,.2); margin-top:.15rem; } .rev-stars span.on{ color:#ffc247; } .rev-stars em{ color:var(--text-tertiary); font-style:normal; font-size:.75rem; margin-left:.4rem; }
+.rev-flags{ display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; }
+.rev-flags .btn.is-on{ color:#ffc247; border-color:rgba(255,194,71,.45); }
+.rev-comment{ font-size:.92rem; line-height:1.55; color:var(--neutral-light); margin:0; }
+.rev-comment.rev-empty{ color:var(--text-tertiary); font-style:italic; }
+.rev-published{ padding:.9rem 1rem; border-left:2px solid #4be3a0; background:rgba(75,227,160,.06); border-radius:0 10px 10px 0; }
+.rev-published b{ color:#4be3a0; font-size:.8rem; } .rev-published p{ margin:.35rem 0 0; font-size:.88rem; color:var(--text-secondary); line-height:1.5; }
+.rev-reply-box{ display:grid; gap:.6rem; }
+.rev-lbl{ font-size:.78rem; color:var(--text-secondary); } .rev-lbl .small{ color:var(--text-tertiary); }
+.rev-actions{ display:flex; gap:.6rem; flex-wrap:wrap; justify-content:flex-end; }
+
+.rev-kpis{ grid-template-columns:repeat(4,1fr); }
+@media(max-width:720px){ .rev-kpis{ grid-template-columns:repeat(2,1fr); } }

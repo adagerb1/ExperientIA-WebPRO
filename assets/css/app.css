@@ -731,3 +731,29 @@ p { margin: 0; color: var(--text-secondary); }
 .ax-links{ display:flex; flex-wrap:wrap; gap:.5rem; padding:0 .3rem .2rem 2.4rem; }
 .ax-link-btn{ display:inline-flex; align-items:center; gap:.35rem; font-size:.82rem; font-weight:600; padding:.45rem .8rem; border-radius:999px; color:#04101f; background:linear-gradient(135deg,var(--cyan),var(--violet)); text-decoration:none; box-shadow:0 8px 20px -10px var(--cyan-glow); }
 .ax-link-btn:hover{ filter:brightness(1.06); }
+
+/* ── Prueba social · reseñas de Google ─────────────────────────────── */
+.reviews-strip{ display:grid; grid-template-columns:auto 1fr auto; gap:clamp(1.2rem,4vw,2.6rem); align-items:center; padding:clamp(1.4rem,3vw,2rem) clamp(1.5rem,4vw,2.4rem); margin-bottom:2.2rem; }
+@media(max-width:720px){ .reviews-strip{ grid-template-columns:1fr; text-align:center; gap:1.2rem; } }
+.rs-score{ display:grid; gap:.3rem; justify-items:center; }
+.rs-score b{ font-size:clamp(2.6rem,7vw,3.4rem); line-height:1; font-weight:800; }
+.rs-stars{ display:flex; gap:.15rem; font-size:1.1rem; }
+.rs-star{ color:rgba(255,255,255,.2); } .rs-star.on{ color:#ffc247; }
+.rs-count{ font-size:.78rem; color:var(--text-secondary); }
+.rs-bars{ display:grid; gap:.35rem; min-width:0; }
+.rs-bar-row{ display:grid; grid-template-columns:2.2rem 1fr; align-items:center; gap:.6rem; }
+.rs-bar-n{ font-size:.72rem; color:var(--text-tertiary); }
+.rs-bar-track{ height:7px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; }
+.rs-bar-fill{ display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--cyan),var(--violet)); transition:width .8s ease; }
+.rs-badge{ display:inline-flex; align-items:center; gap:.5rem; padding:.6rem 1rem; border:1px solid var(--glass-border); border-radius:999px; font-size:.82rem; font-weight:600; color:var(--neutral-light); white-space:nowrap; }
+.rs-badge:hover{ border-color:var(--cyan); }
+.rs-g{ display:grid; place-items:center; width:1.4rem; height:1.4rem; border-radius:50%; background:#fff; color:#4285F4; font-weight:800; font-size:.85rem; }
+.reviews-grid{ display:grid; gap:1.2rem; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+.review-card{ display:grid; gap:.75rem; align-content:start; padding:1.5rem; }
+.rc-stars{ display:flex; gap:.1rem; color:rgba(255,255,255,.2); font-size:.95rem; } .rc-stars span.on{ color:#ffc247; }
+.review-card blockquote{ margin:0; font-size:.95rem; line-height:1.55; color:var(--neutral-light); }
+.review-card figcaption{ display:flex; align-items:center; gap:.6rem; font-size:.88rem; color:var(--text-secondary); }
+.rc-avatar{ display:grid; place-items:center; width:2.1rem; height:2.1rem; border-radius:50%; background:linear-gradient(135deg,var(--cyan),var(--violet)); color:#04101f; font-weight:700; font-size:.9rem; flex-shrink:0; }
+.review-card figcaption b{ color:var(--neutral-light); }
+.rc-reply{ margin:.2rem 0 0; padding:.7rem .9rem; border-left:2px solid var(--cyan); background:rgba(24,214,241,.05); border-radius:0 10px 10px 0; font-size:.82rem; line-height:1.5; color:var(--text-secondary); }
+.rc-reply b{ color:var(--cyan); }

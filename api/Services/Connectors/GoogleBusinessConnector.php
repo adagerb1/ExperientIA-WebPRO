@@ -80,7 +80,49 @@ final class GoogleBusinessConnector
             $n++;
         }
         $avg = $r['body']['averageRating'] ?? null;
-        return ['ok' => true, 'message' => $n . ' reseña(s) sincronizada(s)' . ($avg ? ' · promedio ' . round($avg, 1) . '★' : '') . '.'];
+        // Tras sincronizar, AlexIA prepara borradores (y publica si el auto-piloto está activo).
+        $rep = self::procesarPendientes();
+        $msg = $n . ' reseña(s) sincronizada(s)' . ($avg ? ' · promedio ' . round($avg, 1) . '★' : '') . '.';
+        if ($rep) { $msg .= ' ' . $rep; }
+        return ['ok' => true, 'message' => $msg];
+    }
+
+    /**
+     * Recorre reseñas sin respuesta y deja que AlexIA prepare el borrador. Si el
+     * interruptor de auto-respuesta está activo, además lo publica en Google.
+     * Silencioso ante fallos de IA (sin egress / sin credenciales): no rompe el sync.
+     */
+    public static function procesarPendientes(): string
+    {
+        $auto = \Services\Settings::bool('reviews_auto_reply', false);
+        $pendientes = Database::run(
+            "SELECT * FROM gb_reviews WHERE (reply IS NULL OR reply = '') AND reply_status IN ('ninguna','sugerida') ORDER BY created_at DESC LIMIT 20"
+        )->fetchAll();
+        $sug = 0; $pub = 0;
+        foreach ($pendientes as $rv) {
+            // Genera borrador solo si aún no hay uno.
+            if (empty($rv['ai_reply'])) {
+                try {
+                    $draft = \Services\AlexIA::reviewReply($rv, 'es');
+                } catch (\Throwable $e) { continue; } // IA no disponible: se reintenta luego
+                if ($draft === '') { continue; }
+                Database::run('UPDATE gb_reviews SET ai_reply = ?, reply_status = ? WHERE id = ?', [$draft, 'sugerida', $rv['id']]);
+                $rv['ai_reply'] = $draft; $sug++;
+            }
+            // Auto-piloto: publica sin aprobación previa (queda documentado).
+            if ($auto && ! empty($rv['ai_reply']) && ($rv['reply_status'] ?? '') !== 'publicada') {
+                $res = self::replyReview($rv['name'], $rv['ai_reply']);
+                if (! empty($res['ok'])) {
+                    Database::run('UPDATE gb_reviews SET reply = ?, reply_status = ?, reply_at = ?, reply_by = ? WHERE id = ?',
+                        [$rv['ai_reply'], 'publicada', now_utc(), 'alexia', $rv['id']]);
+                    $pub++;
+                }
+            }
+        }
+        $out = [];
+        if ($sug) { $out[] = 'AlexIA preparó ' . $sug . ' borrador(es).'; }
+        if ($pub) { $out[] = $pub . ' publicada(s) automáticamente.'; }
+        return implode(' ', $out);
     }
 
     /** Responde una reseña (reviewName completo devuelto por la API). */
@@ -113,10 +155,12 @@ final class GoogleBusinessConnector
     private static function guardar(array $r): void
     {
         try {
+            // Si Google ya trae una respuesta publicada, refleja ese estado.
+            $estado = (! empty($r['reply'])) ? 'publicada' : 'ninguna';
             $sql = Database::isSqlite()
-                ? 'INSERT INTO gb_reviews (review_id, name, author, stars, comment, reply, created_at, synced_at) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(review_id) DO UPDATE SET stars=excluded.stars, comment=excluded.comment, reply=excluded.reply, synced_at=excluded.synced_at'
-                : 'INSERT INTO gb_reviews (review_id, name, author, stars, comment, reply, created_at, synced_at) VALUES (?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE stars=VALUES(stars), comment=VALUES(comment), reply=VALUES(reply), synced_at=VALUES(synced_at)';
-            Database::pdo()->prepare($sql)->execute([$r['review_id'], $r['name'], $r['author'], $r['stars'], $r['comment'], $r['reply'], $r['created_at'], now_utc()]);
+                ? 'INSERT INTO gb_reviews (review_id, name, author, stars, comment, reply, reply_status, created_at, synced_at) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(review_id) DO UPDATE SET stars=excluded.stars, comment=excluded.comment, reply=excluded.reply, reply_status=CASE WHEN excluded.reply IS NOT NULL AND excluded.reply <> \'\' THEN \'publicada\' ELSE gb_reviews.reply_status END, synced_at=excluded.synced_at'
+                : 'INSERT INTO gb_reviews (review_id, name, author, stars, comment, reply, reply_status, created_at, synced_at) VALUES (?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE stars=VALUES(stars), comment=VALUES(comment), reply=VALUES(reply), reply_status=IF(VALUES(reply) IS NOT NULL AND VALUES(reply) <> \'\', \'publicada\', reply_status), synced_at=VALUES(synced_at)';
+            Database::pdo()->prepare($sql)->execute([$r['review_id'], $r['name'], $r['author'], $r['stars'], $r['comment'], $r['reply'], $estado, $r['created_at'], now_utc()]);
         } catch (\Throwable $e) { /* tabla sin migrar */ }
     }
 }

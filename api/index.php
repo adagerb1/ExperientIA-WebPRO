@@ -25,6 +25,7 @@ $r->post('/interes', 'PublicApi\\LeadController', 'interes');
 $r->post('/descarga', 'PublicApi\\ResourceController', 'descargar');
 $r->get('/descarga-archivo', 'PublicApi\\ResourceController', 'archivo');
 $r->get('/meta', 'PublicApi\\MetaController', 'index');
+$r->get('/resenas', 'PublicApi\\ReviewsController', 'index');   // prueba social pública (Google)
 $r->get('/diagnosticos', 'PublicApi\\DiagnosticController', 'index');
 $r->get('/diagnosticos/{dkey}', 'PublicApi\\DiagnosticController', 'show');
 $r->post('/diagnostico', 'PublicApi\\DiagnosticController', 'evaluar');
@@ -118,6 +119,12 @@ $r->post('/admin/growthboard/clientes/{id}/enviar-acceso', 'Admin\\GrowthBoardAd
 $r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
 $r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
 $r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');
+// Reseñas de Google: prueba social + respuestas de AlexIA (sugerir/aprobar/destacar/auto-piloto).
+$r->get('/admin/resenas', 'Admin\\ReviewsController', 'index');
+$r->post('/admin/resenas/ajustes', 'Admin\\ReviewsController', 'ajustes');
+$r->post('/admin/resenas/{id}/sugerir', 'Admin\\ReviewsController', 'sugerir');
+$r->post('/admin/resenas/{id}/aprobar', 'Admin\\ReviewsController', 'aprobar');
+$r->post('/admin/resenas/{id}/destacar', 'Admin\\ReviewsController', 'destacar');
 // Segmentos configurables y trilingües (categorías, tamaños, orígenes, canales).
 $r->get('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'index');
 $r->post('/admin/taxonomia/{kind}', 'Admin\\SegmentTaxonomyController', 'store');

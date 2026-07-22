@@ -153,9 +153,20 @@ CREATE TABLE IF NOT EXISTS gb_reviews (
   stars TINYINT NOT NULL DEFAULT 0,
   comment TEXT NULL,
   reply TEXT NULL,
+  ai_reply TEXT NULL,
+  reply_status VARCHAR(20) NOT NULL DEFAULT 'ninguna',
+  reply_at DATETIME NULL,
+  reply_by VARCHAR(120) NULL,
   featured TINYINT NOT NULL DEFAULT 0,
   created_at DATETIME NULL,
   synced_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Ajustes de aplicación (clave/valor): interruptores como la auto-respuesta de AlexIA.
+CREATE TABLE IF NOT EXISTS app_settings (
+  skey VARCHAR(80) PRIMARY KEY,
+  sval TEXT NULL,
+  updated_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Analítica de primera parte, sin cookies ni IPs: conteo agregado por día y ruta.

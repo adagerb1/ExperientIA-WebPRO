@@ -47,6 +47,13 @@ $deseadas = [
         'seo_desc' => 'JSON NULL',
         'status' => "VARCHAR(20) NOT NULL DEFAULT 'draft'",
     ],
+    'gb_reviews' => [
+        // Respuesta redactada por AlexIA y estado del flujo de aprobación/publicación.
+        'ai_reply' => 'TEXT NULL',
+        'reply_status' => "VARCHAR(20) NOT NULL DEFAULT 'ninguna'", // ninguna|sugerida|aprobada|publicada
+        'reply_at' => 'DATETIME NULL',
+        'reply_by' => 'VARCHAR(120) NULL', // 'alexia' (auto) o email del admin que aprobó
+    ],
 ];
 
 /** Adapta un tipo MySQL a SQLite. */
@@ -231,6 +238,15 @@ try {
         $pdo->exec('CREATE TABLE IF NOT EXISTS gb_reviews (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, review_id VARCHAR(190) NOT NULL UNIQUE, name VARCHAR(255) NULL, author VARCHAR(190) NULL, stars TINYINT NOT NULL DEFAULT 0, comment TEXT NULL, reply TEXT NULL, featured TINYINT NOT NULL DEFAULT 0, created_at DATETIME NULL, synced_at DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
     }
 } catch (\Throwable $e) { echo '! gb_reviews: ' . $e->getMessage() . "\n"; }
+
+// Ajustes de aplicación (clave/valor). P. ej. el interruptor de auto-respuesta de AlexIA.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS app_settings (skey TEXT PRIMARY KEY, sval TEXT NULL, updated_at TEXT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS app_settings (skey VARCHAR(80) PRIMARY KEY, sval TEXT NULL, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! app_settings: ' . $e->getMessage() . "\n"; }
 
 // Analítica de primera parte + gasto de pauta (funnel y costo por lead).
 try {

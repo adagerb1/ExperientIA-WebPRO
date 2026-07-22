@@ -136,6 +136,40 @@ final class AlexIA
         return $txt;
     }
 
+    /**
+     * Redacta la respuesta a una reseña de Google respetando la voz de marca y la
+     * división de roles: ExperientIA/GrowthBoard agradece, humaniza y orienta al
+     * siguiente paso, pero NO da consultoría por su cuenta (eso es de Tonny Dager).
+     */
+    public static function reviewReply(array $review, string $locale = 'es'): string
+    {
+        $ctx = self::businessContext($locale);
+        $stars = (int) ($review['stars'] ?? 0);
+        $autor = trim((string) ($review['author'] ?? '')) ?: 'el cliente';
+        $texto = trim((string) ($review['comment'] ?? '')) ?: '(reseña sin comentario, solo calificación)';
+        $tono = $stars >= 4
+            ? 'Agradece con calidez y refuerza el valor recibido, sin sonar exagerada.'
+            : ($stars === 3
+                ? 'Agradece el comentario, reconoce lo que se puede mejorar y muestra disposición a escuchar.'
+                : 'Responde con empatía y responsabilidad; discúlpate con sobriedad, no te justifiques ni discutas, e invita a resolverlo en privado.');
+
+        $instr = "Eres AlexIA, la voz de marca de ExperientIA SAS respondiendo una reseña pública de Google Business. "
+            . "Escribe la respuesta oficial de la empresa a esta reseña. REGLAS ESTRICTAS:\n"
+            . "1) Idioma: {$locale}. Tono premium, humano, cercano y agradecido; nunca robótico ni genérico.\n"
+            . "2) Dirígete a la persona por su nombre cuando exista. Sé BREVE: 2 a 4 frases, máximo ~450 caracteres.\n"
+            . "3) {$tono}\n"
+            . "4) NO inventes datos, precios, promesas ni detalles de servicios que no estén en el contexto. NO des consultoría "
+            . "ni recomendaciones estratégicas (ese es el rol del consultor Tonny Dager, no de la herramienta): limítate a agradecer, "
+            . "humanizar e invitar al siguiente paso.\n"
+            . "5) Si es una reseña negativa o con queja, invita a escribir a hello@experientia.pro para atenderlo personalmente.\n"
+            . "6) Firma implícita como equipo de ExperientIA (no uses corchetes ni marcadores). Devuelve SOLO el texto de la respuesta, sin comillas.\n"
+            . "Contexto de ExperientIA (para no contradecir la marca):\n{$ctx}";
+
+        $input = "Reseña de {$autor} · calificación {$stars}/5 estrellas:\n\"{$texto}\"\n\nRedacta la respuesta oficial.";
+        $out = trim(self::ask($instr, $input));
+        return trim($out, "\"' \n\r\t");
+    }
+
     /** Resumen conciso de la data del negocio para alimentar prompts. */
     public static function snapshot(): string
     {

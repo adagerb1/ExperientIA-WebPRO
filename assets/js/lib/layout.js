@@ -3,6 +3,8 @@ import { store, t, tr, pageUrl, api, toast } from './core.js';
 import { Icon, BrandLogo, BrandSymbol } from './ui.js';
 import { PhoneInput, CodeInput } from './forms.js';
 
+const tx = (k, fb) => { const v = t(k); return (v && v !== k) ? v : fb; };
+
 const SOCIAL = [
   { name: 'Instagram', icon: 'instagram', url: 'https://www.instagram.com/experientia.sas/' },
   { name: 'LinkedIn', icon: 'linkedin', url: 'https://www.linkedin.com/in/tonny-dager/' },
@@ -267,6 +269,41 @@ export const PageHero = {
   template: `<section class="page-hero"><div class="bg-atmos"><div class="halo halo-cyan" style="width:520px;height:520px;top:-260px;right:-140px"></div><div class="halo halo-violet" style="width:420px;height:420px;top:40px;left:-200px;opacity:.35"></div></div>
     <div class="container page-hero__in"><p class="eyebrow" v-reveal>{{ eyebrow }}</p><h1 class="display" v-reveal :style="{'--d':'.08s'}">{{ titulo }}</h1><p class="lead" v-reveal :style="{'--d':'.16s'}" v-if="sub">{{ sub }}</p><slot/></div></section>`,
   props: { eyebrow: String, titulo: String, sub: String },
+};
+
+// Prueba social pública: franja de estrellas (promedio + total en Google) y
+// comentarios destacados. Se auto-oculta si aún no hay reseñas sincronizadas.
+export const ReviewsProof = {
+  components: { Icon },
+  template: `<section class="section reviews-proof" v-if="total>0"><div class="container">
+    <div class="section-head"><p class="eyebrow" v-reveal>{{ tx('reviews.eyebrow','Lo que dicen quienes ya decidieron') }}</p>
+      <h2 class="h2" v-reveal :style="{'--d':'.08s'}">{{ tx('reviews.titulo','Confianza que se puede medir') }}</h2></div>
+    <div class="glass reviews-strip" v-reveal>
+      <div class="rs-score"><b class="grad-text">{{ promedio.toFixed(1) }}</b>
+        <div class="rs-stars" :aria-label="promedio+' de 5'"><span v-for="i in 5" :key="i" class="rs-star" :class="{on:i<=Math.round(promedio)}">★</span></div>
+        <span class="rs-count">{{ total }} {{ total===1 ? tx('reviews.una','reseña') : tx('reviews.varias','reseñas') }} · Google</span></div>
+      <div class="rs-bars">
+        <div v-for="n in [5,4,3,2,1]" :key="n" class="rs-bar-row"><span class="rs-bar-n">{{ n }}★</span>
+          <span class="rs-bar-track"><span class="rs-bar-fill" :style="{width: pct(n)+'%'}"></span></span></div></div>
+      <a class="rs-badge" :href="perfilUrl" target="_blank" rel="noopener" v-if="perfilUrl"><span class="rs-g">G</span> {{ tx('reviews.ver_google','Ver en Google') }}</a></div>
+    <div class="reviews-grid" v-if="destacados.length">
+      <figure v-for="(r,i) in destacados" :key="i" class="glass review-card" v-reveal :style="{'--d':i*.07+'s'}">
+        <div class="rc-stars"><span v-for="s in 5" :key="s" :class="{on:s<=r.stars}">★</span></div>
+        <blockquote>“{{ r.comment }}”</blockquote>
+        <figcaption><span class="rc-avatar">{{ inicial(r.author) }}</span><b>{{ r.author }}</b></figcaption>
+        <p v-if="r.reply" class="rc-reply"><b>{{ tx('reviews.respuesta','ExperientIA responde') }}:</b> {{ r.reply }}</p>
+      </figure></div>
+  </div></section>`,
+  data() { return { total: 0, promedio: 0, distribucion: {}, destacados: [], perfilUrl: '' }; },
+  computed: { tx: () => tx },
+  methods: {
+    pct(n) { const c = (this.distribucion && this.distribucion[n]) || 0; return this.total ? Math.round(c / this.total * 100) : 0; },
+    inicial(a) { return (a || '?').trim().charAt(0).toUpperCase(); },
+  },
+  async mounted() {
+    const r = await api.get('/resenas');
+    if (r.ok) { const d = r.data; this.total = d.total || 0; this.promedio = d.promedio || 0; this.distribucion = d.distribucion || {}; this.destacados = d.destacados || []; }
+  },
 };
 
 export const SectionCTA = {

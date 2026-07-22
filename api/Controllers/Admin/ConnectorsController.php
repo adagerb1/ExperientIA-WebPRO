@@ -21,6 +21,7 @@ final class ConnectorsController extends Controller
         AuthMiddleware::require($this->req, 'admin');
         $defs = biz('connectors');
         $groups = biz('connector_groups');
+        $help = require __DIR__ . '/../../config/connector_help.php';
         $filas = Database::run('SELECT provider, enabled, config, status, last_check FROM connectors')->fetchAll();
         $byProv = [];
         foreach ($filas as $f) { $byProv[$f['provider']] = $f; }
@@ -32,15 +33,20 @@ final class ConnectorsController extends Controller
             $row = $byProv[$prov] ?? ['enabled' => 0, 'config' => null, 'status' => 'sin_configurar', 'last_check' => null];
             $cfg = $row['config'] ? json_decode($row['config'], true) : [];
 
+            $h = $help[$prov] ?? [];
             // Secretos nunca se devuelven; text/select sí. 'saved' indica qué guarda credencial.
             $config = [];
             $saved = [];
+            $campos = [];
             foreach ($def['campos'] as $c) {
                 $n = $c['n'];
                 $has = isset($cfg[$n]) && $cfg[$n] !== '';
                 $saved[$n] = $has;
-                if (! empty($c['transient'])) { $config[$n] = ''; continue; }
-                $config[$n] = (($c['t'] ?? 'text') === 'secret') ? '' : ($cfg[$n] ?? '');
+                if (! empty($c['transient'])) { $config[$n] = ''; }
+                else { $config[$n] = (($c['t'] ?? 'text') === 'secret') ? '' : ($cfg[$n] ?? ''); }
+                // Ayuda por campo (qué es y dónde se obtiene) para el botón "?".
+                $c['ayuda'] = $h['campos'][$n] ?? '';
+                $campos[] = $c;
             }
             $isConfigured = ! empty(array_filter($saved));
             if ($isConfigured) { $configurados++; }
@@ -49,7 +55,8 @@ final class ConnectorsController extends Controller
             $out[] = [
                 'provider' => $prov, 'nombre' => $def['nombre'], 'grupo' => $def['grupo'],
                 'grupo_label' => $groups[$def['grupo']] ?? $def['grupo'], 'desc' => $def['desc'] ?? '',
-                'campos' => $def['campos'], 'acciones' => $def['acciones'] ?? [],
+                'campos' => $campos, 'acciones' => $def['acciones'] ?? [],
+                'ayuda' => ['que' => $h['que'] ?? ($def['desc'] ?? ''), 'guia' => $h['guia'] ?? []],
                 'config' => $config, 'saved' => $saved, 'enabled' => (int) $row['enabled'],
                 'status' => $isConfigured ? ($row['status'] === 'sin_configurar' ? 'configurado' : $row['status']) : 'sin_configurar',
                 'last_check' => $row['last_check'],

@@ -166,10 +166,10 @@ export const Conectores = {
 
     <div class="conn-grid">
       <div v-for="c in filtered" :key="c.provider" class="glass conn-card">
-        <div class="conn-head"><div><b>{{ c.nombre }}</b><p class="conn-desc">{{ c.desc }}</p></div>
+        <div class="conn-head"><div><b>{{ c.nombre }} <button class="help-q" title="¿Qué hace y cómo se activa?" @click="ayudaConector(c)">?</button></b><p class="conn-desc">{{ c.desc }}</p></div>
           <div class="conn-badges"><span v-if="c.status!=='sin_configurar'" class="badge cliente">Configurado</span><span v-if="c.enabled" class="badge ok">Activo</span></div></div>
         <div class="field" v-for="f in c.campos" :key="f.n">
-          <label>{{ f.l }} <span v-if="f.t==='secret' && c.saved[f.n]" class="saved">guardado ✓</span></label>
+          <label>{{ f.l }} <button v-if="f.ayuda" class="help-q" title="¿Qué es este campo?" @click="ayudaCampo(c,f)">?</button> <span v-if="f.t==='secret' && c.saved[f.n]" class="saved">guardado ✓</span></label>
           <select v-if="f.t==='select'" class="inp" v-model="c.config[f.n]"><option v-for="o in f.op" :key="o" :value="o">{{ o }}</option></select>
           <input v-else-if="f.t==='secret'" class="inp" type="password" v-model="c.draft[f.n]" :placeholder="c.saved[f.n]?'Guardado — escribe para cambiar':(f.ph||'')" autocomplete="new-password">
           <input v-else class="inp" type="text" v-model="c.config[f.n]" :placeholder="f.ph||''">
@@ -178,10 +178,23 @@ export const Conectores = {
         <div class="conn-actions">
           <button v-for="a in c.acciones" :key="a.k" class="btn btn-ghost btn-sm" @click="accion(c,a.k)">{{ a.l }}</button>
           <button class="btn btn-primary btn-sm" @click="guardar(c)">Guardar</button></div>
-        <p v-if="c._msg" class="small" :style="{color:c._ok?'#4be3a0':'#ff7d9d'}">{{ c._msg }}</p></div></div></div>`,
-  data(){ return { items:[], groups:[], summary:{}, tab:'' }; },
+        <p v-if="c._msg" class="small" :style="{color:c._ok?'#4be3a0':'#ff7d9d'}">{{ c._msg }}</p></div></div>
+
+    <div v-if="modal" class="help-modal" @click.self="modal=null">
+      <div class="glass help-box">
+        <button class="help-close" @click="modal=null">✕</button>
+        <h3>{{ modal.titulo }}</h3>
+        <p class="help-que">{{ modal.que }}</p>
+        <div v-if="modal.guia && modal.guia.length" class="help-guia">
+          <h4>Pasos para activarlo</h4>
+          <ol><li v-for="(s,i) in modal.guia" :key="i">{{ s }}</li></ol></div>
+      </div></div>
+    </div>`,
+  data(){ return { items:[], groups:[], summary:{}, tab:'', modal:null }; },
   computed:{ filtered(){ return this.tab ? this.items.filter(c=>c.grupo===this.tab) : this.items; } },
   methods:{
+    ayudaConector(c){ this.modal={ titulo:c.nombre, que:(c.ayuda&&c.ayuda.que)||c.desc, guia:(c.ayuda&&c.ayuda.guia)||[] }; },
+    ayudaCampo(c,f){ this.modal={ titulo:c.nombre+' · '+f.l, que:f.ayuda, guia:[] }; },
     async load(){ const r=await api.get('/admin/connectors'); if(!r.ok) return;
       this.groups=r.data.groups; this.summary=r.data.summary;
       this.items=r.data.items.map(c=>{ const cfg={...c.config};
