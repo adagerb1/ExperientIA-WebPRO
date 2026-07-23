@@ -11,6 +11,7 @@ import { SolucionLanding, ProductoLanding, CasoDetalle } from './views/pages5.js
 import { GBDemo, GBDiagnostico } from './views/growthboard.js';
 import { MiTablero } from './views/mitablero.js';
 import { TestimonioForm } from './views/testimonio.js';
+import { PropuestaView } from './views/propuesta.js';
 import { Diagnostico, Agenda } from './views/pages4.js';
 
 const NotFound = {
@@ -60,6 +61,9 @@ for (const loc of ['es','en','pt']) routes.push({ path: `/${loc}/${GB_CLIENTE[lo
 // Testimonio de cliente (enlace con código corto)
 const TESTI = { es: 'testimonio', en: 'testimonial', pt: 'depoimento' };
 for (const loc of ['es','en','pt']) routes.push({ path: `/${loc}/${TESTI[loc]}/:code`, component: TestimonioForm });
+// Propuesta comercial confidencial (compuerta email+NIT)
+const PROP = { es: 'propuesta', en: 'proposal', pt: 'proposta' };
+for (const loc of ['es','en','pt']) routes.push({ path: `/${loc}/${PROP[loc]}/:code`, component: PropuestaView });
 routes.push({ path: '/:pathMatch(.*)*', component: NotFound });
 
 const router = createRouter({ history: createWebHistory(), routes, scrollBehavior(){ return { top: 0 }; } });

@@ -27,6 +27,9 @@ $r->get('/descarga-archivo', 'PublicApi\\ResourceController', 'archivo');
 $r->get('/meta', 'PublicApi\\MetaController', 'index');
 $r->get('/resenas', 'PublicApi\\ReviewsController', 'index');   // prueba social pública (Google)
 $r->get('/testimonios', 'PublicApi\\TestimonialsController', 'index');           // testimonios publicados
+$r->get('/propuesta/{code}', 'PublicApi\\ProposalController', 'meta');            // compuerta de la propuesta
+$r->post('/propuesta/{code}/acceso', 'PublicApi\\ProposalController', 'acceso');  // valida email+NIT y entrega
+$r->post('/propuesta/{code}/aceptar', 'PublicApi\\ProposalController', 'aceptar'); // aceptación del cliente
 $r->get('/testimonio/{code}', 'PublicApi\\TestimonialsController', 'invitacion'); // invitación (código corto)
 $r->post('/testimonio/{code}', 'PublicApi\\TestimonialsController', 'enviar');    // cliente envía testimonio
 $r->get('/diagnosticos', 'PublicApi\\DiagnosticController', 'index');
@@ -122,6 +125,13 @@ $r->post('/admin/growthboard/clientes/{id}/enviar-acceso', 'Admin\\GrowthBoardAd
 $r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
 $r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
 $r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');
+// Propuestas comerciales: crear, editar, generar con AlexIA, enviar y trazar.
+$r->get('/admin/propuestas', 'Admin\\ProposalsController', 'index');
+$r->post('/admin/propuestas', 'Admin\\ProposalsController', 'store');
+$r->put('/admin/propuestas/{id}', 'Admin\\ProposalsController', 'update');
+$r->post('/admin/propuestas/{id}/generar', 'Admin\\ProposalsController', 'generar');
+$r->post('/admin/propuestas/{id}/enviar', 'Admin\\ProposalsController', 'enviar');
+$r->delete('/admin/propuestas/{id}', 'Admin\\ProposalsController', 'destroy');
 // Testimonios de clientes: invitar (código corto), enviar, revisar y publicar.
 $r->get('/admin/testimonios', 'Admin\\TestimonialsController', 'index');
 $r->post('/admin/testimonios', 'Admin\\TestimonialsController', 'store');

@@ -187,6 +187,31 @@ CREATE TABLE IF NOT EXISTS testimonials (
   created_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Propuestas comerciales: página confidencial por cliente. El acceso exige
+-- correo autorizado + NIT; cada apertura y la aceptación quedan trazadas.
+CREATE TABLE IF NOT EXISTS proposals (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(24) NOT NULL UNIQUE,
+  lead_id INT UNSIGNED NULL,
+  title VARCHAR(255) NULL,
+  cliente VARCHAR(190) NULL,
+  nit VARCHAR(40) NULL,                -- normalizado: solo dígitos
+  contact VARCHAR(190) NULL,
+  contact_email VARCHAR(190) NULL,
+  auth_emails JSON NULL,               -- correos autorizados a abrirla
+  locale CHAR(2) NOT NULL DEFAULT 'es',
+  version VARCHAR(40) NULL,
+  doc_date VARCHAR(60) NULL,
+  contenido JSON NULL,                 -- secciones (resumen…próximos pasos)
+  estado VARCHAR(20) NOT NULL DEFAULT 'borrador', -- borrador|enviada|aceptada|rechazada
+  views INT NOT NULL DEFAULT 0,
+  last_view DATETIME NULL,
+  sent_at DATETIME NULL,
+  decided_at DATETIME NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Ajustes de aplicación (clave/valor): interruptores como la auto-respuesta de AlexIA.
 CREATE TABLE IF NOT EXISTS app_settings (
   skey VARCHAR(80) PRIMARY KEY,

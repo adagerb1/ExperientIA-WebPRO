@@ -248,6 +248,15 @@ try {
     }
 } catch (\Throwable $e) { echo '! testimonials: ' . $e->getMessage() . "\n"; }
 
+// Propuestas comerciales: página confidencial por cliente (compuerta email+NIT) con trazabilidad.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS proposals (id INTEGER PRIMARY KEY AUTOINCREMENT, code TEXT NOT NULL UNIQUE, lead_id INTEGER NULL, title TEXT NULL, cliente TEXT NULL, nit TEXT NULL, contact TEXT NULL, contact_email TEXT NULL, auth_emails TEXT NULL, locale TEXT NOT NULL DEFAULT \'es\', version TEXT NULL, doc_date TEXT NULL, contenido TEXT NULL, estado TEXT NOT NULL DEFAULT \'borrador\', views INTEGER NOT NULL DEFAULT 0, last_view TEXT NULL, sent_at TEXT NULL, decided_at TEXT NULL, created_at TEXT NOT NULL, updated_at TEXT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS proposals (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, code VARCHAR(24) NOT NULL UNIQUE, lead_id INT UNSIGNED NULL, title VARCHAR(255) NULL, cliente VARCHAR(190) NULL, nit VARCHAR(40) NULL, contact VARCHAR(190) NULL, contact_email VARCHAR(190) NULL, auth_emails JSON NULL, locale CHAR(2) NOT NULL DEFAULT \'es\', version VARCHAR(40) NULL, doc_date VARCHAR(60) NULL, contenido JSON NULL, estado VARCHAR(20) NOT NULL DEFAULT \'borrador\', views INT NOT NULL DEFAULT 0, last_view DATETIME NULL, sent_at DATETIME NULL, decided_at DATETIME NULL, created_at DATETIME NOT NULL, updated_at DATETIME NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! proposals: ' . $e->getMessage() . "\n"; }
+
 // Ajustes de aplicación (clave/valor). P. ej. el interruptor de auto-respuesta de AlexIA.
 try {
     if ($sqlite) {

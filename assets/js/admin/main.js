@@ -19,6 +19,7 @@ import { Funnel } from './funnel.js';
 import { Usuarios } from './usuarios.js';
 import { Resenas } from './resenas.js';
 import { Testimonios } from './testimonios.js';
+import { Propuestas } from './propuestas.js';
 import { AlexiaWidget } from './alexia.js';
 
 const Shell = {
@@ -41,7 +42,7 @@ const Shell = {
     <div class="adm__user"><span class="adm__user-name">{{ store.admin?store.admin.name:'' }}</span><button class="btn btn-ghost btn-sm adm__logout" @click="salir" title="Salir"><Icon name="logout" :size="14"/><span class="adm__link-label"> Salir</span></button></div>
   </aside><main class="adm__main"><router-view/></main><Toasts/><AlexiaWidget/></div>`,
   data(){ return { store, openGroup: 'crm', collapsed: false, groups: [
-    { key:'crm', label:'CRM', icon:'analitica', items:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/funnel',icon:'analitica',label:'Funnel y pauta'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/growthboard',icon:'target',label:'GrowthBoard Clientes'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/resenas',icon:'sparkle',label:'Reseñas'},{to:'/admin/testimonios',icon:'people',label:'Testimonios'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}] },
+    { key:'crm', label:'CRM', icon:'analitica', items:[{to:'/admin',icon:'analitica',label:'Tablero'},{to:'/admin/leads',icon:'users',label:'Leads'},{to:'/admin/funnel',icon:'analitica',label:'Funnel y pauta'},{to:'/admin/pipeline',icon:'growth',label:'Pipeline'},{to:'/admin/propuestas',icon:'doc',label:'Propuestas'},{to:'/admin/growthboard',icon:'target',label:'GrowthBoard Clientes'},{to:'/admin/campanas',icon:'growth',label:'Campañas'},{to:'/admin/resenas',icon:'sparkle',label:'Reseñas'},{to:'/admin/testimonios',icon:'people',label:'Testimonios'},{to:'/admin/segmentos',icon:'target',label:'Segmentos'},{to:'/admin/reservas',icon:'calendar',label:'Reservas'},{to:'/admin/disponibilidad',icon:'clock',label:'Disponibilidad'}] },
     { key:'cms', label:'Contenido', icon:'doc', items:[{to:'/admin/soluciones',icon:'bulb',label:'Soluciones'},{to:'/admin/productos',icon:'cube',label:'Productos'},{to:'/admin/casos',icon:'growth',label:'Casos'},{to:'/admin/faqs',icon:'alert',label:'FAQs'},{to:'/admin/diagnosticos',icon:'target',label:'Diagnósticos'},{to:'/admin/recursos',icon:'doc',label:'Recursos'},{to:'/admin/growthboard-zonas',icon:'growth',label:'GrowthBoard'},{to:'/admin/studio',icon:'sparkle',label:'Content Studio'},{to:'/admin/industrias',icon:'cube',label:'Industrias'},{to:'/admin/segmentos-config',icon:'target',label:'Segmentos y categorías'}] },
     { key:'plat', label:'Plataforma', icon:'plug', items:[{to:'/admin/secuencias',icon:'gear',label:'Automatizaciones'},{to:'/admin/plantillas-campana',icon:'send',label:'Plantillas campaña'},{to:'/admin/conectores',icon:'plug',label:'Conectores'},{to:'/admin/plantillas',icon:'mail',label:'Plantillas email'},{to:'/admin/usuarios',icon:'users',label:'Usuarios'}] },
   ] }; },
@@ -89,6 +90,7 @@ const routes = [
     { path: 'conectores', component: Conectores },
     { path: 'resenas', component: Resenas },
     { path: 'testimonios', component: Testimonios },
+    { path: 'propuestas', component: Propuestas },
     { path: 'plantillas', component: Plantillas },
   ]},
 ];
