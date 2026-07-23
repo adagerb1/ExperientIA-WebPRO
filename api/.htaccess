@@ -1,0 +1,12 @@
+# El backend solo expone dos entradas: index.php (API) y sitemap.php.
+# Todo lo demás dentro de api/ (Core, Controllers, Services, db, config, .env…)
+# queda inaccesible por web aunque viva en public_html.
+<FilesMatch "\.php$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(index|sitemap)\.php$">
+  Require all granted
+</FilesMatch>
+<FilesMatch "\.(sql|sqlite|log|json|md)$">
+  Require all denied
+</FilesMatch>

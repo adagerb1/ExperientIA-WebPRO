@@ -1,0 +1,19 @@
+.env
+storage/logs/*
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/recursos/*
+!storage/recursos/.gitkeep
+api/db/dev.sqlite
+node_modules/
+.DS_Store
+
+# Medios generados por IA
+assets/img/covers/*
+!assets/img/covers/.gitkeep
+assets/media/*
+!assets/media/.gitkeep
+storage/*.sqlite
+
+# Subidas de clientes (testimonios): contenido de usuario, no del repo
+assets/img/testimonios/*

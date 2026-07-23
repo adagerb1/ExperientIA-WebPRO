@@ -1,0 +1,4 @@
+# Nada dentro de storage/ se sirve por web: los PDF con captura de lead se
+# entregan solo por el endpoint firmado (/api/descarga-archivo) y los logs
+# jamás deben ser públicos.
+Require all denied
