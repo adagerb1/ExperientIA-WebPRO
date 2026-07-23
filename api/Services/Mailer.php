@@ -11,12 +11,21 @@ final class Mailer
     {
         $ok = false;
         $via = 'mail()';
+        // Preferencia 1: correo corporativo (Google Workspace) activo → envía con
+        // la identidad real y queda en "Enviados" del buzón (trazabilidad).
+        if (Connectors\ConnectorRegistry::enabled('google_mail') && Connectors\GmailConnector::isReady()) {
+            $via = 'gmail';
+            $r = Connectors\GmailConnector::send($to, $subject, self::wrap($html));
+            $ok = ! empty($r['ok']);
+        }
         $sg = Connectors\ConnectorRegistry::config('sendgrid');
-        if (! empty($sg['api_key'])) {
+        if (! $ok && ! empty($sg['api_key'])) {
             $via = 'sendgrid';
             $ok = self::viaSendGrid($sg, $to, $subject, $html);
-        } else {
-            // Fallback mail()
+        }
+        if (! $ok && $via !== 'sendgrid') {
+            // Último recurso: mail() del servidor (solo si nada más aplicó/funcionó).
+            $via = 'mail()';
             $from = Env::get('MAIL_FROM', 'hello@experientia.pro');
             $name = Env::get('MAIL_FROM_NAME', 'ExperientIA');
             $headers = "MIME-Version: 1.0\r\nContent-Type: text/html; charset=UTF-8\r\n"

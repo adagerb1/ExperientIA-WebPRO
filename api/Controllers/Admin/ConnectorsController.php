@@ -145,6 +145,9 @@ final class ConnectorsController extends Controller
             'test:wompi', 'test:epayco', 'test:stripe', 'test:paypal' => PaymentConnector::test($provider),
             'test:sendgrid' => ['ok' => ! empty($reg::config('sendgrid')['api_key']), 'message' => 'API key presente.', 'error' => 'Falta la API key de SendGrid.'],
             'send_test:sendgrid' => $this->enviarCorreoPrueba(),
+            'test:google_mail' => \Services\Connectors\GmailConnector::test(),
+            'send_test:google_mail' => $this->correoPruebaGmail(),
+            'sync_inbox:google_mail' => \Services\MailboxService::sync(),
             'register_webhooks:telegram' => TelegramConnector::registerWebhooks($appUrl),
             'webhook_url:whatsapp' => ['ok' => true, 'message' => 'Configura en Meta: ' . $appUrl . '/api/webhook/whatsapp · Verify token: ' . ($reg::config('whatsapp')['verify_token'] ?: '(define uno)')],
             'create_test_event:google_calendar' => $this->crearEventoPrueba(),
@@ -164,6 +167,15 @@ final class ConnectorsController extends Controller
         if (! filter_var($to, FILTER_VALIDATE_EMAIL)) { return ['ok' => false, 'error' => 'Correo de prueba no válido.']; }
         $ok = \Services\Mailer::send($to, 'Prueba de ExperientIA', '<h2>SendGrid operativo</h2><p>Este es un correo de prueba desde el panel de ExperientIA.</p>');
         return $ok ? ['ok' => true, 'message' => 'Correo de prueba enviado a ' . $to] : ['ok' => false, 'error' => 'No se pudo enviar. Revise la API key de SendGrid.'];
+    }
+
+    private function correoPruebaGmail(): array
+    {
+        $to = trim((string) $this->req->input('test_to', '')) ?: \Core\Env::get('MAIL_NOTIFY', 'hello@experientia.pro');
+        if (! filter_var($to, FILTER_VALIDATE_EMAIL)) { return ['ok' => false, 'error' => 'Correo de prueba no válido.']; }
+        $r = \Services\Connectors\GmailConnector::send($to, 'Prueba de correo corporativo · ExperientIA',
+            '<h2>Gmail operativo</h2><p>Este correo salió con tu identidad de Google Workspace desde el panel de ExperientIA. Revisa que también aparezca en tu carpeta "Enviados".</p>');
+        return ! empty($r['ok']) ? ['ok' => true, 'message' => 'Correo de prueba enviado a ' . $to . ' con tu identidad corporativa.'] : ['ok' => false, 'error' => $r['error'] ?? 'No se pudo enviar.'];
     }
 
     private function crearEventoPrueba(): array

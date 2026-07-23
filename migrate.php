@@ -257,6 +257,15 @@ try {
     }
 } catch (\Throwable $e) { echo '! proposals: ' . $e->getMessage() . "\n"; }
 
+// Buzón comercial (Google Workspace): correos leídos + triage de AlexIA + trámite.
+try {
+    if ($sqlite) {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS emails (id INTEGER PRIMARY KEY AUTOINCREMENT, gmail_id TEXT NOT NULL UNIQUE, thread_id TEXT NULL, message_id TEXT NULL, from_email TEXT NULL, from_name TEXT NULL, subject TEXT NULL, snippet TEXT NULL, body TEXT NULL, lead_id INTEGER NULL, ai_clase TEXT NULL, ai_resumen TEXT NULL, ai_accion TEXT NULL, ai_respuesta TEXT NULL, estado TEXT NOT NULL DEFAULT \'nuevo\', replied_at TEXT NULL, received_at TEXT NULL, synced_at TEXT NOT NULL)');
+    } else {
+        $pdo->exec('CREATE TABLE IF NOT EXISTS emails (id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY, gmail_id VARCHAR(64) NOT NULL UNIQUE, thread_id VARCHAR(64) NULL, message_id VARCHAR(255) NULL, from_email VARCHAR(190) NULL, from_name VARCHAR(190) NULL, subject VARCHAR(500) NULL, snippet TEXT NULL, body MEDIUMTEXT NULL, lead_id INT UNSIGNED NULL, ai_clase VARCHAR(30) NULL, ai_resumen TEXT NULL, ai_accion TEXT NULL, ai_respuesta TEXT NULL, estado VARCHAR(20) NOT NULL DEFAULT \'nuevo\', replied_at DATETIME NULL, received_at DATETIME NULL, synced_at DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci');
+    }
+} catch (\Throwable $e) { echo '! emails: ' . $e->getMessage() . "\n"; }
+
 // Ajustes de aplicación (clave/valor). P. ej. el interruptor de auto-respuesta de AlexIA.
 try {
     if ($sqlite) {

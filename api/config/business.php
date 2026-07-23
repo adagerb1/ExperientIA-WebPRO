@@ -77,6 +77,19 @@ return [
             ],
             'acciones' => [['k' => 'send_test', 'l' => 'Enviar correo de prueba']],
         ],
+        'google_mail' => [
+            'nombre' => 'Correo corporativo (Google Workspace)', 'grupo' => 'correo',
+            'desc' => 'Envía con tu identidad corporativa y deja que AlexIA lea y dé trámite a la bandeja comercial.',
+            'campos' => [
+                ['n' => 'client_id', 'l' => 'Client ID (OAuth)', 't' => 'text', 'ph' => 'xxxx.apps.googleusercontent.com'],
+                ['n' => 'client_secret', 'l' => 'Client Secret', 't' => 'secret'],
+                ['n' => 'refresh_token', 'l' => 'Refresh token', 't' => 'secret'],
+                ['n' => 'mailbox', 'l' => 'Buzón conectado', 't' => 'text', 'ph' => 'comercial@experientia.pro'],
+                ['n' => 'from_name', 'l' => 'Nombre remitente', 't' => 'text', 'ph' => 'Tonny Dager · ExperientIA'],
+                ['n' => 'test_to', 'l' => 'Enviar prueba a (opcional)', 't' => 'text', 'ph' => 'tucorreo@ejemplo.com', 'transient' => true],
+            ],
+            'acciones' => [['k' => 'send_test', 'l' => 'Enviar correo de prueba'], ['k' => 'sync_inbox', 'l' => 'Leer bandeja ahora']],
+        ],
         'telegram' => [
             'nombre' => 'Telegram', 'grupo' => 'bots',
             'desc' => 'Agente comercial (capta leads) y bot interno de AlexIA.',

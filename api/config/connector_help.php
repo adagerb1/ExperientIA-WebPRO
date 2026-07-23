@@ -88,6 +88,26 @@ return [
             'test_to' => 'Correo al que se envía la prueba. Solo se usa al pulsar "Enviar correo de prueba"; no se guarda.',
         ],
     ],
+    'google_mail' => [
+        'que' => 'Conecta tu correo corporativo de Google Workspace. La plataforma envía propuestas y seguimientos con tu identidad real (quedan en tus "Enviados") y AlexIA lee la bandeja comercial para clasificar los correos, avisarte de los importantes y sugerir la respuesta.',
+        'guia' => [
+            'Entra a console.cloud.google.com con tu cuenta de Google Workspace y elige (o crea) un proyecto.',
+            'En "APIs y servicios" → "Biblioteca", busca "Gmail API" y pulsa "Habilitar".',
+            'En "Pantalla de consentimiento OAuth", elige tipo "Interno" (solo tu organización) y guarda.',
+            'En "Credenciales" → "Crear credenciales" → "ID de cliente de OAuth" (tipo Aplicación web). Copia el Client ID y el Client Secret y pégalos aquí.',
+            'Autoriza el buzón con los permisos https://www.googleapis.com/auth/gmail.send y https://www.googleapis.com/auth/gmail.readonly y obtén el refresh token (puedes usar el OAuth 2.0 Playground de Google: engrane → "Use your own OAuth credentials").',
+            'Pega el refresh token, escribe el correo del buzón (p. ej. comercial@experientia.pro) y el nombre con el que saldrán los envíos.',
+            'Guarda, pulsa "Probar" y luego "Enviar correo de prueba". Activa el conector: desde ese momento los correos del sistema salen con tu identidad corporativa.',
+        ],
+        'campos' => [
+            'client_id' => 'ID de cliente OAuth de tu proyecto en Google Cloud (termina en .apps.googleusercontent.com). Se crea en console.cloud.google.com → Credenciales.',
+            'client_secret' => 'Secreto del mismo ID de cliente OAuth, visible en la pantalla de credenciales. No lo compartas.',
+            'refresh_token' => 'Token de larga duración que permite renovar el acceso al buzón sin volver a iniciar sesión. Se obtiene al autorizar el buzón con los scopes gmail.send y gmail.readonly (p. ej. con el OAuth 2.0 Playground).',
+            'mailbox' => 'El correo corporativo conectado, tal como enviará (p. ej. comercial@experientia.pro). Debe ser el mismo buzón que autorizaste.',
+            'from_name' => 'Nombre que verá el destinatario junto al correo, p. ej. "Tonny Dager · ExperientIA".',
+            'test_to' => 'Correo al que se envía la prueba. Solo se usa al pulsar "Enviar correo de prueba"; no se guarda.',
+        ],
+    ],
     'telegram' => [
         'que' => 'Dos bots: uno comercial (capta leads desde Telegram) y uno interno (AlexIA para el equipo y notificaciones de negocio).',
         'guia' => [

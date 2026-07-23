@@ -212,6 +212,29 @@ CREATE TABLE IF NOT EXISTS proposals (
   updated_at DATETIME NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Buzón comercial (Google Workspace): cada correo leído queda con el triage de
+-- AlexIA (clase, resumen, acción y respuesta sugerida) y su trámite trazado.
+CREATE TABLE IF NOT EXISTS emails (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  gmail_id VARCHAR(64) NOT NULL UNIQUE,
+  thread_id VARCHAR(64) NULL,
+  message_id VARCHAR(255) NULL,        -- Message-ID para responder en el hilo
+  from_email VARCHAR(190) NULL,
+  from_name VARCHAR(190) NULL,
+  subject VARCHAR(500) NULL,
+  snippet TEXT NULL,
+  body MEDIUMTEXT NULL,
+  lead_id INT UNSIGNED NULL,           -- emparejado por correo del remitente
+  ai_clase VARCHAR(30) NULL,           -- cliente|prospecto|proveedor|otro|spam|pendiente
+  ai_resumen TEXT NULL,
+  ai_accion TEXT NULL,
+  ai_respuesta TEXT NULL,              -- borrador de respuesta sugerido
+  estado VARCHAR(20) NOT NULL DEFAULT 'nuevo',  -- nuevo|tramitado
+  replied_at DATETIME NULL,
+  received_at DATETIME NULL,
+  synced_at DATETIME NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Ajustes de aplicación (clave/valor): interruptores como la auto-respuesta de AlexIA.
 CREATE TABLE IF NOT EXISTS app_settings (
   skey VARCHAR(80) PRIMARY KEY,

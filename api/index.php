@@ -125,6 +125,12 @@ $r->post('/admin/growthboard/clientes/{id}/enviar-acceso', 'Admin\\GrowthBoardAd
 $r->post('/admin/growthboard/clientes/{id}/jugadas', 'Admin\\GrowthBoardAdminController', 'jugadaStore');
 $r->put('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaUpdate');
 $r->delete('/admin/growthboard/clientes/{id}/jugadas/{pid}', 'Admin\\GrowthBoardAdminController', 'jugadaDestroy');
+// Buzón comercial (Google Workspace): lectura, triage de AlexIA y trámite.
+$r->get('/admin/buzon', 'Admin\\MailboxController', 'index');
+$r->post('/admin/buzon/sync', 'Admin\\MailboxController', 'sync');
+$r->post('/admin/buzon/{id}/sugerir', 'Admin\\MailboxController', 'sugerir');
+$r->post('/admin/buzon/{id}/responder', 'Admin\\MailboxController', 'responder');
+$r->post('/admin/buzon/{id}/tramitar', 'Admin\\MailboxController', 'tramitar');
 // Propuestas comerciales: crear, editar, generar con AlexIA, enviar y trazar.
 $r->get('/admin/propuestas', 'Admin\\ProposalsController', 'index');
 $r->post('/admin/propuestas', 'Admin\\ProposalsController', 'store');

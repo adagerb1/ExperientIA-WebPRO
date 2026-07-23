@@ -20,6 +20,12 @@ final class CronController extends Controller
         if ($expected === '' || ! hash_equals($expected, $key)) {
             Response::error('No autorizado.', 401);
         }
-        Response::ok(['secuencias' => SequenceService::processDue(300), 'ran_at' => now_utc()]);
+        // Buzón comercial: leer bandeja + triage de AlexIA (silencioso si no está configurado).
+        $buzon = null;
+        try {
+            if (\Services\Connectors\GmailConnector::isReady()) { $buzon = \Services\MailboxService::sync(); }
+        } catch (\Throwable $e) { $buzon = ['ok' => false, 'error' => 'buzon: ' . $e->getMessage()]; }
+
+        Response::ok(['secuencias' => SequenceService::processDue(300), 'buzon' => $buzon, 'ran_at' => now_utc()]);
     }
 }
